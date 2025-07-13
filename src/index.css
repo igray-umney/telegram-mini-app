@@ -8,11 +8,6 @@ body {
   background-color: #f8fafc;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-}
-
 * {
   box-sizing: border-box;
 }
@@ -21,4 +16,30 @@ html, body, #root {
   height: 100%;
 }
 
-/* Убираем конфликтующие Tailwind импорты */
+/* Telegram Mini App specific styles */
+.telegram-viewport {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Mobile-first responsive design */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 2px;
+}
