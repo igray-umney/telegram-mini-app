@@ -9,63 +9,46 @@ const ChildDevelopmentApp = () => {
     streak: 7
   });
 
-  // База активностей по возрастам
+  // Данные прогресса (в реальном приложении будут из базы данных)
+  const [progressData] = useState({
+    weeklyActivities: [true, true, false, true, true, false, false], // Пн-Вс
+    totalActivities: 45,
+    totalTime: 12.5, // часы
+    skillsProgress: {
+      motor: 85,
+      speech: 70,
+      logic: 60,
+      creativity: 90,
+      development: 75
+    },
+    achievements: [
+      { id: 1, title: 'Первая неделя', description: '7 дней подряд занятий', icon: '🎯', unlocked: true, date: '2025-01-05' },
+      { id: 2, title: 'Творческий гений', description: '10 творческих активностей', icon: '🎨', unlocked: true, date: '2025-01-10' },
+      { id: 3, title: 'Маленький исследователь', description: '15 логических игр', icon: '🔍', unlocked: false, progress: 12 },
+      { id: 4, title: 'Месяц развития', description: '30 дней занятий', icon: '📅', unlocked: false, progress: 15 },
+      { id: 5, title: 'Говорун', description: '20 речевых упражнений', icon: '🗣️', unlocked: false, progress: 8 },
+      { id: 6, title: 'Мастер движений', description: '25 моторных активностей', icon: '🏃', unlocked: false, progress: 18 }
+    ],
+    recentActivities: [
+      { name: 'Сортировка по цветам', category: 'Логика', date: '2025-01-13', duration: 20 },
+      { name: 'Рисование пальчиками', category: 'Творчество', date: '2025-01-13', duration: 25 },
+      { name: 'Простые пазлы', category: 'Логика', date: '2025-01-12', duration: 15 },
+      { name: 'Игра с водой', category: 'Моторика', date: '2025-01-12', duration: 20 },
+      { name: 'Музыкальные инструменты', category: 'Творчество', date: '2025-01-11', duration: 10 }
+    ]
+  });
+
+  // База активностей (сокращенная версия для демо)
   const activities = {
     1: [
       { title: 'Сенсорная коробка', description: 'Исследуем разные текстуры: песок, крупы, ткани', duration: '15 мин', category: 'Моторика', premium: false, icon: '🤲' },
       { title: 'Игра с водой', description: 'Переливаем воду между емкостями, развиваем координацию', duration: '20 мин', category: 'Моторика', premium: false, icon: '💧' },
-      { title: 'Музыкальные инструменты', description: 'Изучаем звуки: погремушки, барабан, колокольчики', duration: '10 мин', category: 'Творчество', premium: true, icon: '🎵' },
-      { title: 'Массаж ладошек', description: 'Стимулируем нервные окончания массажными мячиками', duration: '5 мин', category: 'Развитие', premium: true, icon: '✋' },
-      { title: 'Первые слова', description: 'Повторяем простые слова: мама, папа, дай', duration: '10 мин', category: 'Речь', premium: true, icon: '👶' },
-      { title: 'Игрушки-вкладыши', description: 'Изучаем размеры: большой-маленький', duration: '15 мин', category: 'Логика', premium: true, icon: '🧩' }
+      { title: 'Музыкальные инструменты', description: 'Изучаем звуки: погремушки, барабан, колокольчики', duration: '10 мин', category: 'Творчество', premium: true, icon: '🎵' }
     ],
     2: [
       { title: 'Собираем пирамидку', description: 'Развиваем мелкую моторику и понимание размеров', duration: '15 мин', category: 'Логика', premium: false, icon: '📐' },
       { title: 'Рисование пальчиками', description: 'Творческое развитие с безопасными красками', duration: '25 мин', category: 'Творчество', premium: false, icon: '🎨' },
-      { title: 'Игра в прятки', description: 'Развиваем понимание постоянства объектов', duration: '20 мин', category: 'Развитие', premium: true, icon: '👁️' },
-      { title: 'Лепка из пластилина', description: 'Развиваем креативность и мелкую моторику', duration: '30 мин', category: 'Творчество', premium: true, icon: '🎭' },
-      { title: 'Простые команды', description: 'Учимся выполнять: принеси, дай, покажи', duration: '10 мин', category: 'Речь', premium: true, icon: '🗣️' },
-      { title: 'Сортировка игрушек', description: 'Раскладываем по цветам и формам', duration: '20 мин', category: 'Логика', premium: true, icon: '🔄' }
-    ],
-    3: [
-      { title: 'Сортировка по цветам', description: 'Изучаем основные цвета и их названия', duration: '20 мин', category: 'Логика', premium: false, icon: '🌈' },
-      { title: 'Простые пазлы', description: 'Пазлы из 4-6 элементов, развиваем логику', duration: '25 мин', category: 'Логика', premium: false, icon: '🧩' },
-      { title: 'Ролевые игры', description: 'Играем в доктора, повара, водителя', duration: '30 мин', category: 'Развитие', premium: true, icon: '👨‍⚕️' },
-      { title: 'Изучаем алфавит', description: 'Первые буквы в игровой форме', duration: '15 мин', category: 'Речь', premium: true, icon: '🔤' },
-      { title: 'Счет до 5', description: 'Изучаем цифры с помощью игрушек', duration: '15 мин', category: 'Логика', premium: true, icon: '🔢' },
-      { title: 'Танцы и движения', description: 'Развиваем координацию под музыку', duration: '20 мин', category: 'Моторика', premium: true, icon: '💃' }
-    ],
-    4: [
-      { title: 'Строим из конструктора', description: 'Развиваем пространственное мышление', duration: '35 мин', category: 'Логика', premium: false, icon: '🏗️' },
-      { title: 'Считаем до 10', description: 'Основы математики с наглядными примерами', duration: '20 мин', category: 'Логика', premium: false, icon: '🔢' },
-      { title: 'Рассказываем истории', description: 'Развиваем речь и фантазию', duration: '25 мин', category: 'Речь', premium: true, icon: '📚' },
-      { title: 'Эксперименты с магнитами', description: 'Изучаем физические свойства предметов', duration: '30 мин', category: 'Развитие', premium: true, icon: '🧲' },
-      { title: 'Вырезаем ножницами', description: 'Развиваем мелкую моторику (под присмотром)', duration: '15 мин', category: 'Моторика', premium: true, icon: '✂️' },
-      { title: 'Изучаем времена года', description: 'Знакомимся с природными циклами', duration: '20 мин', category: 'Развитие', premium: true, icon: '🍂' }
-    ],
-    5: [
-      { title: 'Решаем загадки', description: 'Развиваем логическое мышление', duration: '25 мин', category: 'Логика', premium: false, icon: '🤔' },
-      { title: 'Изучаем часы', description: 'Понятие времени: час, минута', duration: '20 мин', category: 'Логика', premium: false, icon: '⏰' },
-      { title: 'Готовим вместе', description: 'Практические навыки на кухне', duration: '45 мин', category: 'Развитие', premium: true, icon: '👨‍🍳' },
-      { title: 'Изучаем карту мира', description: 'Знакомимся со странами и континентами', duration: '30 мин', category: 'Развитие', premium: true, icon: '🌍' },
-      { title: 'Письмо букв', description: 'Подготовка руки к письму', duration: '20 мин', category: 'Моторика', premium: true, icon: '✍️' },
-      { title: 'Театральные постановки', description: 'Развиваем актерские способности', duration: '35 мин', category: 'Творчество', premium: true, icon: '🎭' }
-    ],
-    6: [
-      { title: 'Письмо и чтение', description: 'Подготовка к школе: буквы и слоги', duration: '30 мин', category: 'Речь', premium: false, icon: '📝' },
-      { title: 'Математические задачи', description: 'Сложение и вычитание в пределах 10', duration: '25 мин', category: 'Логика', premium: false, icon: '➕' },
-      { title: 'Научные эксперименты', description: 'Простые опыты: вода, воздух, свет', duration: '40 мин', category: 'Развитие', premium: true, icon: '🔬' },
-      { title: 'Изучаем иностранный язык', description: 'Первые английские слова', duration: '20 мин', category: 'Речь', premium: true, icon: '🇬🇧' },
-      { title: 'Логические цепочки', description: 'Находим закономерности в последовательностях', duration: '25 мин', category: 'Логика', premium: true, icon: '🔗' },
-      { title: 'Создаем комиксы', description: 'Рисуем истории в картинках', duration: '45 мин', category: 'Творчество', premium: true, icon: '💭' }
-    ],
-    7: [
-      { title: 'Чтение книг', description: 'Развиваем навыки чтения и понимания', duration: '30 мин', category: 'Речь', premium: false, icon: '📖' },
-      { title: 'Решение примеров', description: 'Математика в пределах 20', duration: '25 мин', category: 'Логика', premium: false, icon: '🧮' },
-      { title: 'Проектная работа', description: 'Создаем презентацию на выбранную тему', duration: '50 мин', category: 'Развитие', premium: true, icon: '📊' },
-      { title: 'Программирование для детей', description: 'Основы алгоритмического мышления', duration: '35 мин', category: 'Логика', premium: true, icon: '💻' },
-      { title: 'Изучаем историю', description: 'Интересные факты о прошлом', duration: '30 мин', category: 'Развитие', premium: true, icon: '🏛️' },
-      { title: 'Химические опыты', description: 'Безопасные эксперименты для детей', duration: '40 мин', category: 'Развитие', premium: true, icon: '⚗️' }
+      { title: 'Игра в прятки', description: 'Развиваем понимание постоянства объектов', duration: '20 мин', category: 'Развитие', premium: true, icon: '👁️' }
     ]
   };
 
@@ -86,11 +69,32 @@ const ChildDevelopmentApp = () => {
     return colors[category] || 'bg-gray-100 text-gray-800';
   };
 
-  // Главный экран
+  const getSkillName = (key) => {
+    const names = {
+      motor: 'Мелкая моторика',
+      speech: 'Речь и коммуникация', 
+      logic: 'Логическое мышление',
+      creativity: 'Творческие способности',
+      development: 'Общее развитие'
+    };
+    return names[key];
+  };
+
+  const getSkillColor = (key) => {
+    const colors = {
+      motor: 'bg-blue-500',
+      speech: 'bg-green-500',
+      logic: 'bg-purple-500', 
+      creativity: 'bg-pink-500',
+      development: 'bg-orange-500'
+    };
+    return colors[key];
+  };
+
+  // Главный экран (без изменений)
   if (currentScreen === 'main') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
-        {/* Header */}
         <div className="bg-white shadow-sm px-4 py-6">
           <div className="flex items-center justify-between">
             <div>
@@ -111,14 +115,11 @@ const ChildDevelopmentApp = () => {
           </div>
         </div>
 
-        {/* Premium Banner */}
         {!isPremium && (
           <div className="mx-4 mt-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg p-4 text-white">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-bold flex items-center">
-                  👑 Премиум подписка
-                </h3>
+                <h3 className="font-bold flex items-center">👑 Премиум подписка</h3>
                 <p className="text-sm opacity-90">Открой все активности и возможности</p>
               </div>
               <button 
@@ -131,7 +132,6 @@ const ChildDevelopmentApp = () => {
           </div>
         )}
 
-        {/* Main Content */}
         <div className="px-4 py-6">
           <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
             <div className="text-center mb-6">
@@ -150,12 +150,11 @@ const ChildDevelopmentApp = () => {
             </button>
           </div>
 
-          {/* Stats */}
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="bg-white rounded-xl p-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold text-blue-600">{activities[child.age]?.length || 0}</p>
+                  <p className="text-2xl font-bold text-blue-600">{progressData.totalActivities}</p>
                   <p className="text-sm text-gray-600">Активности</p>
                 </div>
                 <span className="text-2xl">🎯</span>
@@ -164,7 +163,7 @@ const ChildDevelopmentApp = () => {
             <div className="bg-white rounded-xl p-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold text-purple-600">12ч</p>
+                  <p className="text-2xl font-bold text-purple-600">{progressData.totalTime}ч</p>
                   <p className="text-sm text-gray-600">Время развития</p>
                 </div>
                 <span className="text-2xl">⏰</span>
@@ -172,7 +171,6 @@ const ChildDevelopmentApp = () => {
             </div>
           </div>
 
-          {/* Quick Actions */}
           <div className="grid grid-cols-2 gap-4">
             <button 
               onClick={() => setCurrentScreen('progress')}
@@ -195,7 +193,6 @@ const ChildDevelopmentApp = () => {
           </div>
         </div>
 
-        {/* Age Selector for testing */}
         <div className="px-4 pb-6">
           <div className="bg-gray-100 rounded-lg p-4">
             <p className="text-sm text-gray-600 mb-2">Тест возрастов:</p>
@@ -205,9 +202,7 @@ const ChildDevelopmentApp = () => {
                   key={age}
                   onClick={() => setChild({...child, age})}
                   className={`px-3 py-1 rounded text-sm ${
-                    child.age === age 
-                      ? 'bg-blue-500 text-white' 
-                      : 'bg-white text-gray-600'
+                    child.age === age ? 'bg-blue-500 text-white' : 'bg-white text-gray-600'
                   }`}
                 >
                   {age} {getAgeText(age)}
@@ -220,7 +215,165 @@ const ChildDevelopmentApp = () => {
     );
   }
 
-  // Экран активностей
+  // НОВЫЙ Экран прогресса
+  if (currentScreen === 'progress') {
+    const completedThisWeek = progressData.weeklyActivities.filter(Boolean).length;
+    const totalDaysThisWeek = 7;
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm px-4 py-4 sticky top-0 z-10">
+          <div className="flex items-center">
+            <button 
+              onClick={() => setCurrentScreen('main')}
+              className="mr-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <span className="text-2xl">←</span>
+            </button>
+            <div>
+              <h1 className="text-xl font-bold text-gray-800">Прогресс развития</h1>
+              <p className="text-sm text-gray-600">{child.name} • {child.age} {getAgeText(child.age)}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-4 py-6">
+          {/* Weekly Progress */}
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-800">Эта неделя</h2>
+              <div className="flex items-center bg-green-100 px-3 py-1 rounded-full">
+                <span className="text-sm font-medium text-green-800">
+                  🔥 {child.streak} дней подряд
+                </span>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-7 gap-2 mb-4">
+              {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map((day, index) => (
+                <div key={day} className="text-center">
+                  <div className="text-xs text-gray-600 mb-1">{day}</div>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    progressData.weeklyActivities[index] ? 'bg-green-500 text-white' : 'bg-gray-200'
+                  }`}>
+                    {progressData.weeklyActivities[index] ? '✓' : ''}
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="bg-gray-100 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-gray-700">Выполнено активностей</span>
+                <span className="font-bold text-green-600">{completedThisWeek} из {totalDaysThisWeek}</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="h-2 rounded-full bg-green-500"
+                  style={{ width: `${(completedThisWeek / totalDaysThisWeek) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Skills Development */}
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">Развитие навыков</h2>
+            <div className="space-y-4">
+              {Object.entries(progressData.skillsProgress).map(([key, progress]) => (
+                <div key={key}>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-medium text-gray-700">{getSkillName(key)}</span>
+                    <span className="text-sm text-gray-500">{progress}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${getSkillColor(key)}`}
+                      style={{ width: `${progress}%` }}
+                    ></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Achievements */}
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">Достижения</h2>
+            <div className="grid grid-cols-2 gap-4">
+              {progressData.achievements.map((achievement) => (
+                <div 
+                  key={achievement.id} 
+                  className={`p-4 rounded-lg border-2 ${
+                    achievement.unlocked 
+                      ? 'border-yellow-300 bg-yellow-50' 
+                      : 'border-gray-200 bg-gray-50'
+                  }`}
+                >
+                  <div className="text-2xl mb-2">{achievement.icon}</div>
+                  <h3 className={`font-medium text-sm ${
+                    achievement.unlocked ? 'text-yellow-800' : 'text-gray-500'
+                  }`}>
+                    {achievement.title}
+                  </h3>
+                  <p className="text-xs text-gray-600 mt-1">{achievement.description}</p>
+                  
+                  {!achievement.unlocked && achievement.progress && (
+                    <div className="mt-3">
+                      <div className="flex justify-between text-xs text-gray-500 mb-1">
+                        <span>Прогресс</span>
+                        <span>{achievement.progress}/15</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-1">
+                        <div 
+                          className="h-1 rounded-full bg-yellow-400"
+                          style={{ width: `${(achievement.progress / 15) * 100}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {achievement.unlocked && achievement.date && (
+                    <p className="text-xs text-yellow-700 mt-2">
+                      Получено: {new Date(achievement.date).toLocaleDateString('ru-RU')}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Recent Activities */}
+          <div className="bg-white rounded-xl p-6 shadow-sm">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">Последние активности</h2>
+            <div className="space-y-3">
+              {progressData.recentActivities.map((activity, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex-1">
+                    <h3 className="font-medium text-gray-800 text-sm">{activity.name}</h3>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(activity.category)}`}>
+                        {activity.category}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {new Date(activity.date).toLocaleDateString('ru-RU')}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-gray-700">{activity.duration} мин</p>
+                    <span className="text-xs text-gray-500">выполнено</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Экран активностей (без изменений)
   if (currentScreen === 'activities') {
     const childActivities = activities[child.age] || [];
     const freeActivities = childActivities.filter(a => !a.premium);
@@ -228,7 +381,6 @@ const ChildDevelopmentApp = () => {
 
     return (
       <div className="min-h-screen bg-gray-50">
-        {/* Header */}
         <div className="bg-white shadow-sm px-4 py-4 sticky top-0 z-10">
           <div className="flex items-center">
             <button 
@@ -245,7 +397,6 @@ const ChildDevelopmentApp = () => {
         </div>
 
         <div className="px-4 py-6">
-          {/* Free Activities */}
           <div className="mb-8">
             <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
               <span className="text-green-500 mr-2">🆓</span>
@@ -281,7 +432,6 @@ const ChildDevelopmentApp = () => {
             </div>
           </div>
 
-          {/* Premium Activities */}
           <div>
             <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
               <span className="text-yellow-500 mr-2">👑</span>
@@ -328,7 +478,6 @@ const ChildDevelopmentApp = () => {
             </div>
           </div>
 
-          {/* Upgrade prompt for non-premium users */}
           {!isPremium && premiumActivities.length > 0 && (
             <div className="mt-8 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-6 text-white text-center">
               <h3 className="text-lg font-bold mb-2">🚀 Разблокируй все возможности!</h3>
@@ -348,7 +497,7 @@ const ChildDevelopmentApp = () => {
     );
   }
 
-  // Экран настроек
+  // Настройки (без изменений)
   if (currentScreen === 'settings') {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -365,7 +514,6 @@ const ChildDevelopmentApp = () => {
         </div>
 
         <div className="px-4 py-6">
-          {/* Child Info */}
           <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
             <h2 className="text-lg font-bold text-gray-800 mb-4">Информация о ребенке</h2>
             <div className="space-y-4">
@@ -394,7 +542,6 @@ const ChildDevelopmentApp = () => {
             </div>
           </div>
 
-          {/* Premium Status */}
           <div className="bg-white rounded-xl p-6 shadow-sm">
             <h2 className="text-lg font-bold text-gray-800 mb-4">Подписка</h2>
             {isPremium ? (
@@ -421,45 +568,46 @@ const ChildDevelopmentApp = () => {
                 </p>
                 <button 
                   onClick={() => setIsPremium(true)}
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition-all"
-                >
-                  Подписаться - 299₽/мес
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 text-white pxonClick={() => setIsPremium(true)}
+                 className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition-all"
+               >
+                 Подписаться - 299₽/мес
+               </button>
+             </div>
+           )}
+         </div>
+       </div>
+     </div>
+   );
+ }
 
-  // Другие экраны (заглушки)
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow-sm px-4 py-4 sticky top-0 z-10">
-        <div className="flex items-center">
-          <button 
-            onClick={() => setCurrentScreen('main')}
-            className="mr-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <span className="text-2xl">←</span>
-          </button>
-          <h1 className="text-xl font-bold text-gray-800">Экран: {currentScreen}</h1>
-        </div>
-      </div>
-      
-      <div className="px-4 py-20 text-center">
-        <h2 className="text-xl font-bold mb-4">Раздел в разработке</h2>
-        <p className="text-gray-600 mb-6">Этот функционал будет добавлен в следующих версиях</p>
-        <button 
-          onClick={() => setCurrentScreen('main')}
-          className="bg-blue-500 text-white px-6 py-2 rounded-lg"
-        >
-          Вернуться на главную
-        </button>
-      </div>
-    </div>
-  );
+ // Другие экраны (заглушки)
+ return (
+   <div className="min-h-screen bg-gray-50">
+     <div className="bg-white shadow-sm px-4 py-4 sticky top-0 z-10">
+       <div className="flex items-center">
+         <button 
+           onClick={() => setCurrentScreen('main')}
+           className="mr-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+         >
+           <span className="text-2xl">←</span>
+         </button>
+         <h1 className="text-xl font-bold text-gray-800">Экран: {currentScreen}</h1>
+       </div>
+     </div>
+     
+     <div className="px-4 py-20 text-center">
+       <h2 className="text-xl font-bold mb-4">Раздел в разработке</h2>
+       <p className="text-gray-600 mb-6">Этот функционал будет добавлен в следующих версиях</p>
+       <button 
+         onClick={() => setCurrentScreen('main')}
+         className="bg-blue-500 text-white px-6 py-2 rounded-lg"
+       >
+         Вернуться на главную
+       </button>
+     </div>
+   </div>
+ );
 };
 
 export default ChildDevelopmentApp;
