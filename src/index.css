@@ -1,7 +1,3 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
-
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -25,39 +21,4 @@ html, body, #root {
   height: 100%;
 }
 
-/* Telegram Mini App specific styles */
-.telegram-viewport {
-  width: 100%;
-  height: 100vh;
-  overflow: hidden;
-}
-
-/* Mobile-first responsive design */
-@media (max-width: 768px) {
-  body {
-    font-size: 14px;
-  }
-}
-
-/* Smooth transitions */
-* {
-  transition: all 0.2s ease-in-out;
-}
-
-/* Custom scrollbar for webkit browsers */
-::-webkit-scrollbar {
-  width: 4px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 2px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}
+/* Убираем конфликтующие Tailwind импорты */
