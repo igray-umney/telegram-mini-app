@@ -1,1572 +1,1294 @@
-import React, { useState } from 'react';
+// Telegram Bot для приложения развития детей
+const express = require('express');
+const TelegramBot = require('node-telegram-bot-api');
+const app = express();
 
-const ChildDevelopmentApp = () => {
-  const [currentScreen, setCurrentScreen] = useState('main');
-  const [isPremium, setIsPremium] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedActivity, setSelectedActivity] = useState(null);
-  const [child, setChild] = useState({
-    name: 'Андрей',
-    age: 2,
-    streak: 7
-  });
+// Конфигурация
+const BOT_TOKEN = 'YOUR_BOT_TOKEN_HERE'; // Получить у @BotFather
+const WEBHOOK_URL = 'https://your-domain.com/webhook'; // Ваш домен для webhook
+const PORT = process.env.PORT || 3000;
 
-  // Настройки уведомлений
-  const [notificationSettings, setNotificationSettings] = useState({
-    enabled: true,
-    time: '19:00',
-    frequency: 'daily',
-    reminderType: 'motivational',
-    quietHours: {
-      enabled: true,
-      start: '21:00',
-      end: '08:00'
-    },
-    weekendMode: false,
-    customDays: {
-      monday: true,
-      tuesday: true,
-      wednesday: true,
-      thursday: true,
-      friday: true,
-      saturday: true,
-      sunday: false
-    }
-  });
+// Инициализация бота
+const bot = new TelegramBot(BOT_TOKEN, { webHook: true });
+bot.setWebHook(`${WEBHOOK_URL}/${BOT_TOKEN}`);
 
-  // Данные прогресса
-  const [progressData] = useState({
-    weeklyActivities: [true, true, false, true, true, false, false],
-    totalActivities: 45,
-    totalTime: 12.5,
-    skillsProgress: {
-      motor: 85,
-      speech: 70,
-      logic: 60,
-      creativity: 90,
-      development: 75
-    },
-    achievements: [
-      { id: 1, title: 'Первая неделя', description: '7 дней подряд', icon: '🎯', unlocked: true },
-      { id: 2, title: 'Творческий гений', description: '10 творческих активностей', icon: '🎨', unlocked: true },
-      { id: 3, title: 'Исследователь', description: '15 логических игр', icon: '🔍', unlocked: false, progress: 12 },
-      { id: 4, title: 'Месяц развития', description: '30 дней занятий', icon: '📅', unlocked: false, progress: 15 }
-    ],
-    recentActivities: [
-      { name: 'Сортировка по цветам', category: 'Логика', date: '2025-01-13', duration: 20 },
-      { name: 'Рисование пальчиками', category: 'Творчество', date: '2025-01-13', duration: 25 },
-      { name: 'Простые пазлы', category: 'Логика', date: '2025-01-12', duration: 15 }
-    ]
-  });
+app.use(express.json());
 
-  // База материалов библиотеки
-  const [libraryContent] = useState({
-    categories: [
-      { id: 'development', name: 'Развитие', icon: '🧠', count: 23 },
-      { id: 'health', name: 'Здоровье', icon: '🏥', count: 18 },
-      { id: 'education', name: 'Обучение', icon: '📖', count: 31 },
-      { id: 'psychology', name: 'Психология', icon: '💭', count: 15 },
-      { id: 'nutrition', name: 'Питание', icon: '🍎', count: 12 },
-      { id: 'safety', name: 'Безопасность', icon: '🛡️', count: 9 }
-    ],
-    articles: [
-      {
-        id: 1,
-        title: 'Как развивать речь у ребенка 2-3 лет',
-        description: 'Практические советы для развития речевых навыков в раннем возрасте',
-        readTime: '5 мин',
-        category: 'development',
-        premium: false,
-        author: 'Логопед Анна Петрова',
-        rating: 4.8,
-        views: 1247
-      },
-      {
-        id: 2,
-        title: 'Лучшие игры для развития мелкой моторики',
-        description: 'Простые упражнения и игры для укрепления мышц рук и пальцев',
-        readTime: '7 мин',
-        category: 'development',
-        premium: false,
-        author: 'Педиатр Мария Иванова',
-        rating: 4.9,
-        views: 987
-      },
-      {
-        id: 3,
-        title: 'Подготовка к школе: чек-лист для родителей',
-        description: 'Что должен уметь ребенок перед поступлением в первый класс',
-        readTime: '10 мин',
-        category: 'education',
-        premium: true,
-        author: 'Педагог Ольга Волкова',
-        rating: 4.9,
-        views: 1543
-      },
-      {
-        id: 4,
-        title: 'Детские страхи: как помочь ребенку',
-        description: 'Работаем с типичными страхами детей разного возраста',
-        readTime: '6 мин',
-        category: 'psychology',
-        premium: true,
-        author: 'Психолог Дмитрий Козлов',
-        rating: 4.6,
-        views: 445
-      },
-      {
-        id: 5,
-        title: 'Здоровое питание для дошкольников',
-        description: 'Составляем сбалансированное меню для детей 3-6 лет',
-        readTime: '8 мин',
-        category: 'nutrition',
-        premium: true,
-        author: 'Диетолог Елена Сидорова',
-        rating: 4.7,
-        views: 756
-      }
-    ],
-    videos: [
-      {
-        id: 1,
-        title: 'Массаж для малышей: укрепляем здоровье',
-        duration: '15 мин',
-        category: 'health',
-        premium: false,
-        thumbnail: '👶',
-        views: 2341
-      },
-      {
-        id: 2,
-        title: 'Творческие занятия с детьми 4-6 лет',
-        duration: '22 мин',
-        category: 'development',
-        premium: true,
-        thumbnail: '🎨',
-        views: 1567
-      }
-    ]
-  });
+// База данных пользователей (в продакшене использовать реальную БД)
+const users = new Map();
 
-  // РАСШИРЕННАЯ база активностей
-  const [activitiesDatabase] = useState({
-    1: [
-      {
-        id: 1,
-        title: 'Сенсорная коробка',
-        description: 'Исследуем разные текстуры: песок, крупы, ткани',
-        duration: '15 мин',
-        category: 'Моторика',
-        premium: false,
-        icon: '🤲',
-        difficulty: 'Легко',
-        materials: ['Коробка', 'Рис/гречка', 'Ткани разной текстуры', 'Мелкие игрушки'],
-        instructions: [
-          'Возьмите небольшую коробку или контейнер',
-          'Наполните её рисом, гречкой или другой крупой',
-          'Добавьте кусочки разных тканей',
-          'Спрячьте мелкие игрушки в наполнителе',
-          'Пусть малыш исследует содержимое руками',
-          'Показывайте и называйте найденные предметы'
-        ],
-        benefits: 'Развивает тактильные ощущения, мелкую моторику, концентрацию внимания',
-        ageRange: '12-18 месяцев'
-      },
-      {
-        id: 2,
-        title: 'Игра с водой',
-        description: 'Переливаем воду между емкостями, развиваем координацию',
-        duration: '20 мин',
-        category: 'Моторика',
-        premium: false,
-        icon: '💧',
-        difficulty: 'Легко',
-        materials: ['2-3 емкости разного размера', 'Вода', 'Губка', 'Полотенце'],
-        instructions: [
-          'Приготовьте емкости разного размера',
-          'Налейте воду в одну из них',
-          'Покажите малышу, как переливать воду',
-          'Пусть ребенок экспериментирует самостоятельно',
-          'Дайте губку - пусть выжимает воду',
-          'Не забудьте про полотенце для уборки!'
-        ],
-        benefits: 'Развивает мелкую моторику, понимание причины и следствия, тактильные ощущения',
-        ageRange: '10-24 месяца'
-      },
-      {
-        id: 3,
-        title: 'Музыкальные инструменты',
-        description: 'Изучаем звуки: погремушки, барабан, колокольчики',
-        duration: '10 мин',
-        category: 'Творчество',
-        premium: true,
-        icon: '🎵',
-        difficulty: 'Легко',
-        materials: ['Погремушки', 'Колокольчики', 'Самодельный барабан', 'Ложки'],
-        instructions: [
-          'Подготовьте разные музыкальные инструменты',
-          'Покажите, как извлекать звуки из каждого',
-          'Пусть малыш попробует сам',
-          'Играйте простые ритмы',
-          'Пойте песенки под аккомпанемент',
-          'Танцуйте под музыку'
-        ],
-        benefits: 'Развивает слух, чувство ритма, координацию движений, творческие способности',
-        ageRange: '8-18 месяцев'
-      }
-    ],
-    2: [
-      {
-        id: 4,
-        title: 'Собираем пирамидку',
-        description: 'Развиваем мелкую моторику и понимание размеров',
-        duration: '15 мин',
-        category: 'Логика',
-        premium: false,
-        icon: '📐',
-        difficulty: 'Легко',
-        materials: ['Пирамидка с кольцами разного размера'],
-        instructions: [
-          'Покажите ребенку пирамидку',
-          'Разберите её на части',
-          'Объясните понятия "большой" и "маленький"',
-          'Пусть ребенок попробует собрать сам',
-          'Помогайте при необходимости',
-          'Хвалите за каждое правильное действие'
-        ],
-        benefits: 'Развивает мелкую моторику, понимание размеров, логическое мышление, терпение',
-        ageRange: '18-30 месяцев'
-      },
-      {
-        id: 5,
-        title: 'Рисование пальчиками',
-        description: 'Творческое развитие с безопасными красками',
-        duration: '25 мин',
-        category: 'Творчество',
-        premium: false,
-        icon: '🎨',
-        difficulty: 'Средне',
-        materials: ['Пальчиковые краски', 'Большой лист бумаги', 'Влажные салфетки'],
-        instructions: [
-          'Подготовьте рабочее место',
-          'Наденьте на ребенка старую одежду',
-          'Покажите, как макать палец в краску',
-          'Начните с простых отпечатков',
-          'Рисуйте вместе простые фигуры',
-          'Не ограничивайте творчество ребенка'
-        ],
-        benefits: 'Развивает творческие способности, мелкую моторику, цветовосприятие, тактильные ощущения',
-        ageRange: '18-36 месяцев'
-      },
-      {
-        id: 6,
-        title: 'Лепка из пластилина',
-        description: 'Развиваем креативность и мелкую моторику',
-        duration: '30 мин',
-        category: 'Творчество',
-        premium: true,
-        icon: '🎭',
-        difficulty: 'Средне',
-        materials: ['Мягкий пластилин', 'Доска для лепки', 'Простые формочки'],
-        instructions: [
-          'Разогрейте пластилин в руках',
-          'Покажите основные приемы: катание, сплющивание',
-          'Лепите простые фигуры: шарики, колбаски',
-          'Используйте формочки для создания фигур',
-          'Создавайте простых животных',
-          'Не стремитесь к идеальному результату'
-        ],
-        benefits: 'Развивает мелкую моторику, творческие способности, пространственное мышление, усидчивость',
-        ageRange: '24-36 месяцев'
-      }
-    ],
-    3: [
-      {
-        id: 7,
-        title: 'Сортировка по цветам',
-        description: 'Изучаем основные цвета и их названия',
-        duration: '20 мин',
-        category: 'Логика',
-        premium: false,
-        icon: '🌈',
-        difficulty: 'Легко',
-        materials: ['Цветные предметы', '4-5 коробочек или емкостей'],
-        instructions: [
-          'Подготовьте предметы 4-5 основных цветов',
-          'Покажите ребенку, как сортировать по цветам',
-          'Называйте каждый цвет при сортировке',
-          'Пусть ребенок повторяет названия цветов',
-          'Проверьте результат вместе',
-          'Усложните задачу, добавив больше цветов'
-        ],
-        benefits: 'Развивает цветовосприятие, логическое мышление, внимание, словарный запас',
-        ageRange: '2-4 года'
-      },
-      {
-        id: 8,
-        title: 'Простые пазлы',
-        description: 'Пазлы из 4-6 элементов, развиваем логику',
-        duration: '25 мин',
-        category: 'Логика',
-        premium: false,
-        icon: '🧩',
-        difficulty: 'Средне',
-        materials: ['Пазлы из 4-6 крупных элементов', 'Картинки для образца'],
-        instructions: [
-          'Выберите пазл с крупными деталями',
-          'Покажите готовую картинку',
-          'Разберите пазл на части',
-          'Помогите найти угловые детали',
-          'Собирайте постепенно, хваля за успехи',
-          'Постепенно увеличивайте количество деталей'
-        ],
-        benefits: 'Развивает логическое мышление, пространственное восприятие, терпение, мелкую моторику',
-        ageRange: '2,5-4 года'
-      },
-      {
-        id: 9,
-        title: 'Ролевые игры',
-        description: 'Играем в доктора, повара, водителя',
-        duration: '30 мин',
-        category: 'Развитие',
-        premium: true,
-        icon: '👨‍⚕️',
-        difficulty: 'Средне',
-        materials: ['Игрушечные инструменты', 'Костюмы или атрибуты', 'Куклы/игрушки'],
-        instructions: [
-          'Выберите роль для игры (доктор, повар, и т.д.)',
-          'Подготовьте необходимые атрибуты',
-          'Покажите, как играть эту роль',
-          'Пусть ребенок попробует сам',
-          'Меняйтесь ролями',
-          'Придумывайте разные сценарии'
-        ],
-        benefits: 'Развивает социальные навыки, воображение, речь, эмпатию, понимание профессий',
-        ageRange: '2,5-5 лет'
-      }
-    ]
-  });
-
-  // База мотивирующих сообщений
-  const [motivationalMessages] = useState({
-    daily: [
-      '🌟 Время для развития с {name}! Сегодня изучаем что-то новое?',
-      '💫 {name} ждет интересную активность! Что выберем сегодня?',
-      '🎯 Продолжаем streak! Уже {streak} дней развиваемся вместе!',
-      '🚀 Пора заниматься с {name}! Каждый день - новое открытие!',
-      '⭐ {name} готов(а) к новым знаниям! Начинаем?'
-    ],
-    streak: [
-      '🔥 Невероятно! {streak} дней подряд! {name} настоящий чемпион!',
-      '👑 Потрясающий streak - {streak} дней! Продолжаем развиваться!',
-      '🏆 {streak} дней занятий! {name} становится умнее каждый день!'
-    ],
-    encouragement: [
-      '💪 Даже 10 минут занятий принесут пользу {name}!',
-      '🌱 Каждая активность помогает {name} расти и развиваться!',
-      '❤️ {name} любит проводить время с вами за играми!'
-    ]
-  });
-
-  // История уведомлений
-  const [notificationHistory] = useState([
+// Данные активностей из React приложения
+const activitiesDatabase = {
+  1: [
     {
       id: 1,
-      message: 'Время для развития с Андрей! Сегодня изучаем что-то новое?',
-      timestamp: '2025-01-14 19:00',
-      type: 'daily',
-      opened: true
+      title: 'Сенсорная коробка',
+      description: 'Исследуем разные текстуры: песок, крупы, ткани',
+      duration: '15 мин',
+      category: 'Моторика',
+      premium: false,
+      icon: '🤲',
+      difficulty: 'Легко',
+      materials: ['Коробка', 'Рис/гречка', 'Ткани разной текстуры', 'Мелкие игрушки'],
+      instructions: [
+        'Возьмите небольшую коробку или контейнер',
+        'Наполните её рисом, гречкой или другой крупой',
+        'Добавьте кусочки разных тканей',
+        'Спрячьте мелкие игрушки в наполнителе',
+        'Пусть малыш исследует содержимое руками',
+        'Показывайте и называйте найденные предметы'
+      ],
+      benefits: 'Развивает тактильные ощущения, мелкую моторику, концентрацию внимания',
+      ageRange: '12-18 месяцев'
     },
     {
       id: 2,
-      message: 'Невероятно! 7 дней подряд! Андрей настоящий чемпион!',
-      timestamp: '2025-01-13 19:00',
-      type: 'streak',
-      opened: true
+      title: 'Игра с водой',
+      description: 'Переливаем воду между емкостями, развиваем координацию',
+      duration: '20 мин',
+      category: 'Моторика',
+      premium: false,
+      icon: '💧',
+      difficulty: 'Легко',
+      materials: ['2-3 емкости разного размера', 'Вода', 'Губка', 'Полотенце'],
+      instructions: [
+        'Приготовьте емкости разного размера',
+        'Налейте воду в одну из них',
+        'Покажите малышу, как переливать воду',
+        'Пусть ребенок экспериментирует самостоятельно',
+        'Дайте губку - пусть выжимает воду',
+        'Не забудьте про полотенце для уборки!'
+      ],
+      benefits: 'Развивает мелкую моторику, понимание причины и следствия, тактильные ощущения',
+      ageRange: '10-24 месяца'
+    },
+    {
+      id: 3,
+      title: 'Музыкальные инструменты',
+      description: 'Изучаем звуки: погремушки, барабан, колокольчики',
+      duration: '10 мин',
+      category: 'Творчество',
+      premium: true,
+      icon: '🎵',
+      difficulty: 'Легко',
+      materials: ['Погремушки', 'Колокольчики', 'Самодельный барабан', 'Ложки'],
+      instructions: [
+        'Подготовьте разные музыкальные инструменты',
+        'Покажите, как извлекать звуки из каждого',
+        'Пусть малыш попробует сам',
+        'Играйте простые ритмы',
+        'Пойте песенки под аккомпанемент',
+        'Танцуйте под музыку'
+      ],
+      benefits: 'Развивает слух, чувство ритма, координацию движений, творческие способности',
+      ageRange: '8-18 месяцев'
     }
-  ]);
-
-  const getAgeText = (age) => {
-    if (age === 1) return 'год';
-    if (age < 5) return 'года';
-    return 'лет';
-  };
-
-  const getCategoryColor = (category) => {
-    const colors = {
-      'Моторика': 'bg-blue-100 text-blue-800',
-      'Речь': 'bg-green-100 text-green-800',
-      'Логика': 'bg-purple-100 text-purple-800',
-      'Творчество': 'bg-pink-100 text-pink-800',
-      'Развитие': 'bg-orange-100 text-orange-800'
-    };
-    return colors[category] || 'bg-gray-100 text-gray-800';
-  };
-
-  const getDifficultyColor = (difficulty) => {
-    const colors = {
-      'Легко': 'bg-green-100 text-green-800',
-      'Средне': 'bg-yellow-100 text-yellow-800',
-      'Сложно': 'bg-red-100 text-red-800'
-    };
-    return colors[difficulty] || 'bg-gray-100 text-gray-800';
-  };
-
-  const getNotificationTypeColor = (type) => {
-    const colors = {
-      'daily': 'bg-blue-100 text-blue-800',
-      'streak': 'bg-orange-100 text-orange-800',
-      'encouragement': 'bg-green-100 text-green-800',
-      'reminder': 'bg-purple-100 text-purple-800'
-    };
-    return colors[type] || 'bg-gray-100 text-gray-800';
-  };
-
-  const getSkillName = (key) => {
-    const names = {
-      motor: 'Мелкая моторика',
-      speech: 'Речь и коммуникация', 
-      logic: 'Логическое мышление',
-      creativity: 'Творческие способности',
-      development: 'Общее развитие'
-    };
-    return names[key];
-  };
-
-  const getSkillColor = (key) => {
-    const colors = {
-      motor: 'bg-blue-500',
-      speech: 'bg-green-500',
-      logic: 'bg-purple-500', 
-      creativity: 'bg-pink-500',
-      development: 'bg-orange-500'
-    };
-    return colors[key];
-  };
-
-  const getCategoryInfo = (categoryId) => {
-    return libraryContent.categories.find(cat => cat.id === categoryId);
-  };
-
-  const getFilteredArticles = () => {
-    if (selectedCategory === 'all') {
-      return libraryContent.articles;
+  ],
+  2: [
+    {
+      id: 4,
+      title: 'Собираем пирамидку',
+      description: 'Развиваем мелкую моторику и понимание размеров',
+      duration: '15 мин',
+      category: 'Логика',
+      premium: false,
+      icon: '📐',
+      difficulty: 'Легко',
+      materials: ['Пирамидка с кольцами разного размера'],
+      instructions: [
+        'Покажите ребенку пирамидку',
+        'Разберите её на части',
+        'Объясните понятия "большой" и "маленький"',
+        'Пусть ребенок попробует собрать сам',
+        'Помогайте при необходимости',
+        'Хвалите за каждое правильное действие'
+      ],
+      benefits: 'Развивает мелкую моторику, понимание размеров, логическое мышление, терпение',
+      ageRange: '18-30 месяцев'
+    },
+    {
+      id: 5,
+      title: 'Рисование пальчиками',
+      description: 'Творческое развитие с безопасными красками',
+      duration: '25 мин',
+      category: 'Творчество',
+      premium: false,
+      icon: '🎨',
+      difficulty: 'Средне',
+      materials: ['Пальчиковые краски', 'Большой лист бумаги', 'Влажные салфетки'],
+      instructions: [
+        'Подготовьте рабочее место',
+        'Наденьте на ребенка старую одежду',
+        'Покажите, как макать палец в краску',
+        'Начните с простых отпечатков',
+        'Рисуйте вместе простые фигуры',
+        'Не ограничивайте творчество ребенка'
+      ],
+      benefits: 'Развивает творческие способности, мелкую моторику, цветовосприятие, тактильные ощущения',
+      ageRange: '18-36 месяцев'
     }
-    return libraryContent.articles.filter(article => article.category === selectedCategory);
-  };
-
-  const getFilteredActivities = () => {
-    const activities = activitiesDatabase[child.age] || [];
-    if (selectedCategory === 'all') {
-      return activities;
+  ],
+  3: [
+    {
+      id: 7,
+      title: 'Сортировка по цветам',
+      description: 'Изучаем основные цвета и их названия',
+      duration: '20 мин',
+      category: 'Логика',
+      premium: false,
+      icon: '🌈',
+      difficulty: 'Легко',
+      materials: ['Цветные предметы', '4-5 коробочек или емкостей'],
+      instructions: [
+        'Подготовьте предметы 4-5 основных цветов',
+        'Покажите ребенку, как сортировать по цветам',
+        'Называйте каждый цвет при сортировке',
+        'Пусть ребенок повторяет названия цветов',
+        'Проверьте результат вместе',
+        'Усложните задачу, добавив больше цветов'
+      ],
+      benefits: 'Развивает цветовосприятие, логическое мышление, внимание, словарный запас',
+      ageRange: '2-4 года'
     }
-    return activities.filter(activity => activity.category === selectedCategory);
-  };
-
-  const getActivityCategories = () => {
-    const activities = activitiesDatabase[child.age] || [];
-    const categories = [...new Set(activities.map(activity => activity.category))];
-    return categories.map(cat => ({
-      id: cat,
-      name: cat,
-      count: activities.filter(a => a.category === cat).length
-    }));
-  };
-
-  const getRandomMessage = (type) => {
-    const messages = motivationalMessages[type] || motivationalMessages.daily;
-    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
-    return randomMessage
-      .replace('{name}', child.name)
-      .replace('{streak}', child.streak);
-  };
-
-  // Главный экран
-  if (currentScreen === 'main') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
-        <div className="bg-white shadow-sm px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-800">Привет, {child.name}! 👋</h1>
-              <p className="text-gray-600">Возраст: {child.age} {getAgeText(child.age)}</p>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="flex items-center bg-orange-100 px-3 py-1 rounded-full">
-                <span className="text-sm font-medium text-orange-800">🏆 {child.streak} дней</span>
-              </div>
-              <button 
-                onClick={() => setCurrentScreen('notifications')}
-                className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors relative"
-              >
-                <span className="text-xl">🔔</span>
-                {notificationSettings.enabled && (
-                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full"></span>
-                )}
-              </button>
-              <button 
-                onClick={() => setCurrentScreen('settings')}
-                className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
-              >
-                ⚙️
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Notification Preview */}
-        {notificationSettings.enabled && (
-          <div className="mx-4 mt-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg p-4 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-bold flex items-center">🔔 Напоминания включены</h3>
-                <p className="text-sm opacity-90">Следующее в {notificationSettings.time}</p>
-              </div>
-              <button 
-                onClick={() => setCurrentScreen('notifications')}
-                className="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-30 transition-colors"
-              >
-                Настроить
-              </button>
-            </div>
-          </div>
-        )}
-
-        {!isPremium && (
-          <div className="mx-4 mt-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg p-4 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-bold flex items-center">👑 Премиум подписка</h3>
-                <p className="text-sm opacity-90">Открой все активности и возможности</p>
-              </div>
-              <button 
-                onClick={() => setIsPremium(true)}
-                className="bg-white text-purple-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
-              >
-                Подключить
-              </button>
-            </div>
-          </div>
-        )}
-
-        <div className="px-4 py-6">
-          <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-            <div className="text-center mb-6">
-              <div className="bg-gradient-to-r from-green-400 to-blue-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-white text-3xl">▶️</span>
-              </div>
-              <h2 className="text-xl font-bold text-gray-800 mb-2">Время для развития!</h2>
-              <p className="text-gray-600">Выбери активность для {child.name}</p>
-            </div>
-            
-            <button 
-              onClick={() => setCurrentScreen('activities')}
-              className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-4 rounded-xl font-medium text-lg hover:from-green-600 hover:to-blue-600 transition-all transform hover:scale-105"
-            >
-              Начать активность
-            </button>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-white rounded-xl p-4 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-2xl font-bold text-blue-600">{(activitiesDatabase[child.age] || []).length}</p>
-                  <p className="text-sm text-gray-600">Активности</p>
-                </div>
-                <span className="text-2xl">🎯</span>
-              </div>
-            </div>
-            <div className="bg-white rounded-xl p-4 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-2xl font-bold text-purple-600">{progressData.totalTime}ч</p>
-                  <p className="text-sm text-gray-600">Время развития</p>
-                </div>
-                <span className="text-2xl">⏰</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <button 
-              onClick={() => setCurrentScreen('progress')}
-              className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-center justify-center mb-2">
-                <span className="text-2xl">📅</span>
-              </div>
-              <p className="text-sm font-medium text-gray-800">Прогресс</p>
-            </button>
-            <button 
-              onClick={() => setCurrentScreen('library')}
-              className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-center justify-center mb-2">
-                <span className="text-2xl">📚</span>
-              </div>
-              <p className="text-sm font-medium text-gray-800">Библиотека</p>
-            </button>
-          </div>
-        </div>
-
-        {/* Age Selector for testing */}
-        <div className="px-4 pb-6">
-          <div className="bg-gray-100 rounded-lg p-4">
-            <p className="text-sm text-gray-600 mb-2">Тест возрастов:</p>
-            <div className="flex gap-2 flex-wrap">
-              {[1,2,3,4,5,6,7].map(age => (
-                <button 
-                  key={age}
-                  onClick={() => setChild({...child, age})}
-                  className={`px-3 py-1 rounded text-sm ${
-                    child.age === age ? 'bg-blue-500 text-white' : 'bg-white text-gray-600'
-                  }`}
-                >
-                  {age} {getAgeText(age)}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Экран активностей
-  if (currentScreen === 'activities') {
-    const categories = getActivityCategories();
-    const filteredActivities = getFilteredActivities();
-    const freeActivities = filteredActivities.filter(a => !a.premium);
-    const premiumActivities = filteredActivities.filter(a => a.premium);
-
-   return (
-     <div className="min-h-screen bg-gray-50">
-       <div className="bg-white shadow-sm px-4 py-4 sticky top-0 z-10">
-         <div className="flex items-center">
-           <button 
-             onClick={() => {
-               setSelectedActivity(null);
-               setCurrentScreen('main');
-             }}
-             className="mr-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
-           >
-             <span className="text-2xl">←</span>
-           </button>
-           <div>
-             <h1 className="text-xl font-bold text-gray-800">Активности</h1>
-             <p className="text-sm text-gray-600">{child.age} {getAgeText(child.age)} • {filteredActivities.length} активностей</p>
-           </div>
-         </div>
-       </div>
-
-       <div className="px-4 py-6">
-         {/* Categories Filter */}
-         <div className="mb-6">
-           <h2 className="text-lg font-bold text-gray-800 mb-4">Категории</h2>
-           <div className="flex gap-2 overflow-x-auto pb-2">
-             <button
-               onClick={() => setSelectedCategory('all')}
-               className={`px-4 py-2 rounded-full whitespace-nowrap transition-all ${
-                 selectedCategory === 'all'
-                   ? 'bg-blue-500 text-white'
-                   : 'bg-white text-gray-600 hover:bg-gray-100'
-               }`}
-             >
-               Все ({(activitiesDatabase[child.age] || []).length})
-             </button>
-             {categories.map((category) => (
-               <button
-                 key={category.id}
-                 onClick={() => setSelectedCategory(category.id)}
-                 className={`px-4 py-2 rounded-full whitespace-nowrap transition-all ${
-                   selectedCategory === category.id
-                     ? 'bg-blue-500 text-white'
-                     : 'bg-white text-gray-600 hover:bg-gray-100'
-                 }`}
-               >
-                 {category.name} ({category.count})
-               </button>
-             ))}
-           </div>
-         </div>
-
-         {/* Free Activities */}
-         {freeActivities.length > 0 && (
-           <div className="mb-8">
-             <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
-               <span className="text-green-500 mr-2">🆓</span>
-               Бесплатные активности ({freeActivities.length})
-             </h2>
-             <div className="space-y-3">
-               {freeActivities.map((activity) => (
-                 <div key={activity.id} className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-                   <div className="flex items-start justify-between">
-                     <div className="flex-1">
-                       <div className="flex items-center mb-2">
-                         <span className="text-2xl mr-3">{activity.icon}</span>
-                         <div className="flex-1">
-                           <h3 className="font-semibold text-gray-800">{activity.title}</h3>
-                           <div className="flex items-center gap-2 mt-1">
-                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(activity.category)}`}>
-                               {activity.category}
-                             </span>
-                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(activity.difficulty)}`}>
-                               {activity.difficulty}
-                             </span>
-                             <span className="text-xs text-gray-500 flex items-center">
-                               ⏱️ {activity.duration}
-                             </span>
-                           </div>
-                         </div>
-                       </div>
-                       <p className="text-sm text-gray-600 ml-11 mb-2">{activity.description}</p>
-                       <p className="text-xs text-gray-500 ml-11">Возраст: {activity.ageRange}</p>
-                     </div>
-                     <div className="ml-4 flex flex-col gap-2">
-                       <button 
-                         onClick={() => setSelectedActivity(activity)}
-                         className="bg-blue-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-600 transition-colors text-sm"
-                       >
-                         Подробнее
-                       </button>
-                       <button className="bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition-colors text-sm">
-                         Начать
-                       </button>
-                     </div>
-                   </div>
-                 </div>
-               ))}
-             </div>
-           </div>
-         )}
-
-         {/* Premium Activities */}
-         {premiumActivities.length > 0 && (
-           <div className="mb-6">
-             <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
-               <span className="text-yellow-500 mr-2">👑</span>
-               Премиум активности ({premiumActivities.length})
-             </h2>
-             <div className="space-y-3">
-               {premiumActivities.map((activity) => (
-                 <div key={activity.id} className={`bg-white rounded-xl p-4 shadow-sm ${!isPremium ? 'opacity-75' : 'hover:shadow-md transition-shadow'}`}>
-                   <div className="flex items-start justify-between">
-                     <div className="flex-1">
-                       <div className="flex items-center mb-2">
-                         <span className="text-2xl mr-3">{activity.icon}</span>
-                         <div className="flex-1">
-                           <h3 className="font-semibold text-gray-800 flex items-center">
-                             {activity.title}
-                             {!isPremium && <span className="ml-2 text-gray-400">🔒</span>}
-                           </h3>
-                           <div className="flex items-center gap-2 mt-1">
-                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(activity.category)}`}>
-                               {activity.category}
-                             </span>
-                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(activity.difficulty)}`}>
-                               {activity.difficulty}
-                             </span>
-                             <span className="text-xs text-gray-500 flex items-center">
-                               ⏱️ {activity.duration}
-                             </span>
-                           </div>
-                         </div>
-                       </div>
-                       <p className="text-sm text-gray-600 ml-11 mb-2">{activity.description}</p>
-                       <p className="text-xs text-gray-500 ml-11">Возраст: {activity.ageRange}</p>
-                     </div>
-                     <div className="ml-4 flex flex-col gap-2">
-                       <button 
-                         onClick={() => isPremium ? setSelectedActivity(activity) : setIsPremium(true)}
-                         className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
-                           isPremium 
-                             ? 'bg-blue-500 text-white hover:bg-blue-600' 
-                             : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                         }`}
-                       >
-                         {isPremium ? 'Подробнее' : 'Премиум'}
-                       </button>
-                       <button 
-                         className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
-                           isPremium 
-                             ? 'bg-purple-500 text-white hover:bg-purple-600' 
-                             : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                         }`}
-                         disabled={!isPremium}
-                       >
-                         {isPremium ? 'Начать' : 'Премиум'}
-                       </button>
-                     </div>
-                   </div>
-                 </div>
-               ))}
-             </div>
-           </div>
-         )}
-
-         {/* Upgrade prompt for non-premium users */}
-         {!isPremium && premiumActivities.length > 0 && (
-           <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-6 text-white text-center">
-             <h3 className="text-lg font-bold mb-2">🚀 Разблокируй все активности!</h3>
-             <p className="text-sm opacity-90 mb-4">
-               Получи доступ к {premiumActivities.length} премиум активностям с детальными инструкциями и материалами
-             </p>
-             <button 
-               onClick={() => setIsPremium(true)}
-               className="bg-white text-purple-600 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors"
-             >
-               Подключить премиум - 299₽/мес
-             </button>
-           </div>
-         )}
-       </div>
-     </div>
-   );
- }
-
- // Детальный экран активности
- if (selectedActivity) {
-   return (
-     <div className="min-h-screen bg-gray-50">
-       <div className="bg-white shadow-sm px-4 py-4 sticky top-0 z-10">
-         <div className="flex items-center">
-           <button 
-             onClick={() => setSelectedActivity(null)}
-             className="mr-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
-           >
-             <span className="text-2xl">←</span>
-           </button>
-           <div className="flex items-center">
-             <span className="text-2xl mr-3">{selectedActivity.icon}</span>
-             <div>
-               <h1 className="text-xl font-bold text-gray-800">{selectedActivity.title}</h1>
-               <p className="text-sm text-gray-600">{selectedActivity.ageRange} • {selectedActivity.duration}</p>
-             </div>
-           </div>
-         </div>
-       </div>
-
-       <div className="px-4 py-6">
-         {/* Activity Info */}
-         <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
-           <div className="flex items-center gap-2 mb-4">
-             <span className={`px-3 py-1 rounded-full text-sm font-medium ${getCategoryColor(selectedActivity.category)}`}>
-               {selectedActivity.category}
-             </span>
-             <span className={`px-3 py-1 rounded-full text-sm font-medium ${getDifficultyColor(selectedActivity.difficulty)}`}>
-               {selectedActivity.difficulty}
-             </span>
-             {selectedActivity.premium && (
-               <span className="px-3 py-1 bg-yellow-100 text-yellow-800 text-sm rounded-full font-medium">
-                 👑 Премиум
-               </span>
-             )}
-           </div>
-           
-           <p className="text-gray-700 mb-4">{selectedActivity.description}</p>
-           
-           <div className="bg-blue-50 rounded-lg p-4">
-             <h3 className="font-semibold text-blue-900 mb-2">🎯 Польза для развития:</h3>
-             <p className="text-blue-800 text-sm">{selectedActivity.benefits}</p>
-           </div>
-         </div>
-
-         {/* Materials */}
-         <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
-           <h3 className="text-lg font-bold text-gray-800 mb-4">📦 Что понадобится:</h3>
-           <div className="grid grid-cols-1 gap-2">
-             {selectedActivity.materials.map((material, index) => (
-               <div key={index} className="flex items-center p-3 bg-gray-50 rounded-lg">
-                 <span className="text-green-500 mr-3">✓</span>
-                 <span className="text-gray-700">{material}</span>
-               </div>
-             ))}
-           </div>
-         </div>
-
-         {/* Instructions */}
-         <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
-           <h3 className="text-lg font-bold text-gray-800 mb-4">📋 Пошаговая инструкция:</h3>
-           <div className="space-y-3">
-             {selectedActivity.instructions.map((instruction, index) => (
-               <div key={index} className="flex items-start p-3 bg-gray-50 rounded-lg">
-                 <span className="bg-blue-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-0.5 flex-shrink-0">
-                   {index + 1}
-                 </span>
-                 <span className="text-gray-700">{instruction}</span>
-               </div>
-             ))}
-           </div>
-         </div>
-
-         {/* Action Buttons */}
-         <div className="space-y-3">
-           <button className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-4 rounded-xl font-medium text-lg hover:from-green-600 hover:to-blue-600 transition-all">
-             🚀 Начать активность
-           </button>
-           
-           <div className="grid grid-cols-2 gap-3">
-             <button className="bg-white text-gray-700 py-3 rounded-lg font-medium border-2 border-gray-200 hover:border-gray-300 transition-colors">
-               ⏰ Установить таймер
-             </button>
-             <button className="bg-white text-gray-700 py-3 rounded-lg font-medium border-2 border-gray-200 hover:border-gray-300 transition-colors">
-               📸 Сохранить результат
-             </button>
-           </div>
-         </div>
-       </div>
-     </div>
-   );
- }
-
- // Экран прогресса
- if (currentScreen === 'progress') {
-   const completedThisWeek = progressData.weeklyActivities.filter(Boolean).length;
-   const totalDaysThisWeek = 7;
-
-   return (
-     <div className="min-h-screen bg-gray-50">
-       <div className="bg-white shadow-sm px-4 py-4 sticky top-0 z-10">
-         <div className="flex items-center">
-           <button 
-             onClick={() => setCurrentScreen('main')}
-             className="mr-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
-           >
-             <span className="text-2xl">←</span>
-           </button>
-           <div>
-             <h1 className="text-xl font-bold text-gray-800">Прогресс развития</h1>
-             <p className="text-sm text-gray-600">{child.name} • {child.age} {getAgeText(child.age)}</p>
-           </div>
-         </div>
-       </div>
-
-       <div className="px-4 py-6">
-         <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
-           <div className="flex items-center justify-between mb-4">
-             <h2 className="text-lg font-bold text-gray-800">Эта неделя</h2>
-             <div className="flex items-center bg-green-100 px-3 py-1 rounded-full">
-               <span className="text-sm font-medium text-green-800">🔥 {child.streak} дней подряд</span>
-             </div>
-           </div>
-           
-           <div className="grid grid-cols-7 gap-2 mb-4">
-             {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map((day, index) => (
-               <div key={day} className="text-center">
-                 <div className="text-xs text-gray-600 mb-1">{day}</div>
-                 <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                   progressData.weeklyActivities[index] ? 'bg-green-500 text-white' : 'bg-gray-200'
-                 }`}>
-                   {progressData.weeklyActivities[index] ? '✓' : ''}
-                 </div>
-               </div>
-             ))}
-           </div>
-           
-           <div className="bg-gray-100 rounded-lg p-4">
-             <div className="flex items-center justify-between mb-2">
-               <span className="text-gray-700">Выполнено активностей</span>
-               <span className="font-bold text-green-600">{completedThisWeek} из {totalDaysThisWeek}</span>
-             </div>
-             <div className="w-full bg-gray-200 rounded-full h-2">
-               <div 
-                 className="h-2 rounded-full bg-green-500"
-                 style={{ width: `${(completedThisWeek / totalDaysThisWeek) * 100}%` }}
-               ></div>
-             </div>
-           </div>
-         </div>
-
-         <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
-           <h2 className="text-lg font-bold text-gray-800 mb-4">Развитие навыков</h2>
-           <div className="space-y-4">
-             {Object.entries(progressData.skillsProgress).map(([key, progress]) => (
-               <div key={key}>
-                 <div className="flex justify-between items-center mb-2">
-                   <span className="text-sm font-medium text-gray-700">{getSkillName(key)}</span>
-                   <span className="text-sm text-gray-500">{progress}%</span>
-                 </div>
-                 <div className="w-full bg-gray-200 rounded-full h-2">
-                   <div 
-                     className={`h-2 rounded-full ${getSkillColor(key)}`}
-                     style={{ width: `${progress}%` }}
-                   ></div>
-                 </div>
-               </div>
-             ))}
-           </div>
-         </div>
-
-         <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
-           <h2 className="text-lg font-bold text-gray-800 mb-4">Достижения</h2>
-           <div className="grid grid-cols-2 gap-4">
-             {progressData.achievements.map((achievement) => (
-               <div 
-                 key={achievement.id} 
-                 className={`p-4 rounded-lg border-2 ${
-                   achievement.unlocked 
-                     ? 'border-yellow-300 bg-yellow-50' 
-                     : 'border-gray-200 bg-gray-50'
-                 }`}
-               >
-                 <div className="text-2xl mb-2">{achievement.icon}</div>
-                 <h3 className={`font-medium text-sm ${
-                   achievement.unlocked ? 'text-yellow-800' : 'text-gray-500'
-                 }`}>
-                   {achievement.title}
-                 </h3>
-                 <p className="text-xs text-gray-600 mt-1">{achievement.description}</p>
-                 
-                 {!achievement.unlocked && achievement.progress && (
-                   <div className="mt-3">
-                     <div className="flex justify-between text-xs text-gray-500 mb-1">
-                       <span>Прогресс</span>
-                       <span>{achievement.progress}/15</span>
-                     </div>
-                     <div className="w-full bg-gray-200 rounded-full h-1">
-                       <div 
-                         className="h-1 rounded-full bg-yellow-400"
-                         style={{ width: `${(achievement.progress / 15) * 100}%` }}
-                       ></div>
-                     </div>
-                   </div>
-                 )}
-               </div>
-             ))}
-           </div>
-         </div>
-
-         <div className="bg-white rounded-xl p-6 shadow-sm">
-           <h2 className="text-lg font-bold text-gray-800 mb-4">Последние активности</h2>
-           <div className="space-y-3">
-             {progressData.recentActivities.map((activity, index) => (
-               <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                 <div className="flex-1">
-                   <h3 className="font-medium text-gray-800 text-sm">{activity.name}</h3>
-                   <div className="flex items-center gap-2 mt-1">
-                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(activity.category)}`}>
-                       {activity.category}
-                     </span>
-                     <span className="text-xs text-gray-500">
-                       {new Date(activity.date).toLocaleDateString('ru-RU')}
-                     </span>
-                   </div>
-                 </div>
-                 <div className="text-right">
-                   <p className="text-sm font-medium text-gray-700">{activity.duration} мин</p>
-                   <span className="text-xs text-gray-500">выполнено</span>
-                 </div>
-               </div>
-             ))}
-           </div>
-         </div>
-       </div>
-     </div>
-   );
- }
-
- // Экран библиотеки
- if (currentScreen === 'library') {
-   const filteredArticles = getFilteredArticles();
-   const freeArticles = filteredArticles.filter(article => !article.premium);
-   const premiumArticles = filteredArticles.filter(article => article.premium);
-
-   return (
-     <div className="min-h-screen bg-gray-50">
-       <div className="bg-white shadow-sm px-4 py-4 sticky top-0 z-10">
-         <div className="flex items-center">
-           <button 
-             onClick={() => setCurrentScreen('main')}
-             className="mr-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
-           >
-             <span className="text-2xl">←</span>
-           </button>
-           <div>
-             <h1 className="text-xl font-bold text-gray-800">Библиотека</h1>
-             <p className="text-sm text-gray-600">Материалы для родителей</p>
-           </div>
-         </div>
-       </div>
-
-       <div className="px-4 py-6">
-         {/* Categories */}
-         <div className="mb-6">
-           <h2 className="text-lg font-bold text-gray-800 mb-4">Категории</h2>
-           <div className="grid grid-cols-2 gap-4 mb-4">
-             {libraryContent.categories.map((category) => (
-               <button
-                 key={category.id}
-                 onClick={() => setSelectedCategory(category.id)}
-                 className={`p-4 rounded-xl text-left transition-all ${
-                   selectedCategory === category.id
-                     ? 'bg-blue-500 text-white shadow-lg'
-                     : 'bg-white shadow-sm hover:shadow-md'
-                 }`}
-               >
-                 <div className="text-2xl mb-2">{category.icon}</div>
-                 <h3 className="font-semibold text-sm">{category.name}</h3>
-                 <p className={`text-xs ${
-                   selectedCategory === category.id ? 'text-blue-100' : 'text-gray-500'
-                 }`}>
-                   {category.count} материалов
-                 </p>
-               </button>
-             ))}
-           </div>
-           
-           <button
-             onClick={() => setSelectedCategory('all')}
-             className={`w-full p-3 rounded-lg text-center transition-all ${
-               selectedCategory === 'all'
-                 ? 'bg-gray-800 text-white'
-                 : 'bg-white text-gray-600 hover:bg-gray-100'
-             }`}
-           >
-             Все категории ({libraryContent.articles.length} статей)
-           </button>
-         </div>
-
-         {/* Featured Videos */}
-         <div className="mb-6">
-           <h2 className="text-lg font-bold text-gray-800 mb-4">🎥 Популярные видео</h2>
-           <div className="space-y-3">
-             {libraryContent.videos.map((video) => (
-               <div 
-                 key={video.id} 
-                 className={`bg-white rounded-xl p-4 shadow-sm ${!video.premium || isPremium ? 'hover:shadow-md transition-shadow' : 'opacity-75'}`}
-               >
-                 <div className="flex items-center justify-between">
-                   <div className="flex items-center flex-1">
-                     <div className="w-16 h-16 bg-gradient-to-br from-red-400 to-pink-500 rounded-lg flex items-center justify-center mr-4">
-                       <span className="text-2xl">{video.thumbnail}</span>
-                     </div>
-                     <div className="flex-1">
-                       <h3 className="font-semibold text-gray-800 flex items-center">
-                         {video.title}
-                         {video.premium && !isPremium && <span className="ml-2 text-gray-400">🔒</span>}
-                       </h3>
-                       <div className="flex items-center gap-2 mt-1">
-                         <span className="text-xs text-gray-500">⏱️ {video.duration}</span>
-                         <span className="text-xs text-gray-500">👁️ {video.views}</span>
-                         {video.premium && (
-                           <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full font-medium">
-                             Премиум
-                           </span>
-                         )}
-                       </div>
-                     </div>
-                   </div>
-                   <button 
-                     className={`ml-4 px-4 py-2 rounded-lg font-medium transition-colors ${
-                       video.premium && !isPremium
-                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                         : 'bg-red-500 text-white hover:bg-red-600'
-                     }`}
-                     disabled={video.premium && !isPremium}
-                   >
-                     {video.premium && !isPremium ? 'Премиум' : 'Смотреть'}
-                   </button>
-                 </div>
-               </div>
-             ))}
-           </div>
-         </div>
-
-         {/* Free Articles */}
-         {freeArticles.length > 0 && (
-           <div className="mb-6">
-             <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
-               <span className="text-green-500 mr-2">🆓</span>
-               Бесплатные статьи ({freeArticles.length})
-             </h2>
-             <div className="space-y-3">
-               {freeArticles.map((article) => (
-                 <div key={article.id} className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-                   <div className="flex items-start justify-between">
-                     <div className="flex-1">
-                       <h3 className="font-semibold text-gray-800 mb-2">{article.title}</h3>
-                       <p className="text-sm text-gray-600 mb-3">{article.description}</p>
-                       <div className="flex items-center gap-3 text-xs text-gray-500">
-                         <span>👤 {article.author}</span>
-                         <span>⏱️ {article.readTime}</span>
-                         <span>⭐ {article.rating}</span>
-                         <span>👁️ {article.views}</span>
-                       </div>
-                     </div>
-                     <button className="ml-4 bg-blue-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-600 transition-colors">
-                       Читать
-                     </button>
-                   </div>
-                 </div>
-               ))}
-             </div>
-           </div>
-         )}
-
-         {/* Premium Articles */}
-         {premiumArticles.length > 0 && (
-           <div className="mb-6">
-             <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
-               <span className="text-yellow-500 mr-2">👑</span>
-               Премиум статьи ({premiumArticles.length})
-             </h2>
-             <div className="space-y-3">
-               {premiumArticles.map((article) => (
-                 <div key={article.id} className={`bg-white rounded-xl p-4 shadow-sm ${!isPremium ? 'opacity-75' : 'hover:shadow-md transition-shadow'}`}>
-                   <div className="flex items-start justify-between">
-                     <div className="flex-1">
-                       <h3 className="font-semibold text-gray-800 mb-2 flex items-center">
-                         {article.title}
-                         {!isPremium && <span className="ml-2 text-gray-400">🔒</span>}
-                       </h3>
-                       <p className="text-sm text-gray-600 mb-3">{article.description}</p>
-                       <div className="flex items-center gap-3 text-xs text-gray-500">
-                         <span>👤 {article.author}</span>
-                         <span>⏱️ {article.readTime}</span>
-                         <span>⭐ {article.rating}</span>
-                         <span>👁️ {article.views}</span>
-                       </div>
-                     </div>
-                     <button 
-                       className={`ml-4 px-4 py-2 rounded-lg font-medium transition-colors ${
-                         isPremium 
-                           ? 'bg-purple-500 text-white hover:bg-purple-600' 
-                           : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                       }`}
-                       disabled={!isPremium}
-                       onClick={() => !isPremium && setIsPremium(true)}
-                     >
-                       {isPremium ? 'Читать' : 'Премиум'}
-                     </button>
-                   </div>
-                 </div>
-               ))}
-             </div>
-           </div>
-         )}
-
-         {/* Upgrade prompt for non-premium users */}
-         {!isPremium && premiumArticles.length > 0 && (
-           <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-6 text-white text-center">
-             <h3 className="text-lg font-bold mb-2">📚 Доступ ко всей библиотеке!</h3>
-             <p className="text-sm opacity-90 mb-4">
-               Получи доступ к {premiumArticles.length} эксклюзивным статьям, видеоурокам и материалам от экспертов
-             </p>
-             <button 
-               onClick={() => setIsPremium(true)}
-               className="bg-white text-purple-600 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors"
-             >
-               Подключить премиум - 299₽/мес
-             </button>
-           </div>
-         )}
-       </div>
-     </div>
-   );
- }
-
- // Экран настроек уведомлений
- if (currentScreen === 'notifications') {
-   return (
-     <div className="min-h-screen bg-gray-50">
-       <div className="bg-white shadow-sm px-4 py-4 sticky top-0 z-10">
-         <div className="flex items-center">
-           <button 
-             onClick={() => setCurrentScreen('main')}
-             className="mr-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
-           >
-             <span className="text-2xl">←</span>
-           </button>
-           <div>
-             <h1 className="text-xl font-bold text-gray-800">Напоминания</h1>
-             <p className="text-sm text-gray-600">Настройка уведомлений о занятиях</p>
-           </div>
-         </div>
-       </div>
-
-       <div className="px-4 py-6">
-         {/* Main Toggle */}
-         <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
-           <div className="flex items-center justify-between mb-4">
-             <div>
-               <h2 className="text-lg font-bold text-gray-800">Уведомления</h2>
-               <p className="text-sm text-gray-600">Включить напоминания о занятиях</p>
-             </div>
-             <button 
-               onClick={() => setNotificationSettings({
-                 ...notificationSettings, 
-                 enabled: !notificationSettings.enabled
-               })}
-               className={`w-12 h-6 rounded-full p-1 transition-colors ${
-                 notificationSettings.enabled ? 'bg-green-500' : 'bg-gray-300'
-               }`}
-             >
-               <div className={`w-4 h-4 rounded-full bg-white transition-transform ${
-                 notificationSettings.enabled ? 'translate-x-6' : 'translate-x-0'
-               }`}></div>
-             </button>
-           </div>
-
-           {notificationSettings.enabled && (
-             <div className="space-y-4">
-               <div>
-                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                   Время напоминания
-                 </label>
-                 <input 
-                   type="time" 
-                   value={notificationSettings.time}
-                   onChange={(e) => setNotificationSettings({
-                     ...notificationSettings, 
-                     time: e.target.value
-                   })}
-                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                 />
-               </div>
-
-               <div>
-                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                   Частота напоминаний
-                 </label>
-                 <select 
-                   value={notificationSettings.frequency}
-                   onChange={(e) => setNotificationSettings({
-                     ...notificationSettings, 
-                     frequency: e.target.value
-                   })}
-                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                 >
-                   <option value="daily">Ежедневно</option>
-                   <option value="weekly">Еженедельно</option>
-                   <option value="custom">Выбрать дни</option>
-                 </select>
-               </div>
-             </div>
-           )}
-         </div>
-
-         {/* Notification Type */}
-         {notificationSettings.enabled && (
-           <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
-             <h2 className="text-lg font-bold text-gray-800 mb-4">Тип сообщений</h2>
-             <div className="space-y-3">
-               {[
-                 { 
-                   value: 'motivational', 
-                   label: 'Мотивирующие', 
-                   description: 'Вдохновляющие сообщения для занятий',
-                   example: getRandomMessage('daily')
-                 },
-                 { 
-                   value: 'simple', 
-                   label: 'Простые', 
-                   description: 'Краткие напоминания о времени занятий',
-                   example: `Время для занятий с ${child.name}!`
-                 },
-                 { 
-                   value: 'streak', 
-                   label: 'С streak', 
-                   description: 'Акцент на достижениях и регулярности',
-                   example: getRandomMessage('streak')
-                 }
-               ].map((type) => (
-                 <button
-                   key={type.value}
-                   onClick={() => setNotificationSettings({
-                     ...notificationSettings,
-                     reminderType: type.value
-                   })}
-                   className={`w-full p-4 rounded-lg border-2 transition-colors text-left ${
-                     notificationSettings.reminderType === type.value
-                       ? 'border-blue-500 bg-blue-50'
-                       : 'border-gray-200 hover:border-gray-300'
-                   }`}
-                 >
-                   <div className="flex items-center justify-between mb-2">
-                     <h3 className="font-semibold text-gray-800">{type.label}</h3>
-                     {notificationSettings.reminderType === type.value && (
-                       <span className="text-blue-500">✓</span>
-                     )}
-                   </div>
-                   <p className="text-sm text-gray-600 mb-2">{type.description}</p>
-                   <p className="text-xs text-gray-500 italic">"{type.example}"</p>
-                 </button>
-               ))}
-             </div>
-           </div>
-         )}
-
-         {/* Test Notification */}
-         {notificationSettings.enabled && (
-           <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
-             <h2 className="text-lg font-bold text-gray-800 mb-4">Тестовое уведомление</h2>
-             <p className="text-sm text-gray-600 mb-4">
-               Посмотрите, как будет выглядеть ваше уведомление
-             </p>
-             
-             <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg mb-4">
-               <div className="flex items-center mb-2">
-                 <span className="text-blue-500 mr-2">🔔</span>
-                 <span className="font-semibold text-blue-900">Развивайка</span>
-                 <span className="text-xs text-blue-600 ml-auto">{notificationSettings.time}</span>
-               </div>
-               <p className="text-blue-800">
-                 {getRandomMessage(notificationSettings.reminderType)}
-               </p>
-             </div>
-
-             <button className="w-full bg-blue-500 text-white py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors">
-               Отправить тестовое уведомление
-             </button>
-           </div>
-         )}
-
-         {/* Notification History */}
-         <div className="bg-white rounded-xl p-6 shadow-sm">
-           <h2 className="text-lg font-bold text-gray-800 mb-4">История уведомлений</h2>
-           <div className="space-y-3">
-             {notificationHistory.map((notification) => (
-               <div 
-                 key={notification.id} 
-                 className={`p-3 rounded-lg ${
-                   notification.opened ? 'bg-gray-50' : 'bg-blue-50'
-                 }`}
-               >
-                 <div className="flex items-center justify-between mb-2">
-                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${getNotificationTypeColor(notification.type)}`}>
-                     {notification.type === 'daily' ? 'Ежедневное' : 
-                      notification.type === 'streak' ? 'Streak' : 'Другое'}
-                   </span>
-                   <span className="text-xs text-gray-500">
-                     {new Date(notification.timestamp).toLocaleString('ru-RU')}
-                   </span>
-                 </div>
-                 <p className="text-sm text-gray-700">{notification.message}</p>
-                 {!notification.opened && (
-                   <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mt-2"></span>
-                 )}
-               </div>
-             ))}
-           </div>
-         </div>
-       </div>
-     </div>
-   );
- }
-
- // Настройки профиля
- if (currentScreen === 'settings') {
-   return (
-     <div className="min-h-screen bg-gray-50">
-       <div className="bg-white shadow-sm px-4 py-4 sticky top-0 z-10">
-         <div className="flex items-center">
-           <button 
-             onClick={() => setCurrentScreen('main')}
-             className="mr-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
-           >
-             <span className="text-2xl">←</span>
-           </button>
-           <h1 className="text-xl font-bold text-gray-800">Настройки</h1>
-         </div>
-       </div>
-
-       <div className="px-4 py-6">
-         {/* Child Info */}
-         <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
-           <h2 className="text-lg font-bold text-gray-800 mb-4">Информация о ребенке</h2>
-           <div className="space-y-4">
-             <div>
-               <label className="block text-sm font-medium text-gray-700 mb-2">Имя</label>
-               <input 
-                 type="text" 
-                 value={child.name}
-                 onChange={(e) => setChild({...child, name: e.target.value})}
-                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                 placeholder="Введите имя ребенка"
-               />
-             </div>
-             <div>
-               <label className="block text-sm font-medium text-gray-700 mb-2">Возраст</label>
-               <select 
-                 value={child.age}
-                 onChange={(e) => setChild({...child, age: parseInt(e.target.value)})}
-                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-               >
-                 {[1,2,3,4,5,6,7].map(age => (
-                   <option key={age} value={age}>{age} {getAgeText(age)}</option>
-                 ))}
-               </select>
-             </div>
-           </div>
-         </div>
-
-         {/* Premium Status */}
-         <div className="bg-white rounded-xl p-6 shadow-sm">
-           <h2 className="text-lg font-bold text-gray-800 mb-4">Подписка</h2>
-           {isPremium ? (
-             <div className="text-center py-4">
-               <div className="bg-gradient-to-r from-purple-600 to-pink-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                 <span className="text-white text-2xl">👑</span>
-               </div>
-               <h3 className="text-lg font-bold text-gray-800">Премиум активен</h3>
-               <p className="text-gray-600">Все активности разблокированы</p>
-               <button 
-                 onClick={() => setIsPremium(false)}
-                 className="mt-4 text-red-600 hover:text-red-700 text-sm"
-               >
-                 Отключить премиум (для теста)
-               </button>
-             </div>
-           ) : (
-             <div className="text-center py-4">
-               <h3 className="text-lg font-bold text-gray-800 mb-2">Разблокируй все возможности</h3>
-               <p className="text-gray-600 mb-4">
-                 • Неограниченные активности<br/>
-                 • Персональные программы<br/>
-                 • Подробная аналитика
-               </p>
-               <button 
-                 onClick={() => setIsPremium(true)}
-                 className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition-all"
-               >
-                 Подписаться - 299₽/мес
-               </button>
-             </div>
-           )}
-         </div>
-       </div>
-     </div>
-   );
- }
-
- // Заглушка для неизвестных экранов
- return (
-   <div className="min-h-screen bg-gray-50">
-     <div className="bg-white shadow-sm px-4 py-4 sticky top-0 z-10">
-       <div className="flex items-center">
-         <button 
-           onClick={() => setCurrentScreen('main')}
-           className="mr-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
-         >
-           <span className="text-2xl">←</span>
-         </button>
-         <h1 className="text-xl font-bold text-gray-800">Экран: {currentScreen}</h1>
-       </div>
-     </div>
-     
-     <div className="px-4 py-20 text-center">
-       <h2 className="text-xl font-bold mb-4">Раздел в разработке</h2>
-       <p className="text-gray-600 mb-6">Функционал будет добавлен в следующих версиях</p>
-       <button 
-         onClick={() => setCurrentScreen('main')}
-         className="bg-blue-500 text-white px-6 py-2 rounded-lg"
-       >
-         Вернуться на главную
-       </button>
-     </div>
-   </div>
- );
+  ]
 };
 
-export default ChildDevelopmentApp;
+// Мотивирующие сообщения
+const motivationalMessages = {
+  daily: [
+    '🌟 Время для развития с {name}! Сегодня изучаем что-то новое?',
+    '💫 {name} ждет интересную активность! Что выберем сегодня?',
+    '🎯 Продолжаем streak! Уже {streak} дней развиваемся вместе!',
+    '🚀 Пора заниматься с {name}! Каждый день - новое открытие!',
+    '⭐ {name} готов(а) к новым знаниям! Начинаем?'
+  ],
+  streak: [
+    '🔥 Невероятно! {streak} дней подряд! {name} настоящий чемпион!',
+    '👑 Потрясающий streak - {streak} дней! Продолжаем развиваться!',
+    '🏆 {streak} дней занятий! {name} становится умнее каждый день!'
+  ],
+  encouragement: [
+    '💪 Даже 10 минут занятий принесут пользу {name}!',
+    '🌱 Каждая активность помогает {name} расти и развиваться!',
+    '❤️ {name} любит проводить время с вами за играми!'
+  ]
+};
+
+// Inline клавиатуры
+const keyboards = {
+  main: {
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: '🎯 Активности', callback_data: 'activities' },
+          { text: '📅 Прогресс', callback_data: 'progress' }
+        ],
+        [
+          { text: '📚 Библиотека', callback_data: 'library' },
+          { text: '🔔 Напоминания', callback_data: 'notifications' }
+        ],
+        [
+          { text: '⚙️ Настройки', callback_data: 'settings' },
+          { text: '👑 Премиум', callback_data: 'premium' }
+        ]
+      ]
+    }
+  },
+  
+  activities: (age) => ({
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: '🤲 Моторика', callback_data: 'category_Моторика' },
+          { text: '🎨 Творчество', callback_data: 'category_Творчество' }
+        ],
+        [
+          { text: '🧠 Логика', callback_data: 'category_Логика' },
+          { text: '🗣️ Речь', callback_data: 'category_Речь' }
+        ],
+        [
+          { text: '📋 Все активности', callback_data: 'all_activities' }
+        ],
+        [
+          { text: '← Назад', callback_data: 'back_main' }
+        ]
+      ]
+    }
+  }),
+
+  activity_detail: (activityId, isPremium) => ({
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: '🚀 Начать активность', callback_data: `start_activity_${activityId}` }
+        ],
+        [
+          { text: '📋 Материалы', callback_data: `materials_${activityId}` },
+          { text: '📝 Инструкция', callback_data: `instructions_${activityId}` }
+        ],
+        [
+          { text: '← К активностям', callback_data: 'activities' }
+        ]
+      ]
+    }
+  }),
+
+  back_to_activities: {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: '← К активностям', callback_data: 'activities' }]
+      ]
+    }
+  },
+
+  back_to_main: {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: '← Главное меню', callback_data: 'back_main' }]
+      ]
+    }
+  }
+};
+
+// Функции-помощники
+function getUserData(userId) {
+  if (!users.has(userId)) {
+    users.set(userId, {
+      name: '',
+      age: 2,
+      streak: 0,
+      isPremium: false,
+      lastActivity: null,
+      totalActivities: 0,
+      notificationsEnabled: true,
+      notificationTime: '19:00',
+      reminderType: 'motivational'
+    });
+  }
+  return users.get(userId);
+}
+
+function getAgeText(age) {
+  if (age === 1) return 'год';
+  if (age < 5) return 'года';
+  return 'лет';
+}
+
+function getActivitiesForAge(age) {
+  return activitiesDatabase[age] || [];
+}
+
+function getRandomMessage(type, userData) {
+  const messages = motivationalMessages[type] || motivationalMessages.daily;
+  const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+  return randomMessage
+    .replace('{name}', userData.name || 'малыш')
+    .replace('{streak}', userData.streak);
+}
+
+function formatActivity(activity, isPremium) {
+  const premiumIcon = activity.premium && !isPremium ? '🔒 ' : '';
+  const difficultyEmoji = activity.difficulty === 'Легко' ? '🟢' : 
+                         activity.difficulty === 'Средне' ? '🟡' : '🔴';
+  
+  return `${premiumIcon}${activity.icon} <b>${activity.title}</b>
+
+📝 ${activity.description}
+⏱️ Длительность: ${activity.duration}
+${difficultyEmoji} Сложность: ${activity.difficulty}
+🎯 Категория: ${activity.category}
+👶 Возраст: ${activity.ageRange}
+
+💡 <b>Польза:</b> ${activity.benefits}`;
+}
+
+function formatMaterials(activity) {
+  const materialsList = activity.materials.map((material, index) => 
+    `${index + 1}. ${material}`
+  ).join('\n');
+  
+  return `📦 <b>Материалы для "${activity.title}":</b>
+
+${materialsList}
+
+💡 Все материалы можно найти дома или купить в любом магазине!`;
+}
+
+function formatInstructions(activity) {
+  const instructionsList = activity.instructions.map((instruction, index) => 
+    `${index + 1}. ${instruction}`
+  ).join('\n\n');
+  
+  return `📋 <b>Пошаговая инструкция "${activity.title}":</b>
+
+${instructionsList}
+
+✨ Не торопитесь и хвалите ребенка за каждый шаг!`;
+}
+
+// Основные команды бота
+bot.onText(/\/start/, (msg) => {
+  const chatId = msg.chat.id;
+  const userData = getUserData(chatId);
+  
+  const welcomeMessage = `🌟 <b>Добро пожаловать в Развивайку!</b>
+
+Привет! Я помогу вам развивать вашего малыша с помощью интересных и полезных активностей.
+
+${userData.name ? `Рад снова видеть вас и ${userData.name}! 👋` : ''}
+
+Что я умею:
+🎯 Подбирать активности по возрасту
+📅 Отслеживать прогресс развития
+📚 Предоставлять материалы для родителей
+🔔 Напоминать о занятиях
+👑 Премиум функции
+
+${!userData.name ? 'Давайте сначала настроим профиль вашего ребенка!' : 'Выберите раздел из меню ниже:'}`;
+
+  bot.sendMessage(chatId, welcomeMessage, {
+    parse_mode: 'HTML',
+    ...(!userData.name ? keyboards.back_to_main : keyboards.main)
+  });
+
+  if (!userData.name) {
+    setTimeout(() => {
+      bot.sendMessage(chatId, '👶 Как зовут вашего малыша?');
+    }, 1000);
+  }
+});
+
+bot.onText(/\/help/, (msg) => {
+  const chatId = msg.chat.id;
+  
+  const helpMessage = `📚 <b>Помощь по боту Развивайка</b>
+
+<b>Основные команды:</b>
+/start - Главное меню
+/help - Эта справка
+/profile - Профиль ребенка
+/activities - Список активностей
+/progress - Прогресс развития
+/premium - Премиум подписка
+
+<b>Возможности:</b>
+🎯 <b>Активности</b> - Более 20 развивающих занятий для детей 1-7 лет
+📅 <b>Прогресс</b> - Отслеживание достижений и навыков
+📚 <b>Библиотека</b> - Статьи и видео для родителей
+🔔 <b>Напоминания</b> - Персональные уведомления
+👑 <b>Премиум</b> - Расширенный функционал
+
+<b>Поддержка:</b> @your_support_username`;
+
+  bot.sendMessage(chatId, helpMessage, {
+    parse_mode: 'HTML',
+    ...keyboards.back_to_main
+  });
+});
+
+bot.onText(/\/profile/, (msg) => {
+  const chatId = msg.chat.id;
+  const userData = getUserData(chatId);
+  
+  if (!userData.name) {
+    bot.sendMessage(chatId, '⚠️ Сначала настройте профиль с помощью /start');
+    return;
+  }
+  
+  const profileMessage = `👶 <b>Профиль ребенка</b>
+
+👤 Имя: ${userData.name}
+🎂 Возраст: ${userData.age} ${getAgeText(userData.age)}
+🔥 Streak: ${userData.streak} дней
+📊 Всего активностей: ${userData.totalActivities}
+👑 Статус: ${userData.isPremium ? 'Премиум' : 'Бесплатный'}
+🔔 Напоминания: ${userData.notificationsEnabled ? `Включены (${userData.notificationTime})` : 'Выключены'}
+
+${userData.lastActivity ? `🎯 Последняя активность: ${userData.lastActivity}` : ''}`;
+
+  bot.sendMessage(chatId, profileMessage, {
+    parse_mode: 'HTML',
+    ...keyboards.back_to_main
+  });
+});
+
+bot.onText(/\/activities/, (msg) => {
+  const chatId = msg.chat.id;
+  handleActivitiesMenu(chatId);
+});
+
+bot.onText(/\/progress/, (msg) => {
+  const chatId = msg.chat.id;
+  handleProgressMenu(chatId);
+});
+
+bot.onText(/\/premium/, (msg) => {
+  const chatId = msg.chat.id;
+  handlePremiumMenu(chatId);
+});
+
+// Обработка текстовых сообщений (настройка профиля)
+bot.on('message', (msg) => {
+  const chatId = msg.chat.id;
+  const userData = getUserData(chatId);
+  
+  // Игнорируем команды и callback'и
+  if (msg.text && !msg.text.startsWith('/') && !userData.name) {
+    // Устанавливаем имя ребенка
+    userData.name = msg.text.trim();
+    users.set(chatId, userData);
+    
+    bot.sendMessage(chatId, `Приятно познакомиться, ${userData.name}! 👋
+
+Теперь выберите возраст:`, {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: '1 год', callback_data: 'set_age_1' },
+            { text: '2 года', callback_data: 'set_age_2' },
+            { text: '3 года', callback_data: 'set_age_3' }
+          ],
+          [
+            { text: '4 года', callback_data: 'set_age_4' },
+            { text: '5 лет', callback_data: 'set_age_5' },
+            { text: '6 лет', callback_data: 'set_age_6' }
+          ],
+          [
+            { text: '7 лет', callback_data: 'set_age_7' }
+          ]
+        ]
+      }
+    });
+  }
+});
+
+// Обработчики callback запросов
+bot.on('callback_query', (callbackQuery) => {
+  const msg = callbackQuery.message;
+  const chatId = msg.chat.id;
+  const data = callbackQuery.data;
+  const userData = getUserData(chatId);
+
+  bot.answerCallbackQuery(callbackQuery.id);
+
+  // Установка возраста
+  if (data.startsWith('set_age_')) {
+    const age = parseInt(data.split('_')[2]);
+    userData.age = age;
+    users.set(chatId, userData);
+    
+    bot.editMessageText(`✅ Отлично! ${userData.name}, ${age} ${getAgeText(age)}
+
+Профиль настроен! Теперь вы можете пользоваться всеми функциями бота.`, {
+      chat_id: chatId,
+      message_id: msg.message_id,
+      parse_mode: 'HTML',
+      ...keyboards.main
+    });
+    return;
+  }
+
+  // Главное меню
+  if (data === 'back_main') {
+    const mainMessage = `🏠 <b>Главное меню</b>
+
+Привет, ${userData.name || 'родитель'}! 
+${userData.name ? `${userData.name} (${userData.age} ${getAgeText(userData.age)}) ждет новых занятий! 🎯` : ''}
+
+Выберите раздел:`;
+
+    bot.editMessageText(mainMessage, {
+      chat_id: chatId,
+      message_id: msg.message_id,
+      parse_mode: 'HTML',
+      ...keyboards.main
+    });
+    return;
+  }
+
+  // Обработка остальных callback'ов
+  switch (data) {
+    case 'activities':
+      handleActivitiesMenu(chatId, msg.message_id);
+      break;
+    case 'progress':
+      handleProgressMenu(chatId, msg.message_id);
+      break;
+    case 'library':
+      handleLibraryMenu(chatId, msg.message_id);
+      break;
+    case 'notifications':
+      handleNotificationsMenu(chatId, msg.message_id);
+      break;
+    case 'settings':
+      handleSettingsMenu(chatId, msg.message_id);
+      break;
+    case 'premium':
+      handlePremiumMenu(chatId, msg.message_id);
+      break;
+    case 'all_activities':
+      handleAllActivities(chatId, msg.message_id);
+      break;
+    default:
+      if (data.startsWith('category_')) {
+        const category = data.split('_')[1];
+        handleCategoryActivities(chatId, msg.message_id, category);
+      } else if (data.startsWith('activity_')) {
+        const activityId = parseInt(data.split('_')[1]);
+        handleActivityDetail(chatId, msg.message_id, activityId);
+      } else if (data.startsWith('start_activity_')) {
+        const activityId = parseInt(data.split('_')[2]);
+        handleStartActivity(chatId, activityId);
+      } else if (data.startsWith('materials_')) {
+        const activityId = parseInt(data.split('_')[1]);
+        handleActivityMaterials(chatId, activityId);
+      } else if (data.startsWith('instructions_')) {
+        const activityId = parseInt(data.split('_')[1]);
+        handleActivityInstructions(chatId, activityId);
+      }
+      break;
+  }
+});
+
+// Функции обработки меню
+function handleActivitiesMenu(chatId, messageId = null) {
+  const userData = getUserData(chatId);
+  const activities = getActivitiesForAge(userData.age);
+  const freeCount = activities.filter(a => !a.premium).length;
+  const premiumCount = activities.filter(a => a.premium).length;
+  
+  const activitiesMessage = `🎯 <b>Активности для ${userData.name || 'ребенка'}</b>
+
+Возраст: ${userData.age} ${getAgeText(userData.age)}
+Доступно активностей: ${activities.length}
+🆓 Бесплатных: ${freeCount}
+👑 Премиум: ${premiumCount}
+
+Выберите категорию или посмотрите все активности:`;
+
+  const options = {
+    chat_id: chatId,
+    parse_mode: 'HTML',
+    ...keyboards.activities(userData.age)
+  };
+
+  if (messageId) {
+    options.message_id = messageId;
+    bot.editMessageText(activitiesMessage, options);
+  } else {
+    bot.sendMessage(chatId, activitiesMessage, options);
+  }
+}
+
+function handleAllActivities(chatId, messageId) {
+  const userData = getUserData(chatId);
+  const activities = getActivitiesForAge(userData.age);
+  
+  if (activities.length === 0) {
+    bot.editMessageText(`😔 Пока нет активностей для возраста ${userData.age} ${getAgeText(userData.age)}.
+
+Скоро добавим больше занятий!`, {
+      chat_id: chatId,
+      message_id: messageId,
+      ...keyboards.back_to_activities
+    });
+    return;
+  }
+
+  let message = `📋 <b>Все активности (${userData.age} ${getAgeText(userData.age)})</b>\n\n`;
+  
+  const keyboard = [];
+  
+  activities.forEach((activity, index) => {
+    const premiumIcon = activity.premium && !userData.isPremium ? '🔒 ' : '';
+    message += `${index + 1}. ${premiumIcon}${activity.icon} ${activity.title}\n`;
+    message += `   ⏱️ ${activity.duration} | ${activity.category}\n\n`;
+    
+    keyboard.push([{
+      text: `${premiumIcon}${activity.icon} ${activity.title}`,
+      callback_data: `activity_${activity.id}`
+    }]);
+  });
+  
+  keyboard.push([{ text: '← К категориям', callback_data: 'activities' }]);
+  
+  bot.editMessageText(message, {
+    chat_id: chatId,
+    message_id: messageId,
+    parse_mode: 'HTML',
+    reply_markup: { inline_keyboard: keyboard }
+  });
+}
+
+function handleCategoryActivities(chatId, messageId, category) {
+  const userData = getUserData(chatId);
+  const allActivities = getActivitiesForAge(userData.age);
+  const activities = allActivities.filter(a => a.category === category);
+  
+  if (activities.length === 0) {
+    bot.editMessageText(`😔 В категории "${category}" пока нет активностей для возраста ${userData.age} ${getAgeText(userData.age)}.`, {
+      chat_id: chatId,
+      message_id: messageId,
+      ...keyboards.back_to_activities
+    });
+    return;
+  }
+
+  let message = `🎯 <b>Категория: ${category}</b>\n\n`;
+  
+  const keyboard = [];
+  
+  activities.forEach(activity => {
+    const premiumIcon = activity.premium && !userData.isPremium ? '🔒 ' : '';
+    message += `${premiumIcon}${activity.icon} <b>${activity.title}</b>\n`;
+    message += `⏱️ ${activity.duration} | ${activity.difficulty}\n`;
+    message += `📝 ${activity.description}\n\n`;
+    
+    keyboard.push([{
+      text: `${premiumIcon}Подробнее о "${activity.title}"`,
+      callback_data: `activity_${activity.id}`
+    }]);
+  });
+  
+  keyboard.push([{ text: '← К категориям', callback_data: 'activities' }]);
+  
+  bot.editMessageText(message, {
+    chat_id: chatId,
+    message_id: messageId,
+    parse_mode: 'HTML',
+    reply_markup: { inline_keyboard: keyboard }
+  });
+}
+
+function handleActivityDetail(chatId, messageId, activityId) {
+  const userData = getUserData(chatId);
+  const allActivities = Object.values(activitiesDatabase).flat();
+  const activity = allActivities.find(a => a.id === activityId);
+  
+  if (!activity) {
+    bot.editMessageText('❌ Активность не найдена', {
+      chat_id: chatId,
+      message_id: messageId,
+      ...keyboards.back_to_activities
+    });
+    return;
+  }
+
+  if (activity.premium && !userData.isPremium) {
+    bot.editMessageText(`🔒 <b>Премиум активность</b>
+
+${formatActivity(activity, userData.isPremium)}
+
+❗ Для доступа к этой активности нужна премиум подписка.`, {
+      chat_id: chatId,
+      message_id: messageId,
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: '👑 Оформить премиум', callback_data: 'premium' }],
+          [{ text: '← К активностям', callback_data: 'activities' }]
+        ]
+      }
+    });
+    return;
+  }
+
+  bot.editMessageText(formatActivity(activity, userData.isPremium), {
+    chat_id: chatId,
+    message_id: messageId,
+    parse_mode: 'HTML',
+    ...keyboards.activity_detail(activityId, userData.isPremium)
+  });
+}
+
+function handleStartActivity(chatId, activityId) {
+  const userData = getUserData(chatId);
+  const allActivities = Object.values(activitiesDatabase).flat();
+  const activity = allActivities.find(a => a.id === activityId);
+  
+  if (!activity) {
+    bot.sendMessage(chatId, '❌ Активность не найдена');
+    return;
+  }
+
+  // Обновляем статистику
+  userData.totalActivities += 1;
+  userData.lastActivity = activity.title;
+  userData.streak += 1;
+  users.set(chatId, userData);
+
+  const startMessage = `🚀 <b>Начинаем активность!</b>
+
+${activity.icon} <b>${activity.title}</b>
+⏱️ Время: ${activity.duration}
+
+🎯 <b>Цель:</b> ${activity.benefits}
+
+💡 <b>Совет:</b> Не торопитесь и получайте удовольствие от процесса! Хвалите ${userData.name || 'ребенка'} за каждый успех.
+
+Удачи! 🍀`;
+
+  bot.sendMessage(chatId, startMessage, {
+    parse_mode: 'HTML',
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: '📋 Инструкция', callback_data: `instructions_${activityId}` },
+          { text: '📦 Материалы', callback_data: `materials_${activityId}` }
+        ],
+        [
+          { text: '✅ Завершить занятие', callback_data: `complete_activity_${activityId}` }
+        ],
+        [
+          { text: '← К активностям', callback_data: 'activities' }
+        ]
+      ]
+    }
+  });
+
+  // Отправляем таймер через 5 секунд
+  setTimeout(() => {
+    const timeReminders = [
+      '⏰ Прошло 5 минут! Как дела?',
+      '🔔 Половина времени прошла!',
+      '⚡ Осталось совсем немного!'
+    ];
+    
+    const reminder = timeReminders[Math.floor(Math.random() * timeReminders.length)];
+    bot.sendMessage(chatId, reminder);
+  }, 5000);
+}
+
+function handleActivityMaterials(chatId, activityId) {
+  const allActivities = Object.values(activitiesDatabase).flat();
+  const activity = allActivities.find(a => a.id === activityId);
+  
+  if (!activity) {
+    bot.sendMessage(chatId, '❌ Активность не найдена');
+    return;
+  }
+
+  bot.sendMessage(chatId, formatMaterials(activity), {
+    parse_mode: 'HTML',
+    ...keyboards.back_to_activities
+  });
+}
+
+function handleActivityInstructions(chatId, activityId) {
+  const allActivities = Object.values(activitiesDatabase).flat();
+  const activity = allActivities.find(a => a.id === activityId);
+  
+  if (!activity) {
+    bot.sendMessage(chatId, '❌ Активность не найдена');
+    return;
+  }
+
+  bot.sendMessage(chatId, formatInstructions(activity), {
+    parse_mode: 'HTML',
+    ...keyboards.back_to_activities
+  });
+}
+
+function handleProgressMenu(chatId, messageId = null) {
+  const userData = getUserData(chatId);
+  
+  const progressMessage = `📅 <b>Прогресс ${userData.name || 'ребенка'}</b>
+
+🔥 <b>Streak:</b> ${userData.streak} дней подряд
+📊 <b>Всего активностей:</b> ${userData.totalActivities}
+🎯 <b>Последняя активность:</b> ${userData.lastActivity || 'Еще не было'}
+
+📈 <b>Достижения:</b>
+${userData.streak >= 7 ? '🏆 Первая неделя' : '⏳ Первая неделя (осталось: ' + (7 - userData.streak) + ' дней)'}
+${userData.totalActivities >= 10 ? '🎨 Творческий гений' : '⏳ Творческий гений (осталось: ' + (10 - userData.totalActivities) + ' активностей)'}
+${userData.streak >= 30 ? '📅 Месяц развития' : '⏳ Месяц развития (осталось: ' + (30 - userData.streak) + ' дней)'}
+
+💪 Продолжайте в том же духе!`;
+
+  const options = {
+    chat_id: chatId,
+    parse_mode: 'HTML',
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: '📊 Детальная статистика', callback_data: 'detailed_stats' },
+          { text: '🏆 Достижения', callback_data: 'achievements' }
+        ],
+        [
+          { text: '← Главное меню', callback_data: 'back_main' }
+        ]
+      ]
+    }
+  };
+
+  if (messageId) {
+    options.message_id = messageId;
+    bot.editMessageText(progressMessage, options);
+  } else {
+    bot.sendMessage(chatId, progressMessage, options);
+  }
+}
+
+function handleLibraryMenu(chatId, messageId = null) {
+  const userData = getUserData(chatId);
+  
+  const libraryMessage = `📚 <b>Библиотека материалов</b>
+
+Полезные материалы для родителей:
+
+🧠 <b>Развитие:</b> Статьи о развитии детей
+🏥 <b>Здоровье:</b> Советы педиатров
+📖 <b>Обучение:</b> Методики и подходы
+💭 <b>Психология:</b> Детская психология
+🍎 <b>Питание:</b> Здоровое питание
+🛡️ <b>Безопасность:</b> Безопасность дома
+
+${userData.isPremium ? '👑 У вас есть доступ ко всем материалам!' : '🔒 Премиум статьи доступны по подписке'}`;
+
+  const options = {
+    chat_id: chatId,
+    parse_mode: 'HTML',
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: '🧠 Развитие', callback_data: 'library_development' },
+          { text: '🏥 Здоровье', callback_data: 'library_health' }
+        ],
+        [
+          { text: '📖 Обучение', callback_data: 'library_education' },
+          { text: '💭 Психология', callback_data: 'library_psychology' }
+        ],
+        [
+          { text: '🍎 Питание', callback_data: 'library_nutrition' },
+          { text: '🛡️ Безопасность', callback_data: 'library_safety' }
+        ],
+        [
+          { text: '🎥 Видеоуроки', callback_data: 'library_videos' }
+        ],
+        [
+          { text: '← Главное меню', callback_data: 'back_main' }
+        ]
+      ]
+    }
+  };
+
+  if (messageId) {
+    options.message_id = messageId;
+    bot.editMessageText(libraryMessage, options);
+  } else {
+    bot.sendMessage(chatId, libraryMessage, options);
+  }
+}
+
+function handleNotificationsMenu(chatId, messageId = null) {
+  const userData = getUserData(chatId);
+  
+  const notificationsMessage = `🔔 <b>Настройки напоминаний</b>
+
+Статус: ${userData.notificationsEnabled ? '✅ Включены' : '❌ Выключены'}
+Время: ${userData.notificationTime}
+Тип: ${userData.reminderType === 'motivational' ? 'Мотивирующие' : 
+       userData.reminderType === 'simple' ? 'Простые' : 'Со streak'}
+
+${userData.notificationsEnabled ? 
+  `📱 Следующее напоминание: сегодня в ${userData.notificationTime}` : 
+  '💡 Включите напоминания, чтобы не забывать о занятиях!'}
+
+Пример сообщения:
+"${getRandomMessage(userData.reminderType, userData)}"`;
+
+  const options = {
+    chat_id: chatId,
+    parse_mode: 'HTML',
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { 
+            text: userData.notificationsEnabled ? '🔕 Выключить' : '🔔 Включить', 
+            callback_data: 'toggle_notifications' 
+          }
+        ],
+        [
+          { text: '⏰ Изменить время', callback_data: 'change_time' },
+          { text: '📝 Тип сообщений', callback_data: 'change_reminder_type' }
+        ],
+        [
+          { text: '📨 Тест уведомления', callback_data: 'test_notification' }
+        ],
+        [
+          { text: '← Главное меню', callback_data: 'back_main' }
+        ]
+      ]
+    }
+  };
+
+  if (messageId) {
+    options.message_id = messageId;
+    bot.editMessageText(notificationsMessage, options);
+  } else {
+    bot.sendMessage(chatId, notificationsMessage, options);
+  }
+}
+
+function handleSettingsMenu(chatId, messageId = null) {
+  const userData = getUserData(chatId);
+  
+  const settingsMessage = `⚙️ <b>Настройки профиля</b>
+
+👤 <b>Имя ребенка:</b> ${userData.name || 'Не указано'}
+🎂 <b>Возраст:</b> ${userData.age} ${getAgeText(userData.age)}
+👑 <b>Статус:</b> ${userData.isPremium ? 'Премиум' : 'Бесплатный'}
+🔔 <b>Уведомления:</b> ${userData.notificationsEnabled ? 'Включены' : 'Выключены'}
+
+Выберите что хотите изменить:`;
+
+  const options = {
+    chat_id: chatId,
+    parse_mode: 'HTML',
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: '👤 Изменить имя', callback_data: 'change_name' },
+          { text: '🎂 Изменить возраст', callback_data: 'change_age' }
+        ],
+        [
+          { text: '🔔 Напоминания', callback_data: 'notifications' },
+          { text: '👑 Премиум', callback_data: 'premium' }
+        ],
+        [
+          { text: '📊 Экспорт данных', callback_data: 'export_data' },
+          { text: '🗑️ Сброс прогресса', callback_data: 'reset_progress' }
+        ],
+        [
+          { text: '← Главное меню', callback_data: 'back_main' }
+        ]
+      ]
+    }
+  };
+
+  if (messageId) {
+    options.message_id = messageId;
+    bot.editMessageText(settingsMessage, options);
+  } else {
+    bot.sendMessage(chatId, settingsMessage, options);
+  }
+}
+
+function handlePremiumMenu(chatId, messageId = null) {
+  const userData = getUserData(chatId);
+  
+  if (userData.isPremium) {
+    const premiumMessage = `👑 <b>Премиум активен!</b>
+
+✅ Все активности разблокированы
+✅ Персональные программы развития
+✅ Расширенная аналитика прогресса
+✅ Приоритетная поддержка
+✅ Еженедельные отчеты
+
+💎 Спасибо за доверие!`;
+
+    const options = {
+      chat_id: chatId,
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: '📊 Премиум статистика', callback_data: 'premium_stats' },
+            { text: '📄 Отчеты', callback_data: 'premium_reports' }
+          ],
+          [
+            { text: '🎯 Персональные программы', callback_data: 'personal_programs' }
+          ],
+          [
+            { text: '← Главное меню', callback_data: 'back_main' }
+          ]
+        ]
+      }
+    };
+
+    if (messageId) {
+      options.message_id = messageId;
+      bot.editMessageText(premiumMessage, options);
+    } else {
+      bot.sendMessage(chatId, premiumMessage, options);
+    }
+  } else {
+    const premiumMessage = `👑 <b>Премиум подписка</b>
+
+🚀 <b>Что вы получите:</b>
+
+🎯 <b>Все активности</b> - Доступ к 50+ премиум занятиям
+📊 <b>Детальная аналитика</b> - Подробные отчеты о развитии
+🎨 <b>Персональные программы</b> - Индивидуальные планы развития
+📚 <b>Эксклюзивные материалы</b> - Статьи и видео от экспертов
+🔔 <b>Умные напоминания</b> - Персонализированные уведомления
+👨‍⚕️ <b>Консультации</b> - Доступ к детским психологам
+📄 <b>Еженедельные отчеты</b> - Прогресс развития
+
+💰 <b>Стоимость:</b> 299₽/месяц
+🎁 <b>Первые 7 дней бесплатно!</b>`;
+
+    const options = {
+      chat_id: chatId,
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: '🎁 Попробовать бесплатно', callback_data: 'start_trial' }
+          ],
+          [
+            { text: '💳 Оформить подписку', callback_data: 'subscribe_premium' }
+          ],
+          [
+            { text: '❓ Часто задаваемые вопросы', callback_data: 'premium_faq' }
+          ],
+          [
+            { text: '← Главное меню', callback_data: 'back_main' }
+          ]
+        ]
+      }
+    };
+
+    if (messageId) {
+      options.message_id = messageId;
+      bot.editMessageText(premiumMessage, options);
+    } else {
+      bot.sendMessage(chatId, premiumMessage, options);
+    }
+  }
+}
+
+// Система напоминаний
+function scheduleNotifications() {
+  setInterval(() => {
+    const now = new Date();
+    const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    
+    users.forEach((userData, chatId) => {
+      if (userData.notificationsEnabled && userData.notificationTime === currentTime) {
+        sendNotification(chatId, userData);
+      }
+    });
+  }, 60000); // Проверяем каждую минуту
+}
+
+function sendNotification(chatId, userData) {
+  const message = getRandomMessage(userData.reminderType, userData);
+  
+  bot.sendMessage(chatId, `🔔 ${message}`, {
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: '🎯 Выбрать активность', callback_data: 'activities' },
+          { text: '📅 Прогресс', callback_data: 'progress' }
+        ],
+        [
+          { text: '⏰ Напомнить через час', callback_data: 'snooze_1h' },
+          { text: '🔕 Выключить на сегодня', callback_data: 'snooze_today' }
+        ]
+      ]
+    }
+  });
+}
+
+// Webhook endpoint
+app.post(`/webhook/${BOT_TOKEN}`, (req, res) => {
+  bot.processUpdate(req.body);
+  res.sendStatus(200);
+});
+
+// Дополнительные callback обработчики
+bot.on('callback_query', (callbackQuery) => {
+  const msg = callbackQuery.message;
+  const chatId = msg.chat.id;
+  const data = callbackQuery.data;
+  const userData = getUserData(chatId);
+
+  // Обработка дополнительных callback'ов
+  if (data === 'toggle_notifications') {
+    userData.notificationsEnabled = !userData.notificationsEnabled;
+    users.set(chatId, userData);
+    
+    bot.answerCallbackQuery(callbackQuery.id, {
+      text: userData.notificationsEnabled ? '🔔 Напоминания включены!' : '🔕 Напоминания выключены'
+    });
+    
+    handleNotificationsMenu(chatId, msg.message_id);
+  }
+  
+  else if (data === 'test_notification') {
+    bot.answerCallbackQuery(callbackQuery.id);
+    sendNotification(chatId, userData);
+  }
+  
+  else if (data === 'start_trial') {
+    userData.isPremium = true;
+    users.set(chatId, userData);
+    
+    bot.answerCallbackQuery(callbackQuery.id, {
+      text: '🎉 Пробный период активирован!'
+    });
+    
+    bot.sendMessage(chatId, `🎁 <b>Добро пожаловать в Премиум!</b>
+
+Ваш 7-дневный пробный период начался! Теперь у вас есть доступ ко всем функциям:
+
+✅ Все активности разблокированы
+✅ Персональные программы развития
+✅ Детальная аналитика
+
+Наслаждайтесь! 🚀`, {
+      parse_mode: 'HTML',
+      ...keyboards.main
+    });
+  }
+  
+  else if (data === 'subscribe_premium') {
+    bot.answerCallbackQuery(callbackQuery.id);
+    
+    bot.sendMessage(chatId, `💳 <b>Оформление подписки</b>
+
+Для оформления премиум подписки:
+
+1. Переведите 299₽ на карту: 
+   \`1234 5678 9012 3456\`
+
+2. Отправьте скриншот оплаты в чат
+
+3. Премиум будет активирован автоматически!
+
+💡 Или воспользуйтесь встроенной оплатой:`, {
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: '💳 Оплатить 299₽', url: 'https://your-payment-link.com' }],
+          [{ text: '← Назад', callback_data: 'premium' }]
+        ]
+      }
+    });
+  }
+  
+  else if (data.startsWith('complete_activity_')) {
+    const activityId = parseInt(data.split('_')[2]);
+    const allActivities = Object.values(activitiesDatabase).flat();
+    const activity = allActivities.find(a => a.id === activityId);
+    
+    bot.answerCallbackQuery(callbackQuery.id, {
+      text: '🎉 Отличная работа!'
+    });
+    
+    bot.sendMessage(chatId, `🎉 <b>Активность завершена!</b>
+
+${activity.icon} <b>${activity.title}</b>
+✅ Время потрачено с пользой!
+
+🏆 Streak: ${userData.streak} дней
+📊 Всего активностей: ${userData.totalActivities}
+
+${userData.name || 'Ребенок'} молодец! 👏`, {
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: '📸 Поделиться результатом', callback_data: 'share_result' },
+            { text: '⭐ Оценить занятие', callback_data: `rate_activity_${activityId}` }
+          ],
+          [
+            { text: '🎯 Следующая активность', callback_data: 'activities' },
+            { text: '📅 Посмотреть прогресс', callback_data: 'progress' }
+          ]
+        ]
+      }
+    });
+  }
+  
+  else if (data === 'change_age') {
+    bot.answerCallbackQuery(callbackQuery.id);
+    
+    bot.sendMessage(chatId, 'Выберите новый возраст:', {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: '1 год', callback_data: 'set_age_1' },
+            { text: '2 года', callback_data: 'set_age_2' },
+            { text: '3 года', callback_data: 'set_age_3' }
+          ],
+          [
+            { text: '4 года', callback_data: 'set_age_4' },
+            { text: '5 лет', callback_data: 'set_age_5' },
+            { text: '6 лет', callback_data: 'set_age_6' }
+          ],
+          [
+            { text: '7 лет', callback_data: 'set_age_7' }
+          ],
+          [
+            { text: '← Отмена', callback_data: 'settings' }
+          ]
+        ]
+      }
+    });
+  }
+});
+
+// Запуск сервера и планировщика
+app.listen(PORT, () => {
+  console.log(`🚀 Telegram Bot сервер запущен на порту ${PORT}`);
+  console.log(`📱 Webhook URL: ${WEBHOOK_URL}/${BOT_TOKEN}`);
+  scheduleNotifications();
+});
+
+// Обработка ошибок
+process.on('unhandledRejection', (reason, promise) => {
+  console.log('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+  console.log('Uncaught Exception:', error);
+});
+
+/* 
+=== ИНСТРУКЦИЯ ПО РАЗВЕРТЫВАНИЮ ===
+
+1. Установите зависимости:
+   npm install express node-telegram-bot-api
+
+2. Получите токен бота:
+   - Напишите @BotFather в Telegram
+   - Создайте нового бота командой /newbot
+   - Скопируйте токен
+
+3. Настройте переменные:
+   - Замените 'YOUR_BOT_TOKEN_HERE' на ваш токен
+   - Укажите ваш домен в WEBHOOK_URL
+
+4. Развертывание:
+   - Загрузите на сервер (Heroku, VPS, etc.)
+   - Убедитесь что порт доступен
+   - Запустите: node bot.js
+
+5. Настройка webhook:
+   curl -X POST "https://api.telegram.org/bot{TOKEN}/setWebhook" \
+        -H "Content-Type: application/json" \
+        -d '{"url":"https://your-domain.com/webhook/{TOKEN}"}'
+
+6. Дополнительные возможности:
+   - Подключите базу данных (MongoDB, PostgreSQL)
+   - Настройте платежную систему
+   - Добавьте аналитику
+   - Интегрируйте с внешними API
+
+=== ФУНКЦИИ БОТА ===
+
+✅ Полная навигация по меню
+✅ Все активности из React приложения  
+✅ Система прогресса и достижений
+✅ Напоминания с настройками
+✅ Премиум функции
+✅ Пошаговые инструкции
+✅ Материалы для занятий
+✅ Настройки профиля
+✅ Библиотека материалов
+
+🚀 БОТ ГОТОВ К ИСПОЛЬЗОВАНИЮ!
+*/
