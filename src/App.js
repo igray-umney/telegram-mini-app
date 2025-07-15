@@ -1,49 +1,52 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './styles/mobile.css';
 
 function App() {
   const [selectedAge, setSelectedAge] = useState('2');
   const [showPayment, setShowPayment] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
 
+  // Простая проверка премиума без сложной логики
   useEffect(() => {
-    // Регистрация Service Worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
-        .then(registration => {
-          console.log('SW registered:', registration);
-        })
-        .catch(error => {
-          console.log('SW registration failed:', error);
-        });
+    try {
+      const premium = localStorage.getItem('isPremium');
+      setIsPremium(premium === 'true');
+    } catch (error) {
+      console.log('LocalStorage error:', error);
     }
-
-    // Проверка статуса подписки
-    checkPremiumStatus();
   }, []);
 
-  const checkPremiumStatus = () => {
-    const premiumStatus = localStorage.getItem('isPremium');
-    setIsPremium(premiumStatus === 'true');
+  // Простая функция для уведомлений
+  const requestNotifications = () => {
+    if ('Notification' in window) {
+      Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+          new Notification('Развивайка', {
+            body: 'Уведомления включены! 🎉',
+            icon: '/favicon.ico'
+          });
+        }
+      });
+    } else {
+      alert('Ваш браузер не поддерживает уведомления');
+    }
   };
 
-  const requestNotifications = async () => {
-    if (Notification.permission === 'default') {
-      const permission = await Notification.requestPermission();
-      if (permission === 'granted') {
-        setShowNotifications(true);
-        // Показать тестовое уведомление
-        new Notification('Развивайка', {
-          body: 'Уведомления включены! 🎉',
-          icon: '/favicon.ico'
-        });
-      }
-    }
+  // Простая функция активности
+  const startActivity = (activity) => {
+    alert(`🎯 Начинаем: "${activity}"!\n\nЭто демо-версия приложения.`);
+  };
+
+  // Простая функция оплаты
+  const handlePayment = () => {
+    localStorage.setItem('isPremium', 'true');
+    setIsPremium(true);
+    setShowPayment(false);
+    alert('✅ Премиум активирован (демо)!');
   };
 
   const ages = ['1 год', '2 года', '3 года', '4 года', '5 лет', '6 лет', '7 лет'];
-
+  
   const activities = {
     '1': ['Пальчиковые игры', 'Музыкальные игрушки', 'Сенсорные мешочки'],
     '2': ['Сортировка по цветам', 'Простые пазлы', 'Лепка из пластилина'],
@@ -79,24 +82,32 @@ function App() {
           </div>
         )}
 
-        {/* Уведомления */}
-        {Notification.permission !== 'granted' && (
-          <div className="notification-banner">
-            <div className="notification-content">
-              <span>🔔</span>
-              <div>
-                <h4>Включить напоминания</h4>
-                <p>Получайте уведомления о времени активностей</p>
-              </div>
-              <button 
-                onClick={requestNotifications}
-                className="btn btn-secondary"
-              >
-                Включить
-              </button>
+        {/* Успешный премиум */}
+        {isPremium && (
+          <div className="premium-active">
+            <div className="premium-content">
+              <h3>✨ Премиум активен</h3>
+              <p>У вас есть доступ ко всем функциям!</p>
             </div>
           </div>
         )}
+
+        {/* Уведомления */}
+        <div className="notification-banner">
+          <div className="notification-content">
+            <span>🔔</span>
+            <div>
+              <h4>Включить напоминания</h4>
+              <p>Получайте уведомления о времени активностей</p>
+            </div>
+            <button 
+              onClick={requestNotifications}
+              className="btn btn-secondary"
+            >
+              Включить
+            </button>
+          </div>
+        </div>
 
         {/* Выбор возраста */}
         <section className="age-selection">
@@ -120,13 +131,16 @@ function App() {
           <p className="activities-subtitle">Выбери активность для Андрей</p>
           
           <div className="activity-grid">
-            {activities[selectedAge]?.map((activity, index) => (
+            {activities[selectedAge] && activities[selectedAge].map((activity, index) => (
               <div key={index} className="activity-card">
                 <div className="activity-icon">
                   {index === 0 ? '📚' : index === 1 ? '🎯' : '🔬'}
                 </div>
                 <h3>{activity}</h3>
-                <button className="btn btn-primary activity-btn">
+                <button 
+                  className="btn btn-primary activity-btn"
+                  onClick={() => startActivity(activity)}
+                >
                   Начать активность
                 </button>
               </div>
@@ -136,7 +150,7 @@ function App() {
 
         {/* Статистика */}
         <section className="stats-section">
-          <div className="stats-card">
+          <div className="stats-card" onClick={() => alert('📊 Статистика: 12.5 часов развития')}>
             <div className="stats-icon">📊</div>
             <div className="stats-info">
               <h3>12.5ч</h3>
@@ -147,12 +161,12 @@ function App() {
 
         {/* Разделы */}
         <section className="sections-grid">
-          <div className="section-card">
+          <div className="section-card" onClick={() => alert('📈 Раздел "Прогресс" скоро будет доступен!')}>
             <div className="section-icon">📈</div>
             <h3>Прогресс</h3>
             <p>Отслеживайте успехи</p>
           </div>
-          <div className="section-card">
+          <div className="section-card" onClick={() => alert('📚 Библиотека материалов скоро будет доступна!')}>
             <div className="section-icon">📚</div>
             <h3>Библиотека</h3>
             <p>Коллекция материалов</p>
@@ -182,10 +196,17 @@ function App() {
                   <li>✓ Детальная статистика</li>
                   <li>✓ Персонализация</li>
                   <li>✓ Без рекламы</li>
+                  <li>✓ Push-уведомления</li>
                 </ul>
-                <button className="btn btn-primary">
-                  Выбрать план
+                <button 
+                  className="btn btn-primary"
+                  onClick={handlePayment}
+                >
+                  Выбрать план (ДЕМО)
                 </button>
+                <p style={{fontSize: '0.8rem', color: '#666', marginTop: '10px'}}>
+                  * Это демо-версия оплаты
+                </p>
               </div>
             </div>
           </div>
