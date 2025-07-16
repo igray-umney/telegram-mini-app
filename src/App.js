@@ -61,6 +61,9 @@ const ChildDevelopmentApp = () => {
 
   // База материалов библиотеки
   const [libraryContent] = useState({
+        }
+  };
+
     // Функция для тестирования уведомлений
   const testNotification = () => {
     console.log('🔔 Тестируем уведомление...');
@@ -77,8 +80,7 @@ const ChildDevelopmentApp = () => {
       }
     } else {
       console.log('Уведомления не разрешены:', Notification.permission);
-    }
-  };
+
     categories: [
       { id: 'development', name: 'Развитие', icon: '🧠', count: 23 },
       { id: 'health', name: 'Здоровье', icon: '🏥', count: 18 },
