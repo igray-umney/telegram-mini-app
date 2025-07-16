@@ -61,26 +61,6 @@ const ChildDevelopmentApp = () => {
 
   // База материалов библиотеки
   const [libraryContent] = useState({
-        }
-  };
-
-    // Функция для тестирования уведомлений
-  const testNotification = () => {
-    console.log('🔔 Тестируем уведомление...');
-    
-    if (Notification.permission === 'granted') {
-      try {
-        new Notification('Развивайка - Тест', {
-          body: 'Тестовое уведомление работает! 🎉',
-          icon: '/favicon.ico'
-        });
-        console.log('✅ Уведомление отправлено');
-      } catch (error) {
-        console.error('Ошибка:', error);
-      }
-    } else {
-      console.log('Уведомления не разрешены:', Notification.permission);
-
     categories: [
       { id: 'development', name: 'Развитие', icon: '🧠', count: 23 },
       { id: 'health', name: 'Здоровье', icon: '🏥', count: 18 },
@@ -1436,12 +1416,9 @@ const ChildDevelopmentApp = () => {
                </p>
              </div>
 
-<button 
-  onClick={testNotification}
-  className="w-full bg-blue-500 text-white py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors"
->
-  Отправить тестовое уведомление
-</button>
+             <button className="w-full bg-blue-500 text-white py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors">
+               Отправить тестовое уведомление
+             </button>
            </div>
          )}
 
