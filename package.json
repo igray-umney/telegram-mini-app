@@ -1,1 +1,6 @@
-npm install node-telegram-bot-api
+{
+  "dependencies": {
+    "node-telegram-bot-api": "^0.64.0",
+    // ... остальные зависимости
+  }
+}
