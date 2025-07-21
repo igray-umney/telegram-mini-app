@@ -345,7 +345,7 @@ const ChildDevelopmentApp = () => {
   const connectToBot = async () => {
     try {
       // Отправляем команду боту для подключения уведомлений
-      const response = await fetch('/api/telegram/connect', {
+      const response = await fetch('https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/connect', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -385,7 +385,7 @@ const ChildDevelopmentApp = () => {
     try {
       const message = getRandomMessage(notificationSettings.reminderType);
       
-      const response = await fetch('/api/telegram/send-notification', {
+      const response = await fetch('https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/send-notification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -428,7 +428,7 @@ const ChildDevelopmentApp = () => {
     
     try {
       // Создаем инвойс через Telegram Bot API
-      const response = await fetch('/api/telegram/create-invoice', {
+      const response = await fetch('https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/create-invoice', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
