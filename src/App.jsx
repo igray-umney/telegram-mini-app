@@ -342,37 +342,48 @@ const ChildDevelopmentApp = () => {
   ]);
 
   // Функции для работы с Telegram Bot
-  const connectToBot = async () => {
-    try {
-      // Отправляем команду боту для подключения уведомлений
-      const response = await fetch('https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/connect', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: telegramUser?.id,
-          username: telegramUser?.username,
-          settings: notificationSettings
-        })
-      });
+const connectToBot = async () => {
+  try {
+    console.log('🔗 Подключение к боту, telegramUser:', telegramUser);
+    
+    // Отправляем команду боту для подключения уведомлений
+    const response = await fetch('https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/connect', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId: telegramUser?.id,
+        username: telegramUser?.username,
+        settings: notificationSettings
+      })
+    });
 
-      if (response.ok) {
-        setBotConnected(true);
-        setNotificationSettings(prev => ({ ...prev, enabled: true }));
-        
-        // Показываем сообщение об успехе
-        if (window.Telegram?.WebApp) {
-          window.Telegram.WebApp.showAlert('Уведомления подключены! Теперь бот будет напоминать о занятиях.');
-        }
-      }
-    } catch (error) {
-      console.error('Ошибка подключения к боту:', error);
+    const result = await response.json();
+    console.log('📡 Ответ сервера:', result);
+
+    if (response.ok && result.success) {
+      setBotConnected(true);
+      setNotificationSettings(prev => ({ ...prev, enabled: true }));
+      
+      // Показываем сообщение об успехе
       if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.showAlert('Ошибка подключения к боту. Попробуйте позже.');
+        window.Telegram.WebApp.showAlert('Уведомления подключены! Теперь бот будет напоминать о занятиях.');
+      } else {
+        alert('Уведомления подключены!');
       }
+    } else {
+      throw new Error(result.message || 'Ошибка подключения');
     }
-  };
+  } catch (error) {
+    console.error('❌ Ошибка подключения к боту:', error);
+    if (window.Telegram?.WebApp) {
+      window.Telegram.WebApp.showAlert('Ошибка подключения к боту: ' + error.message);
+    } else {
+      alert('Ошибка подключения к боту: ' + error.message);
+    }
+  }
+};
 
   const sendTestNotification = async () => {
     if (!botConnected) {
