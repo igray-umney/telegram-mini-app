@@ -55,42 +55,45 @@ const ChildDevelopmentApp = () => {
   }, [currentScreen]);
 
 // Проверяем статус уведомлений при загрузке
-  useEffect(() => {
-    const checkNotificationStatus = async () => {
-      if (telegramUser?.id) {
-        try {
-          console.log('🔍 Проверяем статус уведомлений для:', telegramUser.id);
-          
-          const response = await fetch(`https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/status/${telegramUser.id}`);
-          const status = await response.json();
-          
-          console.log('📊 Статус с сервера:', status);
-          
-          if (status.connected) {
-            console.log('✅ Уведомления уже настроены');
-            setBotConnected(true);
-            setNotificationSettings(prev => ({
-              ...prev,
-              enabled: status.enabled,
-              time: status.time || prev.time,
-              reminderType: status.type || prev.reminderType
-            }));
-          } else {
-            console.log('❌ Уведомления не настроены');
-            setBotConnected(false);
-          }
-        } catch (error) {
-          console.error('❌ Ошибка проверки статуса:', error);
+const checkNotificationStatus = async () => {
+  if (telegramUser?.id) {
+    try {
+      console.log('🔍 Проверяем статус уведомлений для:', telegramUser.id);
+      
+      const response = await fetch(`https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/status/${telegramUser.id}`);
+      
+      if (response.ok) {
+        const status = await response.json();
+        console.log('📊 Статус с сервера:', status);
+        
+        if (status.connected) {
+          console.log('✅ Уведомления уже настроены');
+          setBotConnected(true);
+          setNotificationSettings(prev => ({
+            ...prev,
+            enabled: status.enabled,
+            time: status.time || prev.time,
+            reminderType: status.type || prev.reminderType
+          }));
+        } else {
+          console.log('❌ Уведомления не настроены');
           setBotConnected(false);
         }
+      } else {
+        console.log('⚠️ Ошибка ответа сервера:', response.status);
+        setBotConnected(false);
       }
-    };
-    
-    // Проверяем статус через 1 секунду после получения данных пользователя
-    if (telegramUser) {
-      setTimeout(checkNotificationStatus, 1000);
+    } catch (error) {
+      console.error('❌ Ошибка проверки статуса:', error);
+      setBotConnected(false);
     }
-  }, [telegramUser]);
+  }
+};
+
+// Проверяем статус через 2 секунды после получения данных пользователя
+if (telegramUser) {
+  setTimeout(checkNotificationStatus, 2000);
+}
   
   // Настройки уведомлений через Telegram Bot
   const [notificationSettings, setNotificationSettings] = useState({
