@@ -384,7 +384,6 @@ const connectToBot = async () => {
   try {
     console.log('🔗 Подключение к боту, telegramUser:', telegramUser);
     
-    // Отправляем команду боту для подключения уведомлений
     const response = await fetch('https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/connect', {
       method: 'POST',
       headers: {
@@ -404,11 +403,16 @@ const connectToBot = async () => {
       setBotConnected(true);
       setNotificationSettings(prev => ({ ...prev, enabled: true }));
       
-      // Показываем сообщение об успехе
+      // Показываем соответствующее сообщение
+      let message = 'Уведомления подключены!';
+      if (result.needsBotStart) {
+        message += '\n\nДля получения уведомлений напишите боту /start';
+      }
+      
       if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.showAlert('Уведомления подключены! Теперь бот будет напоминать о занятиях.');
+        window.Telegram.WebApp.showAlert(message);
       } else {
-        alert('Уведомления подключены!');
+        alert(message);
       }
     } else {
       throw new Error(result.message || 'Ошибка подключения');
