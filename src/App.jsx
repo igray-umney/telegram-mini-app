@@ -1142,6 +1142,292 @@ const ChildDevelopmentApp = () => {
     );
   }
 
+// Экран настроек профиля
+  if (currentScreen === 'settings') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm px-4 py-4 sticky top-0 z-10">
+          <div className="flex items-center">
+            <button 
+              onClick={() => setCurrentScreen('main')}
+              className="mr-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <span className="text-2xl">←</span>
+            </button>
+            <div>
+              <h1 className="text-xl font-bold text-gray-800">Настройки</h1>
+              <p className="text-sm text-gray-600">Управление профилем и подпиской</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-4 py-6">
+          {/* Child Info */}
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">Информация о ребенке</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Имя</label>
+                <input 
+                  type="text" 
+                  value={child.name}
+                  onChange={(e) => setChild({...child, name: e.target.value})}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Введите имя ребенка"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Возраст</label>
+                <select 
+                  value={child.age}
+                  onChange={(e) => setChild({...child, age: parseInt(e.target.value)})}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  {[1,2,3,4,5,6,7].map(age => (
+                    <option key={age} value={age}>{age} {getAgeText(age)}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Telegram Integration Status */}
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">Telegram Интеграция</h2>
+            
+            {/* User Info */}
+            {telegramUser && (
+              <div className="bg-blue-50 rounded-lg p-4 mb-4">
+                <div className="flex items-center">
+                  <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-white text-lg">👤</span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-blue-900">{telegramUser.first_name}</h3>
+                    <p className="text-sm text-blue-700">
+                      @{telegramUser.username || 'пользователь'} • ID: {telegramUser.id}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Bot Connection Status */}
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg mb-4">
+              <div className="flex items-center">
+                <span className="text-2xl mr-3">🤖</span>
+                <div>
+                  <h3 className="font-medium text-gray-800">Telegram Бот</h3>
+                  <p className="text-sm text-gray-600">
+                    @{notificationSettings.botUsername}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center">
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  botConnected ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                }`}>
+                  {botConnected ? 'Подключен' : 'Не подключен'}
+                </span>
+                {botConnected && (
+                  <span className="w-3 h-3 bg-green-500 rounded-full ml-2"></span>
+                )}
+              </div>
+            </div>
+
+            {/* Bot Actions */}
+            <div className="grid grid-cols-1 gap-3">
+              {!botConnected ? (
+                <button 
+                  onClick={connectToBot}
+                  className="bg-blue-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-600 transition-colors"
+                >
+                  🔗 Подключить бота
+                </button>
+              ) : (
+                <>
+                  <button 
+                    onClick={() => setCurrentScreen('notifications')}
+                    className="bg-blue-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-600 transition-colors"
+                  >
+                    ⚙️ Настроить уведомления
+                  </button>
+                  <button 
+                    onClick={sendTestNotification}
+                    className="bg-purple-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-purple-600 transition-colors"
+                  >
+                    🧪 Тест уведомления
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Premium Status */}
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">Подписка</h2>
+            {isPremium ? (
+              <div className="text-center py-4">
+                <div className="bg-gradient-to-r from-purple-600 to-pink-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white text-2xl">👑</span>
+                </div>
+                <h3 className="text-lg font-bold text-gray-800">Премиум активен</h3>
+                <p className="text-gray-600 mb-4">Все функции разблокированы</p>
+                
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 mb-4">
+                  <div className="text-sm text-gray-600 space-y-1">
+                    <p>✅ Неограниченные активности</p>
+                    <p>✅ Персональные программы</p>
+                    <p>✅ Подробная аналитика</p>
+                    <p>✅ Приоритетная поддержка</p>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => {
+                    setIsPremium(false);
+                    if (window.Telegram?.WebApp) {
+                      window.Telegram.WebApp.showAlert('Премиум отключен (для демо)');
+                    }
+                  }}
+                  className="text-red-600 hover:text-red-700 text-sm underline"
+                >
+                  Отключить премиум (для теста)
+                </button>
+              </div>
+            ) : (
+              <div className="text-center py-4">
+                <div className="text-6xl mb-4">💎</div>
+                <h3 className="text-lg font-bold text-gray-800 mb-2">Разблокируй все возможности</h3>
+                <p className="text-gray-600 mb-4">
+                  Получи доступ ко всем функциям приложения
+                </p>
+                
+                <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                  <div className="text-sm text-gray-600 space-y-2">
+                    <div className="flex items-center justify-center">
+                      <span className="text-purple-500 mr-2">👑</span>
+                      <span>Все активности без ограничений</span>
+                    </div>
+                    <div className="flex items-center justify-center">
+                      <span className="text-blue-500 mr-2">📊</span>
+                      <span>Детальная аналитика прогресса</span>
+                    </div>
+                    <div className="flex items-center justify-center">
+                      <span className="text-green-500 mr-2">🎯</span>
+                      <span>Персональные программы развития</span>
+                    </div>
+                    <div className="flex items-center justify-center">
+                      <span className="text-orange-500 mr-2">📚</span>
+                      <span>Эксклюзивные материалы</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 mb-6">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Стоимость:</span>
+                    <span className="text-2xl font-bold text-purple-600">299₽/мес</span>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">или 50 ⭐ Telegram Stars</p>
+                </div>
+
+                <button 
+                  onClick={() => setShowPayment(true)}
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition-all"
+                >
+                  Подписаться на премиум
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* App Info */}
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">О приложении</h2>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">Версия</span>
+                <span className="font-medium text-gray-800">1.0.0</span>
+              </div>
+              <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">Разработчик</span>
+                <span className="font-medium text-gray-800">Развивайка Team</span>
+              </div>
+              <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600">Последнее обновление</span>
+                <span className="font-medium text-gray-800">23.01.2025</span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-gray-600">Telegram Bot</span>
+                <span className="font-medium text-gray-800">@{notificationSettings.botUsername}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Support & Feedback */}
+          <div className="bg-white rounded-xl p-6 shadow-sm">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">Поддержка</h2>
+            <div className="space-y-3">
+              <button 
+                onClick={() => {
+                  if (window.Telegram?.WebApp) {
+                    window.Telegram.WebApp.openLink('https://t.me/razvivayка_support');
+                  } else {
+                    window.open('https://t.me/razvivayка_support', '_blank');
+                  }
+                }}
+                className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-600 transition-colors flex items-center justify-center"
+              >
+                <span className="mr-2">💬</span>
+                Написать в поддержку
+              </button>
+              
+              <button 
+                onClick={() => {
+                  if (window.Telegram?.WebApp) {
+                    window.Telegram.WebApp.showPopup({
+                      title: 'Оценить приложение',
+                      message: 'Нравится приложение? Поставьте оценку!',
+                      buttons: [
+                        {id: 'rate', type: 'default', text: 'Оценить'},
+                        {id: 'cancel', type: 'cancel', text: 'Отмена'}
+                      ]
+                    }, (buttonId) => {
+                      if (buttonId === 'rate') {
+                        window.Telegram.WebApp.showAlert('Спасибо за оценку! ⭐⭐⭐⭐⭐');
+                      }
+                    });
+                  } else {
+                    alert('Спасибо за оценку! ⭐⭐⭐⭐⭐');
+                  }
+                }}
+                className="w-full bg-yellow-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-yellow-600 transition-colors flex items-center justify-center"
+              >
+                <span className="mr-2">⭐</span>
+                Оценить приложение
+              </button>
+              
+              <button 
+                onClick={() => {
+                  if (window.Telegram?.WebApp) {
+                    window.Telegram.WebApp.openLink('https://razvivayка.ru/privacy');
+                  } else {
+                    window.open('https://razvivayка.ru/privacy', '_blank');
+                  }
+                }}
+                className="w-full bg-gray-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-gray-600 transition-colors flex items-center justify-center"
+              >
+                <span className="mr-2">📋</span>
+                Политика конфиденциальности
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Остальные экраны (заглушка)
   return (
     <div className="min-h-screen bg-gray-50">
@@ -1169,6 +1455,7 @@ const ChildDevelopmentApp = () => {
       </div>
     </div>
   );
+
 };
 
 export default ChildDevelopmentApp;
