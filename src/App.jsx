@@ -5,18 +5,23 @@ const ChildDevelopmentApp = () => {
   const [isPremium, setIsPremium] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedActivity, setSelectedActivity] = useState(null);
+  const [showPayment, setShowPayment] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState('idle');
+  const [telegramUser, setTelegramUser] = useState(null);
+  const [botConnected, setBotConnected] = useState(false);
   const [child, setChild] = useState({
     name: 'Андрей',
     age: 2,
     streak: 7
   });
-
-  // Настройки уведомлений с интеграцией Telegram
+  
+  // Настройки уведомлений через Telegram Bot
   const [notificationSettings, setNotificationSettings] = useState({
     enabled: false,
     time: '19:00',
     frequency: 'daily',
     reminderType: 'motivational',
+    botUsername: 'razvivayка_bot', // Замените на имя вашего бота
     quietHours: {
       enabled: true,
       start: '21:00',
@@ -32,14 +37,6 @@ const ChildDevelopmentApp = () => {
       saturday: true,
       sunday: false
     }
-  });
-
-  // Состояние Telegram подключения
-  const [telegramStatus, setTelegramStatus] = useState({
-    connected: false,
-    checking: false,
-    error: null,
-    userId: null
   });
 
   // Данные прогресса
@@ -67,96 +64,7 @@ const ChildDevelopmentApp = () => {
     ]
   });
 
-  // База материалов библиотеки
-  const [libraryContent] = useState({
-    categories: [
-      { id: 'development', name: 'Развитие', icon: '🧠', count: 23 },
-      { id: 'health', name: 'Здоровье', icon: '🏥', count: 18 },
-      { id: 'education', name: 'Обучение', icon: '📖', count: 31 },
-      { id: 'psychology', name: 'Психология', icon: '💭', count: 15 },
-      { id: 'nutrition', name: 'Питание', icon: '🍎', count: 12 },
-      { id: 'safety', name: 'Безопасность', icon: '🛡️', count: 9 }
-    ],
-    articles: [
-      {
-        id: 1,
-        title: 'Как развивать речь у ребенка 2-3 лет',
-        description: 'Практические советы для развития речевых навыков в раннем возрасте',
-        readTime: '5 мин',
-        category: 'development',
-        premium: false,
-        author: 'Логопед Анна Петрова',
-        rating: 4.8,
-        views: 1247
-      },
-      {
-        id: 2,
-        title: 'Лучшие игры для развития мелкой моторики',
-        description: 'Простые упражнения и игры для укрепления мышц рук и пальцев',
-        readTime: '7 мин',
-        category: 'development',
-        premium: false,
-        author: 'Педиатр Мария Иванова',
-        rating: 4.9,
-        views: 987
-      },
-      {
-        id: 3,
-        title: 'Подготовка к школе: чек-лист для родителей',
-        description: 'Что должен уметь ребенок перед поступлением в первый класс',
-        readTime: '10 мин',
-        category: 'education',
-        premium: true,
-        author: 'Педагог Ольга Волкова',
-        rating: 4.9,
-        views: 1543
-      },
-      {
-        id: 4,
-        title: 'Детские страхи: как помочь ребенку',
-        description: 'Работаем с типичными страхами детей разного возраста',
-        readTime: '6 мин',
-        category: 'psychology',
-        premium: true,
-        author: 'Психолог Дмитрий Козлов',
-        rating: 4.6,
-        views: 445
-      },
-      {
-        id: 5,
-        title: 'Здоровое питание для дошкольников',
-        description: 'Составляем сбалансированное меню для детей 3-6 лет',
-        readTime: '8 мин',
-        category: 'nutrition',
-        premium: true,
-        author: 'Диетолог Елена Сидорова',
-        rating: 4.7,
-        views: 756
-      }
-    ],
-    videos: [
-      {
-        id: 1,
-        title: 'Массаж для малышей: укрепляем здоровье',
-        duration: '15 мин',
-        category: 'health',
-        premium: false,
-        thumbnail: '👶',
-        views: 2341
-      },
-      {
-        id: 2,
-        title: 'Творческие занятия с детьми 4-6 лет',
-        duration: '22 мин',
-        category: 'development',
-        premium: true,
-        thumbnail: '🎨',
-        views: 1567
-      }
-    ]
-  });
-
-  // РАСШИРЕННАЯ база активностей
+  // База активностей
   const [activitiesDatabase] = useState({
     1: [
       {
@@ -377,7 +285,7 @@ const ChildDevelopmentApp = () => {
   });
 
   // История уведомлений
-  const [notificationHistory] = useState([
+  const [notificationHistory, setNotificationHistory] = useState([
     {
       id: 1,
       message: 'Время для развития с Андрей! Сегодня изучаем что-то новое?',
@@ -394,126 +302,287 @@ const ChildDevelopmentApp = () => {
     }
   ]);
 
-  // API функции для работы с Telegram
-  const generateUserId = () => {
-    // В реальном приложении это должно быть из настоящей аутентификации
-    const savedUserId = localStorage.getItem('telegramUserId');
-    if (savedUserId) return savedUserId;
-    
-    const newUserId = 'demo_' + Math.random().toString(36).substr(2, 9);
-    localStorage.setItem('telegramUserId', newUserId);
-    return newUserId;
+  // Функция для проверки статуса уведомлений
+  const checkNotificationStatus = async () => {
+    if (telegramUser?.id) {
+      try {
+        console.log('🔍 Проверяем статус уведомлений для:', telegramUser.id);
+        
+        const response = await fetch(`https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/status/${telegramUser.id}`);
+        
+        if (response.ok) {
+          const status = await response.json();
+          console.log('📊 Статус с сервера:', status);
+          
+          if (status.connected) {
+            console.log('✅ Уведомления уже настроены');
+            setBotConnected(true);
+            setNotificationSettings(prev => ({
+              ...prev,
+              enabled: status.enabled,
+              time: status.time || prev.time,
+              reminderType: status.type || prev.reminderType
+            }));
+          } else {
+            console.log('❌ Уведомления не настроены');
+            setBotConnected(false);
+          }
+        } else {
+          console.log('⚠️ Ошибка ответа сервера:', response.status);
+          setBotConnected(false);
+        }
+      } catch (error) {
+        console.error('❌ Ошибка проверки статуса:', error);
+        setBotConnected(false);
+      }
+    }
   };
 
-  const checkTelegramStatus = async () => {
-    setTelegramStatus(prev => ({ ...prev, checking: true, error: null }));
-    
-    try {
-      const userId = generateUserId();
-      // В демо режиме симулируем API вызов
-      await new Promise(resolve => setTimeout(resolve, 1000));
+  // Telegram Mini App integration
+  useEffect(() => {
+    // Инициализация Telegram Web App
+    if (window.Telegram && window.Telegram.WebApp) {
+      const tg = window.Telegram.WebApp;
+      tg.ready();
       
-      // Симулируем ответ API
-      const mockResponse = {
-        connected: Math.random() > 0.5, // 50% шанс что подключен
-        enabled: notificationSettings.enabled,
-        time: notificationSettings.time,
-        timezone: 'Москва',
-        type: notificationSettings.reminderType
-      };
-
-      setTelegramStatus({
-        connected: mockResponse.connected,
-        checking: false,
-        error: null,
-        userId: userId
-      });
-
-      if (mockResponse.connected) {
-        setNotificationSettings(prev => ({
+      // Получаем данные пользователя
+      const user = tg.initDataUnsafe?.user;
+      if (user) {
+        setTelegramUser(user);
+        // Автоматически устанавливаем имя ребенка на основе имени пользователя
+        setChild(prev => ({
           ...prev,
-          enabled: mockResponse.enabled,
-          time: mockResponse.time,
-          reminderType: mockResponse.type
+          name: user.first_name || 'Малыш'
         }));
       }
-    } catch (error) {
-      setTelegramStatus(prev => ({
-        ...prev,
-        checking: false,
-        error: 'Ошибка подключения к серверу'
-      }));
-    }
-  };
 
-  const connectTelegram = async () => {
-    setTelegramStatus(prev => ({ ...prev, checking: true, error: null }));
-    
-    try {
-      const userId = telegramStatus.userId || generateUserId();
+      // Настраиваем внешний вид
+      tg.setHeaderColor('#ffffff');
+      tg.setBackgroundColor('#f8fafc');
       
-      // Открываем Telegram бота
-      const botUsername = 'razvivayка_bot';
-      const telegramUrl = `https://t.me/${botUsername}?start=${userId}`;
-      window.open(telegramUrl, '_blank');
-      
-      // В реальном приложении здесь была бы проверка подключения
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Симулируем успешное подключение
-      setTelegramStatus({
-        connected: true,
-        checking: false,
-        error: null,
-        userId: userId
+      // Обработчик кнопки "Назад"
+      tg.onEvent('backButtonClicked', () => {
+        if (currentScreen !== 'main') {
+          setCurrentScreen('main');
+          setSelectedActivity(null);
+        }
       });
+
+      // Показываем/скрываем кнопку "Назад"
+      if (currentScreen !== 'main') {
+        tg.BackButton.show();
+      } else {
+        tg.BackButton.hide();
+      }
+    }
+  }, [currentScreen]);
+
+  // Проверяем статус уведомлений после получения данных пользователя
+  useEffect(() => {
+    if (telegramUser) {
+      const timer = setTimeout(() => {
+        checkNotificationStatus();
+      }, 2000);
       
-      setNotificationSettings(prev => ({ ...prev, enabled: true }));
+      return () => clearTimeout(timer);
+    }
+  }, [telegramUser]);
+  
+  // Функции для работы с Telegram Bot
+  const connectToBot = async () => {
+    try {
+      console.log('🔗 Подключение к боту, telegramUser:', telegramUser);
       
+      const response = await fetch('https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/connect', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: telegramUser?.id,
+          username: telegramUser?.username,
+          settings: notificationSettings
+        })
+      });
+
+      const result = await response.json();
+      console.log('📡 Ответ сервера:', result);
+
+      if (response.ok && result.success) {
+        setBotConnected(true);
+        setNotificationSettings(prev => ({ ...prev, enabled: true }));
+        
+        // Показываем соответствующее сообщение
+        let message = 'Уведомления подключены!';
+        if (result.needsBotStart) {
+          message += '\n\nДля получения уведомлений напишите боту /start';
+        }
+        
+        if (window.Telegram?.WebApp) {
+          window.Telegram.WebApp.showAlert(message);
+        } else {
+          alert(message);
+        }
+      } else {
+        throw new Error(result.message || 'Ошибка подключения');
+      }
     } catch (error) {
-      setTelegramStatus(prev => ({
-        ...prev,
-        checking: false,
-        error: 'Не удалось подключиться к Telegram'
-      }));
+      console.error('❌ Ошибка подключения к боту:', error);
+      if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.showAlert('Ошибка подключения к боту: ' + error.message);
+      } else {
+        alert('Ошибка подключения к боту: ' + error.message);
+      }
     }
   };
 
-  const disconnectTelegram = () => {
-    setTelegramStatus({
-      connected: false,
-      checking: false,
-      error: null,
-      userId: null
-    });
-    setNotificationSettings(prev => ({ ...prev, enabled: false }));
-    localStorage.removeItem('telegramUserId');
-  };
-
-  const testNotification = async () => {
-    if (!telegramStatus.connected) {
-      alert('Сначала подключите Telegram бота');
+  const sendTestNotification = async () => {
+    if (!botConnected) {
+      if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.showAlert('Сначала подключитесь к боту!');
+      }
       return;
     }
 
     try {
-      // В реальном приложении здесь был бы API вызов
       const message = getRandomMessage(notificationSettings.reminderType);
       
-      // Симулируем отправку
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      alert(`Тестовое уведомление отправлено в Telegram:\n\n"${message}"`);
+      const response = await fetch('https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/send-notification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: telegramUser?.id,
+          message: message
+        })
+      });
+
+      if (response.ok) {
+        // Добавляем в историю
+        const newNotification = {
+          id: Date.now(),
+          message: message,
+          timestamp: new Date().toISOString(),
+          type: notificationSettings.reminderType,
+          opened: false
+        };
+        
+        setNotificationHistory(prev => [newNotification, ...prev]);
+        
+        if (window.Telegram?.WebApp) {
+          window.Telegram.WebApp.showAlert('Тестовое уведомление отправлено!');
+        }
+      }
     } catch (error) {
-      alert('Ошибка отправки тестового уведомления');
+      console.error('Ошибка отправки уведомления:', error);
     }
   };
 
-  // Проверяем статус Telegram при загрузке
-  useEffect(() => {
-    checkTelegramStatus();
-  }, []);
+  // Функция для создания платежа через Telegram Payments
+  const createTelegramPayment = async () => {
+    if (!window.Telegram?.WebApp) {
+      alert('Эта функция доступна только в Telegram');
+      return;
+    }
 
+    setPaymentStatus('processing');
+    
+    try {
+      // Создаем инвойс через Telegram Bot API
+      const response = await fetch('https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/create-invoice', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: telegramUser?.id,
+          amount: 299,
+          description: 'Премиум подписка Развивайка',
+          payload: `premium_${Date.now()}`
+        })
+      });
+
+      if (response.ok) {
+        const { invoiceUrl } = await response.json();
+        
+        // Открываем инвойс в Telegram
+        window.Telegram.WebApp.openInvoice(invoiceUrl, (status) => {
+          if (status === 'paid') {
+            setPaymentStatus('success');
+            setIsPremium(true);
+            setTimeout(() => {
+              setShowPayment(false);
+              setPaymentStatus('idle');
+            }, 2000);
+          } else {
+            setPaymentStatus('error');
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Ошибка при создании платежа:', error);
+      setPaymentStatus('error');
+    }
+  };
+
+  // Альтернативный способ оплаты через Telegram Stars
+  const createStarsPayment = async () => {
+    if (!window.Telegram?.WebApp) {
+      alert('Эта функция доступна только в Telegram');
+      return;
+    }
+
+    setPaymentStatus('processing');
+    
+    try {
+      // Оплата через Telegram Stars
+      const response = await fetch('/api/telegram/create-stars-invoice', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: telegramUser?.id,
+          stars: 50, // Количество звезд
+          description: 'Премиум подписка Развивайка',
+          payload: `premium_stars_${Date.now()}`
+        })
+      });
+
+      if (response.ok) {
+        const { invoiceUrl } = await response.json();
+        
+        window.Telegram.WebApp.openInvoice(invoiceUrl, (status) => {
+          if (status === 'paid') {
+            setPaymentStatus('success');
+            setIsPremium(true);
+            setTimeout(() => {
+              setShowPayment(false);
+              setPaymentStatus('idle');
+            }, 2000);
+          } else {
+            setPaymentStatus('error');
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Ошибка при создании платежа:', error);
+      setPaymentStatus('error');
+    }
+  };
+
+  // Симуляция успешного платежа
+  const simulatePaymentSuccess = () => {
+    setPaymentStatus('success');
+    setIsPremium(true);
+    setTimeout(() => {
+      setShowPayment(false);
+      setPaymentStatus('idle');
+    }, 2000);
+  };
+
+  // Утилиты
   const getAgeText = (age) => {
     if (age === 1) return 'год';
     if (age < 5) return 'года';
@@ -550,39 +619,6 @@ const ChildDevelopmentApp = () => {
     return colors[type] || 'bg-gray-100 text-gray-800';
   };
 
-  const getSkillName = (key) => {
-    const names = {
-      motor: 'Мелкая моторика',
-      speech: 'Речь и коммуникация', 
-      logic: 'Логическое мышление',
-      creativity: 'Творческие способности',
-      development: 'Общее развитие'
-    };
-    return names[key];
-  };
-
-  const getSkillColor = (key) => {
-    const colors = {
-      motor: 'bg-blue-500',
-      speech: 'bg-green-500',
-      logic: 'bg-purple-500', 
-      creativity: 'bg-pink-500',
-      development: 'bg-orange-500'
-    };
-    return colors[key];
-  };
-
-  const getCategoryInfo = (categoryId) => {
-    return libraryContent.categories.find(cat => cat.id === categoryId);
-  };
-
-  const getFilteredArticles = () => {
-    if (selectedCategory === 'all') {
-      return libraryContent.articles;
-    }
-    return libraryContent.articles.filter(article => article.category === selectedCategory);
-  };
-
   const getFilteredActivities = () => {
     const activities = activitiesDatabase[child.age] || [];
     if (selectedCategory === 'all') {
@@ -608,9 +644,119 @@ const ChildDevelopmentApp = () => {
       .replace('{name}', child.name)
       .replace('{streak}', child.streak);
   };
-  // Продолжение компонента ChildDevelopmentApp
 
-  // Главный экран
+  // Модальное окно оплаты для Telegram
+  const PaymentModal = () => {
+    if (!showPayment) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+          <div className="text-center">
+            <div className="bg-gradient-to-r from-purple-600 to-pink-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-white text-2xl">👑</span>
+            </div>
+            
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Премиум подписка</h2>
+            <p className="text-gray-600 mb-6">Разблокируйте все возможности приложения</p>
+            
+            <div className="bg-gray-50 rounded-lg p-4 mb-6">
+              <h3 className="font-semibold text-gray-800 mb-3">Что входит в премиум:</h3>
+              <ul className="text-sm text-gray-600 space-y-2">
+                <li className="flex items-center">
+                  <span className="text-green-500 mr-2">✓</span>
+                  Все активности без ограничений
+                </li>
+                <li className="flex items-center">
+                  <span className="text-green-500 mr-2">✓</span>
+                  Персональные программы развития
+                </li>
+                <li className="flex items-center">
+                  <span className="text-green-500 mr-2">✓</span>
+                  Подробная аналитика прогресса
+                </li>
+                <li className="flex items-center">
+                  <span className="text-green-500 mr-2">✓</span>
+                  Эксклюзивные материалы
+                </li>
+                <li className="flex items-center">
+                  <span className="text-green-500 mr-2">✓</span>
+                  Приоритетная поддержка
+                </li>
+              </ul>
+            </div>
+            
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 mb-6">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-600">Стоимость:</span>
+                <span className="text-2xl font-bold text-purple-600">299₽/мес</span>
+              </div>
+              <p className="text-sm text-gray-500 mt-1">или 50 ⭐ Telegram Stars</p>
+            </div>
+            
+            {paymentStatus === 'processing' && (
+              <div className="mb-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
+                <p className="text-sm text-gray-600 mt-2">Обработка платежа...</p>
+              </div>
+            )}
+            
+            {paymentStatus === 'success' && (
+              <div className="mb-4 p-4 bg-green-50 rounded-lg">
+                <div className="text-green-500 text-2xl mb-2">✓</div>
+                <p className="text-green-800 font-semibold">Платеж успешно завершен!</p>
+                <p className="text-sm text-green-600">Премиум активирован</p>
+              </div>
+            )}
+            
+            {paymentStatus === 'error' && (
+              <div className="mb-4 p-4 bg-red-50 rounded-lg">
+                <div className="text-red-500 text-2xl mb-2">✗</div>
+                <p className="text-red-800 font-semibold">Ошибка платежа</p>
+                <p className="text-sm text-red-600">Попробуйте еще раз</p>
+              </div>
+            )}
+            
+            <div className="space-y-3">
+              <button
+                onClick={createTelegramPayment}
+                disabled={paymentStatus === 'processing'}
+                className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              >
+                <span className="mr-2">💳</span>
+                {paymentStatus === 'processing' ? 'Обработка...' : 'Оплатить картой'}
+              </button>
+              
+              <button
+                onClick={createStarsPayment}
+                disabled={paymentStatus === 'processing'}
+                className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-white py-3 rounded-lg font-medium hover:from-yellow-600 hover:to-yellow-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              >
+                <span className="mr-2">⭐</span>
+                {paymentStatus === 'processing' ? 'Обработка...' : 'Оплатить Stars'}
+              </button>
+              
+              <button
+                onClick={simulatePaymentSuccess}
+                className="w-full bg-green-500 text-white py-3 rounded-lg font-medium hover:bg-green-600 transition-colors"
+              >
+                Симулировать успешный платеж (для теста)
+              </button>
+              
+              <button
+                onClick={() => setShowPayment(false)}
+                className="w-full bg-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-400 transition-colors"
+              >
+                Отмена
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Главный экран с интеграцией Telegram
   if (currentScreen === 'main') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
@@ -619,6 +765,11 @@ const ChildDevelopmentApp = () => {
             <div>
               <h1 className="text-2xl font-bold text-gray-800">Привет, {child.name}! 👋</h1>
               <p className="text-gray-600">Возраст: {child.age} {getAgeText(child.age)}</p>
+              {telegramUser && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Telegram: @{telegramUser.username || telegramUser.first_name}
+                </p>
+              )}
             </div>
             <div className="flex items-center space-x-3">
               <div className="flex items-center bg-orange-100 px-3 py-1 rounded-full">
@@ -629,7 +780,7 @@ const ChildDevelopmentApp = () => {
                 className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors relative"
               >
                 <span className="text-xl">🔔</span>
-                {telegramStatus.connected && notificationSettings.enabled && (
+                {botConnected && (
                   <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full"></span>
                 )}
               </button>
@@ -643,12 +794,30 @@ const ChildDevelopmentApp = () => {
           </div>
         </div>
 
-        {/* Telegram Notification Status */}
-        {telegramStatus.connected && notificationSettings.enabled && (
-          <div className="mx-4 mt-4 bg-gradient-to-r from-green-500 to-blue-600 rounded-lg p-4 text-white">
+        {/* Telegram Bot Connection */}
+        {!botConnected && (
+          <div className="mx-4 mt-4 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-4 text-white">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-bold flex items-center">📱 Telegram уведомления активны</h3>
+                <h3 className="font-bold flex items-center">🤖 Подключить уведомления</h3>
+                <p className="text-sm opacity-90">Бот будет напоминать о занятиях в Telegram</p>
+              </div>
+              <button 
+                onClick={connectToBot}
+                className="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-30 transition-colors"
+              >
+                Подключить
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Notification Status */}
+        {botConnected && (
+          <div className="mx-4 mt-4 bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-4 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-bold flex items-center">✅ Уведомления активны</h3>
                 <p className="text-sm opacity-90">Следующее напоминание в {notificationSettings.time}</p>
               </div>
               <button 
@@ -656,23 +825,6 @@ const ChildDevelopmentApp = () => {
                 className="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-30 transition-colors"
               >
                 Настроить
-              </button>
-            </div>
-          </div>
-        )}
-
-        {!telegramStatus.connected && (
-          <div className="mx-4 mt-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg p-4 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-bold flex items-center">📲 Подключите Telegram бота</h3>
-                <p className="text-sm opacity-90">Получайте напоминания о занятиях в Telegram</p>
-              </div>
-              <button 
-                onClick={() => setCurrentScreen('notifications')}
-                className="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-30 transition-colors"
-              >
-                Подключить
               </button>
             </div>
           </div>
@@ -686,7 +838,7 @@ const ChildDevelopmentApp = () => {
                 <p className="text-sm opacity-90">Открой все активности и возможности</p>
               </div>
               <button 
-                onClick={() => setIsPremium(true)}
+                onClick={() => setShowPayment(true)}
                 className="bg-white text-purple-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
               >
                 Подключить
@@ -775,11 +927,13 @@ const ChildDevelopmentApp = () => {
             </div>
           </div>
         </div>
+
+        <PaymentModal />
       </div>
     );
   }
 
-  // Экран настроек уведомлений с интеграцией Telegram
+  // Экран настроек уведомлений через Telegram Bot
   if (currentScreen === 'notifications') {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -792,272 +946,203 @@ const ChildDevelopmentApp = () => {
               <span className="text-2xl">←</span>
             </button>
             <div>
-              <h1 className="text-xl font-bold text-gray-800">Telegram Уведомления</h1>
-              <p className="text-sm text-gray-600">Настройка напоминаний о занятиях</p>
+              <h1 className="text-xl font-bold text-gray-800">Уведомления</h1>
+              <p className="text-sm text-gray-600">Настройка напоминаний через Telegram</p>
             </div>
           </div>
         </div>
 
         <div className="px-4 py-6">
-          {/* Telegram Connection Status */}
+          {/* Bot Connection Status */}
           <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-lg font-bold text-gray-800 flex items-center">
-                  📱 Telegram Бот
-                  {telegramStatus.connected && <span className="ml-2 text-green-500">✓</span>}
-                </h2>
-                <p className="text-sm text-gray-600">
-                  {telegramStatus.connected 
-                    ? 'Бот подключен и готов отправлять уведомления' 
-                    : 'Подключите бота для получения уведомлений в Telegram'
-                  }
-                </p>
+                <h2 className="text-lg font-bold text-gray-800">Telegram Bot</h2>
+                <p className="text-sm text-gray-600">@{notificationSettings.botUsername}</p>
               </div>
-              {telegramStatus.checking && (
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-              )}
+              <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                botConnected ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+              }`}>
+                {botConnected ? 'Подключен' : 'Не подключен'}
+              </div>
             </div>
 
-            {telegramStatus.error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-                <p className="text-red-700 text-sm">{telegramStatus.error}</p>
-              </div>
-            )}
-
-            {!telegramStatus.connected ? (
+            {!botConnected ? (
               <div className="space-y-4">
                 <div className="bg-blue-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-blue-900 mb-2">Как подключить:</h3>
-                  <ol className="text-blue-800 text-sm space-y-1">
-                    <li>1. Нажмите кнопку "Подключить Telegram"</li>
-                    <li>2. Откроется бот в Telegram</li>
-                    <li>3. Нажмите "Запустить" или отправьте /start</li>
-                    <li>4. Настройте уведомления в боте</li>
+                  <h3 className="font-semibold text-blue-900 mb-2">Как подключить уведомления:</h3>
+                  <ol className="text-sm text-blue-800 space-y-1">
+                    <li>1. Найдите бота @{notificationSettings.botUsername} в Telegram</li>
+                    <li>2. Нажмите /start</li>
+                    <li>3. Вернитесь в приложение и нажмите "Подключить"</li>
                   </ol>
                 </div>
-                <button 
-                  onClick={connectTelegram}
-                  disabled={telegramStatus.checking}
-                  className="w-full bg-blue-500 text-white py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors disabled:opacity-50"
+                
+                <button
+                  onClick={connectToBot}
+                  className="w-full bg-blue-500 text-white py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors"
                 >
-                  {telegramStatus.checking ? 'Подключение...' : '📱 Подключить Telegram'}
+                  Подключить бота
                 </button>
               </div>
             ) : (
               <div className="space-y-4">
                 <div className="bg-green-50 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-semibold text-green-900">✅ Telegram подключен</h3>
-                      <p className="text-green-700 text-sm">ID: {telegramStatus.userId}</p>
-                    </div>
-                    <button 
-                      onClick={disconnectTelegram}
-                      className="text-red-600 hover:text-red-700 text-sm underline"
-                    >
-                      Отключить
-                    </button>
-                  </div>
+                  <h3 className="font-semibold text-green-900 mb-2">✅ Бот успешно подключен!</h3>
+                  <p className="text-sm text-green-800">
+                    Теперь вы будете получать напоминания о занятиях прямо в Telegram
+                  </p>
                 </div>
-                
-                <div className="grid grid-cols-2 gap-3">
-                  <button 
-                    onClick={testNotification}
-                    className="bg-purple-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-purple-600 transition-colors"
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Время напоминания
+                  </label>
+                  <input 
+                    type="time" 
+                    value={notificationSettings.time}
+                    onChange={(e) => setNotificationSettings({
+                      ...notificationSettings, 
+                      time: e.target.value
+                    })}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Частота напоминаний
+                  </label>
+                  <select 
+                    value={notificationSettings.frequency}
+                    onChange={(e) => setNotificationSettings({
+                      ...notificationSettings, 
+                      frequency: e.target.value
+                    })}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    🧪 Тест уведомления
-                  </button>
-                  <button 
-                    onClick={() => window.open('https://t.me/razvivayка_bot', '_blank')}
-                    className="bg-gray-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-gray-600 transition-colors"
-                  >
-                    💬 Открыть бота
-                  </button>
+                    <option value="daily">Ежедневно</option>
+                    <option value="weekly">Еженедельно</option>
+                    <option value="custom">Выбрать дни</option>
+                  </select>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Notification Settings - только если Telegram подключен */}
-          {telegramStatus.connected && (
-            <>
-              {/* Main Toggle */}
-              <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h2 className="text-lg font-bold text-gray-800">Уведомления</h2>
-                    <p className="text-sm text-gray-600">Включить напоминания о занятиях</p>
-                  </div>
-                  <button 
+          {/* Notification Type */}
+          {botConnected && (
+            <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+              <h2 className="text-lg font-bold text-gray-800 mb-4">Тип сообщений</h2>
+              <div className="space-y-3">
+                {[
+                  { 
+                    value: 'motivational', 
+                    label: 'Мотивирующие', 
+                    description: 'Вдохновляющие сообщения для занятий',
+                    example: getRandomMessage('daily')
+                  },
+                  { 
+                    value: 'simple', 
+                    label: 'Простые', 
+                    description: 'Краткие напоминания о времени занятий',
+                    example: `Время для занятий с ${child.name}!`
+                  },
+                  { 
+                    value: 'streak', 
+                    label: 'С streak', 
+                    description: 'Акцент на достижениях и регулярности',
+                    example: getRandomMessage('streak')
+                  }
+                ].map((type) => (
+                  <button
+                    key={type.value}
                     onClick={() => setNotificationSettings({
-                      ...notificationSettings, 
-                      enabled: !notificationSettings.enabled
+                      ...notificationSettings,
+                      reminderType: type.value
                     })}
-                    className={`w-12 h-6 rounded-full p-1 transition-colors ${
-                      notificationSettings.enabled ? 'bg-green-500' : 'bg-gray-300'
+                    className={`w-full p-4 rounded-lg border-2 transition-colors text-left ${
+                      notificationSettings.reminderType === type.value
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <div className={`w-4 h-4 rounded-full bg-white transition-transform ${
-                      notificationSettings.enabled ? 'translate-x-6' : 'translate-x-0'
-                    }`}></div>
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-semibold text-gray-800">{type.label}</h3>
+                      {notificationSettings.reminderType === type.value && (
+                        <span className="text-blue-500">✓</span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-600 mb-2">{type.description}</p>
+                    <p className="text-xs text-gray-500 italic">"{type.example}"</p>
                   </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Test Notification */}
+          {botConnected && (
+            <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+              <h2 className="text-lg font-bold text-gray-800 mb-4">Тестовое уведомление</h2>
+              <p className="text-sm text-gray-600 mb-4">
+                Отправьте тестовое сообщение в Telegram
+              </p>
+              
+              <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg mb-4">
+                <div className="flex items-center mb-2">
+                  <span className="text-blue-500 mr-2">🤖</span>
+                  <span className="font-semibold text-blue-900">Развивайка Бот</span>
+                  <span className="text-xs text-blue-600 ml-auto">{notificationSettings.time}</span>
                 </div>
-
-                {notificationSettings.enabled && (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Время напоминания
-                      </label>
-                      <input 
-                        type="time" 
-                        value={notificationSettings.time}
-                        onChange={(e) => setNotificationSettings({
-                          ...notificationSettings, 
-                          time: e.target.value
-                        })}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Частота напоминаний
-                      </label>
-                      <select 
-                        value={notificationSettings.frequency}
-                        onChange={(e) => setNotificationSettings({
-                          ...notificationSettings, 
-                          frequency: e.target.value
-                        })}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      >
-                        <option value="daily">Ежедневно</option>
-                        <option value="weekly">Еженедельно</option>
-                        <option value="custom">Выбрать дни</option>
-                      </select>
-                    </div>
-                  </div>
-                )}
+                <p className="text-blue-800">
+                  {getRandomMessage(notificationSettings.reminderType)}
+                </p>
               </div>
 
-              {/* Notification Type */}
-              {notificationSettings.enabled && (
-                <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
-                  <h2 className="text-lg font-bold text-gray-800 mb-4">Тип сообщений</h2>
-                  <div className="space-y-3">
-                    {[
-                      { 
-                        value: 'motivational', 
-                        label: 'Мотивирующие', 
-                        description: 'Вдохновляющие сообщения для занятий',
-                        example: getRandomMessage('daily')
-                      },
-                      { 
-                        value: 'simple', 
-                        label: 'Простые', 
-                        description: 'Краткие напоминания о времени занятий',
-                        example: `Время для занятий с ${child.name}!`
-                      },
-                      { 
-                        value: 'streak', 
-                        label: 'С streak', 
-                        description: 'Акцент на достижениях и регулярности',
-                        example: getRandomMessage('streak')
-                      }
-                    ].map((type) => (
-                      <button
-                        key={type.value}
-                        onClick={() => setNotificationSettings({
-                          ...notificationSettings,
-                          reminderType: type.value
-                        })}
-                        className={`w-full p-4 rounded-lg border-2 transition-colors text-left ${
-                          notificationSettings.reminderType === type.value
-                            ? 'border-blue-500 bg-blue-50'
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <h3 className="font-semibold text-gray-800">{type.label}</h3>
-                          {notificationSettings.reminderType === type.value && (
-                            <span className="text-blue-500">✓</span>
-                          )}
-                        </div>
-                        <p className="text-sm text-gray-600 mb-2">{type.description}</p>
-                        <p className="text-xs text-gray-500 italic">"{type.example}"</p>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Preview */}
-              {notificationSettings.enabled && (
-                <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
-                  <h2 className="text-lg font-bold text-gray-800 mb-4">Предварительный просмотр</h2>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Так будет выглядеть ваше уведомление в Telegram
-                  </p>
-                  
-                  <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg mb-4">
-                    <div className="flex items-center mb-2">
-                      <span className="text-blue-500 mr-2">🤖</span>
-                      <span className="font-semibold text-blue-900">Развивайка Бот</span>
-                      <span className="text-xs text-blue-600 ml-auto">{notificationSettings.time}</span>
-                    </div>
-                    <p className="text-blue-800">
-                      {getRandomMessage(notificationSettings.reminderType)}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </>
+              <button 
+                onClick={sendTestNotification}
+                className="w-full bg-blue-500 text-white py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors"
+              >
+                Отправить тестовое уведомление
+              </button>
+            </div>
           )}
 
           {/* Notification History */}
           <div className="bg-white rounded-xl p-6 shadow-sm">
             <h2 className="text-lg font-bold text-gray-800 mb-4">История уведомлений</h2>
-            {notificationHistory.length > 0 ? (
-              <div className="space-y-3">
-                {notificationHistory.map((notification) => (
-                  <div 
-                    key={notification.id} 
-                    className={`p-3 rounded-lg ${
-                      notification.opened ? 'bg-gray-50' : 'bg-blue-50'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getNotificationTypeColor(notification.type)}`}>
-                        {notification.type === 'daily' ? 'Ежедневное' : 
-                         notification.type === 'streak' ? 'Streak' : 'Другое'}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {new Date(notification.timestamp).toLocaleString('ru-RU')}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-700">{notification.message}</p>
-                    {!notification.opened && (
-                      <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mt-2"></span>
-                    )}
+            <div className="space-y-3">
+              {notificationHistory.map((notification) => (
+                <div 
+                  key={notification.id} 
+                  className={`p-3 rounded-lg ${
+                    notification.opened ? 'bg-gray-50' : 'bg-blue-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getNotificationTypeColor(notification.type)}`}>
+                      {notification.type === 'daily' ? 'Ежедневное' : 
+                       notification.type === 'streak' ? 'Streak' : 'Другое'}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {new Date(notification.timestamp).toLocaleString('ru-RU')}
+                    </span>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <span className="text-4xl mb-4 block">📝</span>
-                <p>История уведомлений пуста</p>
-                <p className="text-sm">Подключите Telegram бота для получения уведомлений</p>
-              </div>
-            )}
+                  <p className="text-sm text-gray-700">{notification.message}</p>
+                  {!notification.opened && (
+                    <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mt-2"></span>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
-  // Простая заглушка для других экранов
+  // Остальные экраны (заглушка)
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow-sm px-4 py-4 sticky top-0 z-10">
