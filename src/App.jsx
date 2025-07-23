@@ -14,86 +14,6 @@ const ChildDevelopmentApp = () => {
     age: 2,
     streak: 7
   });
-
-  // Telegram Mini App integration
-  useEffect(() => {
-    // Инициализация Telegram Web App
-    if (window.Telegram && window.Telegram.WebApp) {
-      const tg = window.Telegram.WebApp;
-      tg.ready();
-      
-      // Получаем данные пользователя
-      const user = tg.initDataUnsafe?.user;
-      if (user) {
-        setTelegramUser(user);
-        // Автоматически устанавливаем имя ребенка на основе имени пользователя
-        setChild(prev => ({
-          ...prev,
-          name: user.first_name || 'Малыш'
-        }));
-      }
-
-      // Настраиваем внешний вид
-      tg.setHeaderColor('#ffffff');
-      tg.setBackgroundColor('#f8fafc');
-      
-      // Обработчик кнопки "Назад"
-      tg.onEvent('backButtonClicked', () => {
-        if (currentScreen !== 'main') {
-          setCurrentScreen('main');
-          setSelectedActivity(null);
-        }
-      });
-
-      // Показываем/скрываем кнопку "Назад"
-      if (currentScreen !== 'main') {
-        tg.BackButton.show();
-      } else {
-        tg.BackButton.hide();
-      }
-    }
-  }, [currentScreen]);
-
-// Проверяем статус уведомлений при загрузке
-const checkNotificationStatus = async () => {
-  if (telegramUser?.id) {
-    try {
-      console.log('🔍 Проверяем статус уведомлений для:', telegramUser.id);
-      
-      const response = await fetch(`https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/status/${telegramUser.id}`);
-      
-      if (response.ok) {
-        const status = await response.json();
-        console.log('📊 Статус с сервера:', status);
-        
-        if (status.connected) {
-          console.log('✅ Уведомления уже настроены');
-          setBotConnected(true);
-          setNotificationSettings(prev => ({
-            ...prev,
-            enabled: status.enabled,
-            time: status.time || prev.time,
-            reminderType: status.type || prev.reminderType
-          }));
-        } else {
-          console.log('❌ Уведомления не настроены');
-          setBotConnected(false);
-        }
-      } else {
-        console.log('⚠️ Ошибка ответа сервера:', response.status);
-        setBotConnected(false);
-      }
-    } catch (error) {
-      console.error('❌ Ошибка проверки статуса:', error);
-      setBotConnected(false);
-    }
-  }
-};
-
-// Проверяем статус через 2 секунды после получения данных пользователя
-if (telegramUser) {
-  setTimeout(checkNotificationStatus, 2000);
-}
   
   // Настройки уведомлений через Telegram Bot
   const [notificationSettings, setNotificationSettings] = useState({
@@ -382,53 +302,139 @@ if (telegramUser) {
     }
   ]);
 
-  // Функции для работы с Telegram Bot
-const connectToBot = async () => {
-  try {
-    console.log('🔗 Подключение к боту, telegramUser:', telegramUser);
-    
-    const response = await fetch('https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/connect', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        userId: telegramUser?.id,
-        username: telegramUser?.username,
-        settings: notificationSettings
-      })
-    });
-
-    const result = await response.json();
-    console.log('📡 Ответ сервера:', result);
-
-    if (response.ok && result.success) {
-      setBotConnected(true);
-      setNotificationSettings(prev => ({ ...prev, enabled: true }));
-      
-      // Показываем соответствующее сообщение
-      let message = 'Уведомления подключены!';
-      if (result.needsBotStart) {
-        message += '\n\nДля получения уведомлений напишите боту /start';
+  // Функция для проверки статуса уведомлений
+  const checkNotificationStatus = async () => {
+    if (telegramUser?.id) {
+      try {
+        console.log('🔍 Проверяем статус уведомлений для:', telegramUser.id);
+        
+        const response = await fetch(`https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/status/${telegramUser.id}`);
+        
+        if (response.ok) {
+          const status = await response.json();
+          console.log('📊 Статус с сервера:', status);
+          
+          if (status.connected) {
+            console.log('✅ Уведомления уже настроены');
+            setBotConnected(true);
+            setNotificationSettings(prev => ({
+              ...prev,
+              enabled: status.enabled,
+              time: status.time || prev.time,
+              reminderType: status.type || prev.reminderType
+            }));
+          } else {
+            console.log('❌ Уведомления не настроены');
+            setBotConnected(false);
+          }
+        } else {
+          console.log('⚠️ Ошибка ответа сервера:', response.status);
+          setBotConnected(false);
+        }
+      } catch (error) {
+        console.error('❌ Ошибка проверки статуса:', error);
+        setBotConnected(false);
       }
+    }
+  };
+
+  // Telegram Mini App integration
+  useEffect(() => {
+    // Инициализация Telegram Web App
+    if (window.Telegram && window.Telegram.WebApp) {
+      const tg = window.Telegram.WebApp;
+      tg.ready();
       
-      if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.showAlert(message);
+      // Получаем данные пользователя
+      const user = tg.initDataUnsafe?.user;
+      if (user) {
+        setTelegramUser(user);
+        // Автоматически устанавливаем имя ребенка на основе имени пользователя
+        setChild(prev => ({
+          ...prev,
+          name: user.first_name || 'Малыш'
+        }));
+      }
+
+      // Настраиваем внешний вид
+      tg.setHeaderColor('#ffffff');
+      tg.setBackgroundColor('#f8fafc');
+      
+      // Обработчик кнопки "Назад"
+      tg.onEvent('backButtonClicked', () => {
+        if (currentScreen !== 'main') {
+          setCurrentScreen('main');
+          setSelectedActivity(null);
+        }
+      });
+
+      // Показываем/скрываем кнопку "Назад"
+      if (currentScreen !== 'main') {
+        tg.BackButton.show();
       } else {
-        alert(message);
+        tg.BackButton.hide();
       }
-    } else {
-      throw new Error(result.message || 'Ошибка подключения');
     }
-  } catch (error) {
-    console.error('❌ Ошибка подключения к боту:', error);
-    if (window.Telegram?.WebApp) {
-      window.Telegram.WebApp.showAlert('Ошибка подключения к боту: ' + error.message);
-    } else {
-      alert('Ошибка подключения к боту: ' + error.message);
+  }, [currentScreen]);
+
+  // Проверяем статус уведомлений после получения данных пользователя
+  useEffect(() => {
+    if (telegramUser) {
+      const timer = setTimeout(() => {
+        checkNotificationStatus();
+      }, 2000);
+      
+      return () => clearTimeout(timer);
     }
-  }
-};
+  }, [telegramUser]);
+  
+  // Функции для работы с Telegram Bot
+  const connectToBot = async () => {
+    try {
+      console.log('🔗 Подключение к боту, telegramUser:', telegramUser);
+      
+      const response = await fetch('https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/connect', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: telegramUser?.id,
+          username: telegramUser?.username,
+          settings: notificationSettings
+        })
+      });
+
+      const result = await response.json();
+      console.log('📡 Ответ сервера:', result);
+
+      if (response.ok && result.success) {
+        setBotConnected(true);
+        setNotificationSettings(prev => ({ ...prev, enabled: true }));
+        
+        // Показываем соответствующее сообщение
+        let message = 'Уведомления подключены!';
+        if (result.needsBotStart) {
+          message += '\n\nДля получения уведомлений напишите боту /start';
+        }
+        
+        if (window.Telegram?.WebApp) {
+          window.Telegram.WebApp.showAlert(message);
+        } else {
+          alert(message);
+        }
+      } else {
+        throw new Error(result.message || 'Ошибка подключения');
+      }
+    } catch (error) {
+      console.error('❌ Ошибка подключения к боту:', error);
+      if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.showAlert('Ошибка подключения к боту: ' + error.message);
+      } else {
+        alert('Ошибка подключения к боту: ' + error.message);
+      }
+    }
+  };
 
   const sendTestNotification = async () => {
     if (!botConnected) {
@@ -922,201 +928,6 @@ const connectToBot = async () => {
           </div>
         </div>
 
-        <PaymentModal />
-      </div>
-    );
-  }
-
-  // Экран активностей
-  if (currentScreen === 'activities') {
-    const categories = getActivityCategories();
-    const filteredActivities = getFilteredActivities();
-    const freeActivities = filteredActivities.filter(a => !a.premium);
-    const premiumActivities = filteredActivities.filter(a => a.premium);
-
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white shadow-sm px-4 py-4 sticky top-0 z-10">
-          <div className="flex items-center">
-            <button 
-              onClick={() => {
-                setSelectedActivity(null);
-                setCurrentScreen('main');
-              }}
-              className="mr-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
-            >
-              <span className="text-2xl">←</span>
-            </button>
-            <div>
-              <h1 className="text-xl font-bold text-gray-800">Активности</h1>
-              <p className="text-sm text-gray-600">{child.age} {getAgeText(child.age)} • {filteredActivities.length} активностей</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="px-4 py-6">
-          {/* Categories Filter */}
-          <div className="mb-6">
-            <h2 className="text-lg font-bold text-gray-800 mb-4">Категории</h2>
-            <div className="flex gap-2 overflow-x-auto pb-2">
-              <button
-                onClick={() => setSelectedCategory('all')}
-                className={`px-4 py-2 rounded-full whitespace-nowrap transition-all ${
-                  selectedCategory === 'all'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-white text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                Все ({(activitiesDatabase[child.age] || []).length})
-              </button>
-              {categories.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => setSelectedCategory(category.id)}
-                  className={`px-4 py-2 rounded-full whitespace-nowrap transition-all ${
-                    selectedCategory === category.id
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-white text-gray-600 hover:bg-gray-100'
-                  }`}
-                >
-                  {category.name} ({category.count})
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Free Activities */}
-          {freeActivities.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                <span className="text-green-500 mr-2">🆓</span>
-                Бесплатные активности ({freeActivities.length})
-              </h2>
-              <div className="space-y-3">
-                {freeActivities.map((activity) => (
-                  <div key={activity.id} className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center mb-2">
-                          <span className="text-2xl mr-3">{activity.icon}</span>
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-gray-800">{activity.title}</h3>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(activity.category)}`}>
-                                {activity.category}
-                              </span>
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(activity.difficulty)}`}>
-                                {activity.difficulty}
-                              </span>
-                              <span className="text-xs text-gray-500 flex items-center">
-                                ⏱️ {activity.duration}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <p className="text-sm text-gray-600 ml-11 mb-2">{activity.description}</p>
-                        <p className="text-xs text-gray-500 ml-11">Возраст: {activity.ageRange}</p>
-                      </div>
-                      <div className="ml-4 flex flex-col gap-2">
-                        <button 
-                          onClick={() => setSelectedActivity(activity)}
-                          className="bg-blue-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-600 transition-colors text-sm"
-                        >
-                          Подробнее
-                        </button>
-                        <button className="bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition-colors text-sm">
-                          Начать
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Premium Activities */}
-          {premiumActivities.length > 0 && (
-            <div className="mb-6">
-              <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                <span className="text-yellow-500 mr-2">👑</span>
-                Премиум активности ({premiumActivities.length})
-              </h2>
-              <div className="space-y-3">
-                {premiumActivities.map((activity) => (
-                  <div key={activity.id} className={`bg-white rounded-xl p-4 shadow-sm ${!isPremium ? 'opacity-75' : 'hover:shadow-md transition-shadow'}`}>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center mb-2">
-                          <span className="text-2xl mr-3">{activity.icon}</span>
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-gray-800 flex items-center">
-                              {activity.title}
-                              {!isPremium && <span className="ml-2 text-gray-400">🔒</span>}
-                            </h3>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(activity.category)}`}>
-                                {activity.category}
-                              </span>
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(activity.difficulty)}`}>
-                                {activity.difficulty}
-                              </span>
-                              <span className="text-xs text-gray-500 flex items-center">
-                                ⏱️ {activity.duration}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <p className="text-sm text-gray-600 ml-11 mb-2">{activity.description}</p>
-                        <p className="text-xs text-gray-500 ml-11">Возраст: {activity.ageRange}</p>
-                      </div>
-                      <div className="ml-4 flex flex-col gap-2">
-                        <button 
-                          onClick={() => isPremium ? setSelectedActivity(activity) : setShowPayment(true)}
-                          className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
-                            isPremium 
-                              ? 'bg-blue-500 text-white hover:bg-blue-600' 
-                              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                          }`}
-                        >
-                          {isPremium ? 'Подробнее' : 'Премиум'}
-                        </button>
-                        <button 
-                          onClick={() => !isPremium && setShowPayment(true)}
-                          className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
-                            isPremium 
-                              ? 'bg-purple-500 text-white hover:bg-purple-600' 
-                              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                          }`}
-                          disabled={!isPremium}
-                        >
-                          {isPremium ? 'Начать' : 'Премиум'}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Upgrade prompt for non-premium users */}
-          {!isPremium && premiumActivities.length > 0 && (
-            <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-6 text-white text-center">
-              <h3 className="text-lg font-bold mb-2">🚀 Разблокируй все активности!</h3>
-              <p className="text-sm opacity-90 mb-4">
-                Получи доступ к {premiumActivities.length} премиум активностям с детальными инструкциями и материалами
-              </p>
-              <button 
-                onClick={() => setShowPayment(true)}
-                className="bg-white text-purple-600 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors"
-              >
-                Подключить премиум - 299₽/мес
-              </button>
-            </div>
-          )}
-        </div>
-        
         <PaymentModal />
       </div>
     );
