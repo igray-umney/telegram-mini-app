@@ -1814,6 +1814,537 @@ const ChildDevelopmentApp = () => {
       </div>
     );
   }
+
+// Экран библиотеки
+  if (currentScreen === 'library') {
+    // Добавляем библиотечный контент, если его нет в состоянии
+    const libraryContent = {
+      categories: [
+        { id: 'development', name: 'Развитие', icon: '🧠', count: 23 },
+        { id: 'health', name: 'Здоровье', icon: '🏥', count: 18 },
+        { id: 'education', name: 'Обучение', icon: '📖', count: 31 },
+        { id: 'psychology', name: 'Психология', icon: '💭', count: 15 },
+        { id: 'nutrition', name: 'Питание', icon: '🍎', count: 12 },
+        { id: 'safety', name: 'Безопасность', icon: '🛡️', count: 9 }
+      ],
+      articles: [
+        {
+          id: 1,
+          title: 'Как развивать речь у ребенка 2-3 лет',
+          description: 'Практические советы для развития речевых навыков в раннем возрасте',
+          readTime: '5 мин',
+          category: 'development',
+          premium: false,
+          author: 'Логопед Анна Петрова',
+          rating: 4.8,
+          views: 1247
+        },
+        {
+          id: 2,
+          title: 'Лучшие игры для развития мелкой моторики',
+          description: 'Простые упражнения и игры для укрепления мышц рук и пальцев',
+          readTime: '7 мин',
+          category: 'development',
+          premium: false,
+          author: 'Педиатр Мария Иванова',
+          rating: 4.9,
+          views: 987
+        },
+        {
+          id: 3,
+          title: 'Подготовка к школе: чек-лист для родителей',
+          description: 'Что должен уметь ребенок перед поступлением в первый класс',
+          readTime: '10 мин',
+          category: 'education',
+          premium: true,
+          author: 'Педагог Ольга Волкова',
+          rating: 4.9,
+          views: 1543
+        },
+        {
+          id: 4,
+          title: 'Детские страхи: как помочь ребенку',
+          description: 'Работаем с типичными страхами детей разного возраста',
+          readTime: '6 мин',
+          category: 'psychology',
+          premium: true,
+          author: 'Психолог Дмитрий Козлов',
+          rating: 4.6,
+          views: 445
+        },
+        {
+          id: 5,
+          title: 'Здоровое питание для дошкольников',
+          description: 'Составляем сбалансированное меню для детей 3-6 лет',
+          readTime: '8 мин',
+          category: 'nutrition',
+          premium: true,
+          author: 'Диетолог Елена Сидорова',
+          rating: 4.7,
+          views: 756
+        },
+        {
+          id: 6,
+          title: 'Безопасность дома: детские замки и защита',
+          description: 'Как обезопасить дом для активного малыша',
+          readTime: '4 мин',
+          category: 'safety',
+          premium: false,
+          author: 'Эксперт по безопасности',
+          rating: 4.5,
+          views: 523
+        },
+        {
+          id: 7,
+          title: 'Кризис 3 лет: как пережить сложный период',
+          description: 'Психологические советы для родителей',
+          readTime: '12 мин',
+          category: 'psychology',
+          premium: true,
+          author: 'Психолог Елена Васильева',
+          rating: 4.8,
+          views: 892
+        },
+        {
+          id: 8,
+          title: 'Физическое развитие ребенка: нормы и отклонения',
+          description: 'Что должно насторожить родителей в развитии малыша',
+          readTime: '9 мин',
+          category: 'health',
+          premium: false,
+          author: 'Педиатр Иван Смирнов',
+          rating: 4.7,
+          views: 1124
+        }
+      ],
+      videos: [
+        {
+          id: 1,
+          title: 'Массаж для малышей: укрепляем здоровье',
+          duration: '15 мин',
+          category: 'health',
+          premium: false,
+          thumbnail: '👶',
+          views: 2341,
+          description: 'Техники детского массажа от специалиста'
+        },
+        {
+          id: 2,
+          title: 'Творческие занятия с детьми 4-6 лет',
+          duration: '22 мин',
+          category: 'development',
+          premium: true,
+          thumbnail: '🎨',
+          views: 1567,
+          description: 'Мастер-класс по развитию творческих способностей'
+        },
+        {
+          id: 3,
+          title: 'Первая помощь детям: что должен знать каждый родитель',
+          duration: '28 мин',
+          category: 'health',
+          premium: true,
+          thumbnail: '🏥',
+          views: 3456,
+          description: 'Практические навыки оказания первой помощи'
+        },
+        {
+          id: 4,
+          title: 'Развитие речи через игру',
+          duration: '18 мин',
+          category: 'development',
+          premium: false,
+          thumbnail: '🗣️',
+          views: 1890,
+          description: 'Игровые методики развития речи'
+        }
+      ]
+    };
+
+    const getFilteredArticles = () => {
+      if (selectedCategory === 'all') {
+        return libraryContent.articles;
+      }
+      return libraryContent.articles.filter(article => article.category === selectedCategory);
+    };
+
+    const getFilteredVideos = () => {
+      if (selectedCategory === 'all') {
+        return libraryContent.videos;
+      }
+      return libraryContent.videos.filter(video => video.category === selectedCategory);
+    };
+
+    const filteredArticles = getFilteredArticles();
+    const filteredVideos = getFilteredVideos();
+    const freeArticles = filteredArticles.filter(article => !article.premium);
+    const premiumArticles = filteredArticles.filter(article => article.premium);
+    const freeVideos = filteredVideos.filter(video => !video.premium);
+    const premiumVideos = filteredVideos.filter(video => video.premium);
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm px-4 py-4 sticky top-0 z-10">
+          <div className="flex items-center">
+            <button 
+              onClick={() => setCurrentScreen('main')}
+              className="mr-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <span className="text-2xl">←</span>
+            </button>
+            <div>
+              <h1 className="text-xl font-bold text-gray-800">Библиотека</h1>
+              <p className="text-sm text-gray-600">Материалы для родителей</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-4 py-6">
+          {/* Welcome Banner */}
+          <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-6 text-white mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold mb-2">📚 Добро пожаловать в библиотеку!</h2>
+                <p className="text-sm opacity-90">
+                  Экспертные материалы для развития {child.name}
+                </p>
+              </div>
+              <div className="text-4xl">📖</div>
+            </div>
+          </div>
+
+          {/* Categories */}
+          <div className="mb-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">Категории</h2>
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              {libraryContent.categories.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={`p-4 rounded-xl text-left transition-all ${
+                    selectedCategory === category.id
+                      ? 'bg-blue-500 text-white shadow-lg transform scale-105'
+                      : 'bg-white shadow-sm hover:shadow-md hover:scale-102'
+                  }`}
+                >
+                  <div className="text-2xl mb-2">{category.icon}</div>
+                  <h3 className="font-semibold text-sm">{category.name}</h3>
+                  <p className={`text-xs ${
+                    selectedCategory === category.id ? 'text-blue-100' : 'text-gray-500'
+                  }`}>
+                    {category.count} материалов
+                  </p>
+                </button>
+              ))}
+            </div>
+            
+            <button
+              onClick={() => setSelectedCategory('all')}
+              className={`w-full p-3 rounded-lg text-center transition-all ${
+                selectedCategory === 'all'
+                  ? 'bg-gray-800 text-white'
+                  : 'bg-white text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              Все категории ({libraryContent.articles.length + libraryContent.videos.length} материалов)
+            </button>
+          </div>
+
+          {/* Featured Videos */}
+          {(freeVideos.length > 0 || premiumVideos.length > 0) && (
+            <div className="mb-6">
+              <h2 className="text-lg font-bold text-gray-800 mb-4">🎥 Видеоуроки</h2>
+              
+              {/* Free Videos */}
+              {freeVideos.length > 0 && (
+                <div className="mb-4">
+                  <h3 className="text-md font-semibold text-gray-700 mb-3 flex items-center">
+                    <span className="text-green-500 mr-2">🆓</span>
+                    Бесплатные видео ({freeVideos.length})
+                  </h3>
+                  <div className="space-y-3">
+                    {freeVideos.map((video) => (
+                      <div 
+                        key={video.id} 
+                        className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center flex-1">
+                            <div className="w-16 h-16 bg-gradient-to-br from-red-400 to-pink-500 rounded-lg flex items-center justify-center mr-4">
+                              <span className="text-2xl">{video.thumbnail}</span>
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-gray-800">{video.title}</h3>
+                              <p className="text-sm text-gray-600 mb-1">{video.description}</p>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-gray-500">⏱️ {video.duration}</span>
+                                <span className="text-xs text-gray-500">👁️ {video.views}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <button 
+                            onClick={() => {
+                              if (window.Telegram?.WebApp) {
+                                window.Telegram.WebApp.showAlert(`📺 Открываем видео "${video.title}"`);
+                              } else {
+                                alert(`📺 Открываем видео "${video.title}"`);
+                              }
+                            }}
+                            className="ml-4 bg-red-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-600 transition-colors"
+                          >
+                            Смотреть
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Premium Videos */}
+              {premiumVideos.length > 0 && (
+                <div className="mb-4">
+                  <h3 className="text-md font-semibold text-gray-700 mb-3 flex items-center">
+                    <span className="text-yellow-500 mr-2">👑</span>
+                    Премиум видео ({premiumVideos.length})
+                  </h3>
+                  <div className="space-y-3">
+                    {premiumVideos.map((video) => (
+                      <div 
+                        key={video.id} 
+                        className={`bg-white rounded-xl p-4 shadow-sm ${!isPremium ? 'opacity-75' : 'hover:shadow-md transition-shadow'}`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center flex-1">
+                            <div className="w-16 h-16 bg-gradient-to-br from-red-400 to-pink-500 rounded-lg flex items-center justify-center mr-4">
+                              <span className="text-2xl">{video.thumbnail}</span>
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-gray-800 flex items-center">
+                                {video.title}
+                                {!isPremium && <span className="ml-2 text-gray-400">🔒</span>}
+                              </h3>
+                              <p className="text-sm text-gray-600 mb-1">{video.description}</p>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-gray-500">⏱️ {video.duration}</span>
+                                <span className="text-xs text-gray-500">👁️ {video.views}</span>
+                                <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full font-medium">
+                                  Премиум
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <button 
+                            onClick={() => {
+                              if (isPremium) {
+                                if (window.Telegram?.WebApp) {
+                                  window.Telegram.WebApp.showAlert(`📺 Открываем премиум видео "${video.title}"`);
+                                } else {
+                                  alert(`📺 Открываем премиум видео "${video.title}"`);
+                                }
+                              } else {
+                                setShowPayment(true);
+                              }
+                            }}
+                            className={`ml-4 px-4 py-2 rounded-lg font-medium transition-colors ${
+                              isPremium
+                                ? 'bg-red-500 text-white hover:bg-red-600'
+                                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                            }`}
+                          >
+                            {isPremium ? 'Смотреть' : 'Премиум'}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Articles */}
+          {(freeArticles.length > 0 || premiumArticles.length > 0) && (
+            <div className="mb-6">
+              <h2 className="text-lg font-bold text-gray-800 mb-4">📖 Статьи</h2>
+              
+              {/* Free Articles */}
+              {freeArticles.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-md font-semibold text-gray-700 mb-3 flex items-center">
+                    <span className="text-green-500 mr-2">🆓</span>
+                    Бесплатные статьи ({freeArticles.length})
+                  </h3>
+                  <div className="space-y-3">
+                    {freeArticles.map((article) => (
+                      <div key={article.id} className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-gray-800 mb-2">{article.title}</h3>
+                            <p className="text-sm text-gray-600 mb-3">{article.description}</p>
+                            <div className="flex items-center gap-3 text-xs text-gray-500">
+                              <span>👤 {article.author}</span>
+                              <span>⏱️ {article.readTime}</span>
+                              <span>⭐ {article.rating}</span>
+                              <span>👁️ {article.views}</span>
+                            </div>
+                          </div>
+                          <button 
+                            onClick={() => {
+                              if (window.Telegram?.WebApp) {
+                                window.Telegram.WebApp.showAlert(`📖 Открываем статью "${article.title}"`);
+                              } else {
+                                alert(`📖 Открываем статью "${article.title}"`);
+                              }
+                            }}
+                            className="ml-4 bg-blue-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-600 transition-colors"
+                          >
+                            Читать
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Premium Articles */}
+              {premiumArticles.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-md font-semibold text-gray-700 mb-3 flex items-center">
+                    <span className="text-yellow-500 mr-2">👑</span>
+                    Премиум статьи ({premiumArticles.length})
+                  </h3>
+                  <div className="space-y-3">
+                    {premiumArticles.map((article) => (
+                      <div key={article.id} className={`bg-white rounded-xl p-4 shadow-sm ${!isPremium ? 'opacity-75' : 'hover:shadow-md transition-shadow'}`}>
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-gray-800 mb-2 flex items-center">
+                              {article.title}
+                              {!isPremium && <span className="ml-2 text-gray-400">🔒</span>}
+                            </h3>
+                            <p className="text-sm text-gray-600 mb-3">{article.description}</p>
+                            <div className="flex items-center gap-3 text-xs text-gray-500">
+                              <span>👤 {article.author}</span>
+                              <span>⏱️ {article.readTime}</span>
+                              <span>⭐ {article.rating}</span>
+                              <span>👁️ {article.views}</span>
+                              <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full font-medium">
+                                Премиум
+                              </span>
+                            </div>
+                          </div>
+                          <button 
+                            onClick={() => {
+                              if (isPremium) {
+                                if (window.Telegram?.WebApp) {
+                                  window.Telegram.WebApp.showAlert(`📖 Открываем премиум статью "${article.title}"`);
+                                } else {
+                                  alert(`📖 Открываем премиум статью "${article.title}"`);
+                                }
+                              } else {
+                                setShowPayment(true);
+                              }
+                            }}
+                            className={`ml-4 px-4 py-2 rounded-lg font-medium transition-colors ${
+                              isPremium 
+                                ? 'bg-purple-500 text-white hover:bg-purple-600' 
+                                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                            }`}
+                          >
+                            {isPremium ? 'Читать' : 'Премиум'}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* No content message */}
+          {filteredArticles.length === 0 && filteredVideos.length === 0 && (
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">📚</div>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">Материалы не найдены</h3>
+              <p className="text-gray-600 mb-6">
+                В категории "{selectedCategory}" пока нет материалов
+              </p>
+              <button 
+                onClick={() => setSelectedCategory('all')}
+                className="bg-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors"
+              >
+                Показать все материалы
+              </button>
+            </div>
+          )}
+
+          {/* Upgrade prompt for non-premium users */}
+          {!isPremium && (premiumArticles.length > 0 || premiumVideos.length > 0) && (
+            <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-6 text-white text-center">
+              <h3 className="text-lg font-bold mb-2">📚 Доступ ко всей библиотеке!</h3>
+              <p className="text-sm opacity-90 mb-4">
+                Получи доступ к {premiumArticles.length + premiumVideos.length} эксклюзивным материалам от экспертов
+              </p>
+              <div className="bg-white bg-opacity-20 rounded-lg p-4 mb-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="text-center">
+                    <div className="text-2xl mb-1">📖</div>
+                    <div className="font-semibold">{premiumArticles.length} статей</div>
+                    <div className="opacity-80">От экспертов</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl mb-1">🎥</div>
+                    <div className="font-semibold">{premiumVideos.length} видео</div>
+                    <div className="opacity-80">Мастер-классы</div>
+                  </div>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowPayment(true)}
+                className="bg-white text-purple-600 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+              >
+                Подключить премиум - 299₽/мес
+              </button>
+            </div>
+          )}
+
+          {/* Popular Topics */}
+          <div className="bg-white rounded-xl p-6 shadow-sm">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">🔥 Популярные темы</h2>
+            <div className="flex flex-wrap gap-2">
+              {[
+                'Развитие речи',
+                'Мелкая моторика', 
+                'Подготовка к школе',
+                'Детские страхи',
+                'Питание ребенка',
+                'Безопасность дома',
+                'Кризис 3 лет',
+                'Творческое развитие'
+              ].map((topic) => (
+                <button 
+                  key={topic}
+                  onClick={() => {
+                    if (window.Telegram?.WebApp) {
+                      window.Telegram.WebApp.showAlert(`🔍 Поиск материалов по теме "${topic}"`);
+                    } else {
+                      alert(`🔍 Поиск материалов по теме "${topic}"`);
+                    }
+                  }}
+                  className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm text-gray-700 transition-colors"
+                >
+                  {topic}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   
 // Экран настроек профиля
   if (currentScreen === 'settings') {
