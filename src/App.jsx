@@ -1142,6 +1142,387 @@ const ChildDevelopmentApp = () => {
     );
   }
 
+// Экран активностей
+  if (currentScreen === 'activities') {
+    const categories = getActivityCategories();
+    const filteredActivities = getFilteredActivities();
+    const freeActivities = filteredActivities.filter(a => !a.premium);
+    const premiumActivities = filteredActivities.filter(a => a.premium);
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm px-4 py-4 sticky top-0 z-10">
+          <div className="flex items-center">
+            <button 
+              onClick={() => {
+                setSelectedActivity(null);
+                setCurrentScreen('main');
+              }}
+              className="mr-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <span className="text-2xl">←</span>
+            </button>
+            <div>
+              <h1 className="text-xl font-bold text-gray-800">Активности</h1>
+              <p className="text-sm text-gray-600">{child.age} {getAgeText(child.age)} • {filteredActivities.length} активностей</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-4 py-6">
+          {/* Categories Filter */}
+          <div className="mb-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">Категории</h2>
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              <button
+                onClick={() => setSelectedCategory('all')}
+                className={`px-4 py-2 rounded-full whitespace-nowrap transition-all ${
+                  selectedCategory === 'all'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-white text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                Все ({(activitiesDatabase[child.age] || []).length})
+              </button>
+              {categories.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={`px-4 py-2 rounded-full whitespace-nowrap transition-all ${
+                    selectedCategory === category.id
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-white text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  {category.name} ({category.count})
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Free Activities */}
+          {freeActivities.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                <span className="text-green-500 mr-2">🆓</span>
+                Бесплатные активности ({freeActivities.length})
+              </h2>
+              <div className="space-y-3">
+                {freeActivities.map((activity) => (
+                  <div key={activity.id} className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center mb-2">
+                          <span className="text-2xl mr-3">{activity.icon}</span>
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-gray-800">{activity.title}</h3>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(activity.category)}`}>
+                                {activity.category}
+                              </span>
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(activity.difficulty)}`}>
+                                {activity.difficulty}
+                              </span>
+                              <span className="text-xs text-gray-500 flex items-center">
+                                ⏱️ {activity.duration}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <p className="text-sm text-gray-600 ml-11 mb-2">{activity.description}</p>
+                        <p className="text-xs text-gray-500 ml-11">Возраст: {activity.ageRange}</p>
+                      </div>
+                      <div className="ml-4 flex flex-col gap-2">
+                        <button 
+                          onClick={() => setSelectedActivity(activity)}
+                          className="bg-blue-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-600 transition-colors text-sm"
+                        >
+                          Подробнее
+                        </button>
+                        <button 
+                          onClick={() => {
+                            if (window.Telegram?.WebApp) {
+                              window.Telegram.WebApp.showAlert(`Активность "${activity.title}" начата! 🎯`);
+                            } else {
+                              alert(`Активность "${activity.title}" начата! 🎯`);
+                            }
+                          }}
+                          className="bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition-colors text-sm"
+                        >
+                          Начать
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Premium Activities */}
+          {premiumActivities.length > 0 && (
+            <div className="mb-6">
+              <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                <span className="text-yellow-500 mr-2">👑</span>
+                Премиум активности ({premiumActivities.length})
+              </h2>
+              <div className="space-y-3">
+                {premiumActivities.map((activity) => (
+                  <div key={activity.id} className={`bg-white rounded-xl p-4 shadow-sm ${!isPremium ? 'opacity-75' : 'hover:shadow-md transition-shadow'}`}>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center mb-2">
+                          <span className="text-2xl mr-3">{activity.icon}</span>
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-gray-800 flex items-center">
+                              {activity.title}
+                              {!isPremium && <span className="ml-2 text-gray-400">🔒</span>}
+                            </h3>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(activity.category)}`}>
+                                {activity.category}
+                              </span>
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(activity.difficulty)}`}>
+                                {activity.difficulty}
+                              </span>
+                              <span className="text-xs text-gray-500 flex items-center">
+                                ⏱️ {activity.duration}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <p className="text-sm text-gray-600 ml-11 mb-2">{activity.description}</p>
+                        <p className="text-xs text-gray-500 ml-11">Возраст: {activity.ageRange}</p>
+                      </div>
+                      <div className="ml-4 flex flex-col gap-2">
+                        <button 
+                          onClick={() => {
+                            if (isPremium) {
+                              setSelectedActivity(activity);
+                            } else {
+                              setShowPayment(true);
+                            }
+                          }}
+                          className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
+                            isPremium 
+                              ? 'bg-blue-500 text-white hover:bg-blue-600' 
+                              : 'bg-gray-300 text-gray-500'
+                          }`}
+                        >
+                          {isPremium ? 'Подробнее' : 'Премиум'}
+                        </button>
+                        <button 
+                          onClick={() => {
+                            if (isPremium) {
+                              if (window.Telegram?.WebApp) {
+                                window.Telegram.WebApp.showAlert(`Премиум активность "${activity.title}" начата! ✨`);
+                              } else {
+                                alert(`Премиум активность "${activity.title}" начата! ✨`);
+                              }
+                            } else {
+                              setShowPayment(true);
+                            }
+                          }}
+                          className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
+                            isPremium 
+                              ? 'bg-purple-500 text-white hover:bg-purple-600' 
+                              : 'bg-gray-300 text-gray-500'
+                          }`}
+                        >
+                          {isPremium ? 'Начать' : 'Премиум'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Upgrade prompt for non-premium users */}
+          {!isPremium && premiumActivities.length > 0 && (
+            <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-6 text-white text-center">
+              <h3 className="text-lg font-bold mb-2">🚀 Разблокируй все активности!</h3>
+              <p className="text-sm opacity-90 mb-4">
+                Получи доступ к {premiumActivities.length} премиум активностям с детальными инструкциями и материалами
+              </p>
+              <div className="bg-white bg-opacity-20 rounded-lg p-3 mb-4">
+                <div className="text-sm space-y-1">
+                  <p>✨ Эксклюзивные развивающие игры</p>
+                  <p>📚 Подробные инструкции от экспертов</p>
+                  <p>🎯 Персональные программы развития</p>
+                  <p>📊 Детальная аналитика прогресса</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowPayment(true)}
+                className="bg-white text-purple-600 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+              >
+                Подключить премиум - 299₽/мес
+              </button>
+            </div>
+          )}
+
+          {/* No activities message */}
+          {filteredActivities.length === 0 && (
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">🎯</div>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">Активности не найдены</h3>
+              <p className="text-gray-600 mb-6">
+                Для возраста {child.age} {getAgeText(child.age)} в категории "{selectedCategory}" активностей нет
+              </p>
+              <button 
+                onClick={() => setSelectedCategory('all')}
+                className="bg-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors"
+              >
+                Показать все активности
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Детальный экран активности
+  if (selectedActivity) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm px-4 py-4 sticky top-0 z-10">
+          <div className="flex items-center">
+            <button 
+              onClick={() => setSelectedActivity(null)}
+              className="mr-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <span className="text-2xl">←</span>
+            </button>
+            <div className="flex items-center">
+              <span className="text-2xl mr-3">{selectedActivity.icon}</span>
+              <div>
+                <h1 className="text-xl font-bold text-gray-800">{selectedActivity.title}</h1>
+                <p className="text-sm text-gray-600">{selectedActivity.ageRange} • {selectedActivity.duration}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-4 py-6">
+          {/* Activity Info */}
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <div className="flex items-center gap-2 mb-4">
+              <span className={`px-3 py-1 rounded-full text-sm font-medium ${getCategoryColor(selectedActivity.category)}`}>
+                {selectedActivity.category}
+              </span>
+              <span className={`px-3 py-1 rounded-full text-sm font-medium ${getDifficultyColor(selectedActivity.difficulty)}`}>
+                {selectedActivity.difficulty}
+              </span>
+              {selectedActivity.premium && (
+                <span className="px-3 py-1 bg-yellow-100 text-yellow-800 text-sm rounded-full font-medium">
+                  👑 Премиум
+                </span>
+              )}
+            </div>
+            
+            <p className="text-gray-700 mb-4">{selectedActivity.description}</p>
+            
+            <div className="bg-blue-50 rounded-lg p-4">
+              <h3 className="font-semibold text-blue-900 mb-2">🎯 Польза для развития:</h3>
+              <p className="text-blue-800 text-sm">{selectedActivity.benefits}</p>
+            </div>
+          </div>
+
+          {/* Materials */}
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <h3 className="text-lg font-bold text-gray-800 mb-4">📦 Что понадобится:</h3>
+            <div className="grid grid-cols-1 gap-2">
+              {selectedActivity.materials.map((material, index) => (
+                <div key={index} className="flex items-center p-3 bg-gray-50 rounded-lg">
+                  <span className="text-green-500 mr-3">✓</span>
+                  <span className="text-gray-700">{material}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Instructions */}
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <h3 className="text-lg font-bold text-gray-800 mb-4">📋 Пошаговая инструкция:</h3>
+            <div className="space-y-3">
+              {selectedActivity.instructions.map((instruction, index) => (
+                <div key={index} className="flex items-start p-3 bg-gray-50 rounded-lg">
+                  <span className="bg-blue-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-0.5 flex-shrink-0">
+                    {index + 1}
+                  </span>
+                  <span className="text-gray-700">{instruction}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            <button 
+              onClick={() => {
+                if (window.Telegram?.WebApp) {
+                  window.Telegram.WebApp.showAlert(`🚀 Активность "${selectedActivity.title}" начата!\n\nУдачных занятий с ${child.name}! 💪`);
+                } else {
+                  alert(`🚀 Активность "${selectedActivity.title}" начата!\n\nУдачных занятий с ${child.name}! 💪`);
+                }
+              }}
+              className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-4 rounded-xl font-medium text-lg hover:from-green-600 hover:to-blue-600 transition-all"
+            >
+              🚀 Начать активность
+            </button>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <button 
+                onClick={() => {
+                  if (window.Telegram?.WebApp) {
+                    window.Telegram.WebApp.showAlert(`⏰ Таймер на ${selectedActivity.duration} установлен!`);
+                  } else {
+                    alert(`⏰ Таймер на ${selectedActivity.duration} установлен!`);
+                  }
+                }}
+                className="bg-white text-gray-700 py-3 rounded-lg font-medium border-2 border-gray-200 hover:border-gray-300 transition-colors"
+              >
+                ⏰ Установить таймер
+              </button>
+              <button 
+                onClick={() => {
+                  if (window.Telegram?.WebApp) {
+                    window.Telegram.WebApp.showAlert('📸 Результат сохранен в галерею!');
+                  } else {
+                    alert('📸 Результат сохранен в галерею!');
+                  }
+                }}
+                className="bg-white text-gray-700 py-3 rounded-lg font-medium border-2 border-gray-200 hover:border-gray-300 transition-colors"
+              >
+                📸 Сохранить результат
+              </button>
+            </div>
+            
+            <button 
+              onClick={() => {
+                if (botConnected) {
+                  sendTestNotification();
+                } else {
+                  if (window.Telegram?.WebApp) {
+                    window.Telegram.WebApp.showAlert('Подключите Telegram бота для отправки напоминаний!');
+                  } else {
+                    alert('Подключите Telegram бота для отправки напоминаний!');
+                  }
+                }
+              }}
+              className="w-full bg-purple-500 text-white py-3 rounded-lg font-medium hover:bg-purple-600 transition-colors"
+            >
+              🔔 Напомнить завтра
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
 // Экран настроек профиля
   if (currentScreen === 'settings') {
     return (
