@@ -1522,6 +1522,298 @@ const ChildDevelopmentApp = () => {
       </div>
     );
   }
+
+// Экран прогресса
+  if (currentScreen === 'progress') {
+    const completedThisWeek = progressData.weeklyActivities.filter(Boolean).length;
+    const totalDaysThisWeek = 7;
+    const weeklyProgress = (completedThisWeek / totalDaysThisWeek) * 100;
+
+    // Функции для отображения навыков
+    const getSkillName = (key) => {
+      const names = {
+        motor: 'Мелкая моторика',
+        speech: 'Речь и коммуникация', 
+        logic: 'Логическое мышление',
+        creativity: 'Творческие способности',
+        development: 'Общее развитие'
+      };
+      return names[key];
+    };
+
+    const getSkillColor = (key) => {
+      const colors = {
+        motor: 'bg-blue-500',
+        speech: 'bg-green-500',
+        logic: 'bg-purple-500', 
+        creativity: 'bg-pink-500',
+        development: 'bg-orange-500'
+      };
+      return colors[key];
+    };
+
+    const getSkillIcon = (key) => {
+      const icons = {
+        motor: '🤲',
+        speech: '💬',
+        logic: '🧠',
+        creativity: '🎨',
+        development: '🌱'
+      };
+      return icons[key];
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm px-4 py-4 sticky top-0 z-10">
+          <div className="flex items-center">
+            <button 
+              onClick={() => setCurrentScreen('main')}
+              className="mr-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <span className="text-2xl">←</span>
+            </button>
+            <div>
+              <h1 className="text-xl font-bold text-gray-800">Прогресс развития</h1>
+              <p className="text-sm text-gray-600">{child.name} • {child.age} {getAgeText(child.age)}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-4 py-6">
+          {/* Current Streak */}
+          <div className="bg-gradient-to-r from-orange-400 to-red-500 rounded-xl p-6 text-white mb-6 relative overflow-hidden">
+            <div className="absolute top-0 right-0 opacity-20 text-6xl">🔥</div>
+            <div className="relative z-10">
+              <h2 className="text-2xl font-bold mb-2">🔥 {child.streak} дней подряд!</h2>
+              <p className="opacity-90">Отличная работа! Продолжайте в том же духе!</p>
+              <div className="mt-4 flex items-center">
+                <div className="bg-white bg-opacity-20 rounded-full px-4 py-2">
+                  <span className="text-sm font-medium">Следующая цель: {child.streak + 3} дней</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Weekly Progress */}
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-800">Эта неделя</h2>
+              <div className="flex items-center bg-blue-100 px-3 py-1 rounded-full">
+                <span className="text-sm font-medium text-blue-800">{completedThisWeek}/{totalDaysThisWeek} дней</span>
+              </div>
+            </div>
+            
+            {/* Weekly Calendar */}
+            <div className="grid grid-cols-7 gap-2 mb-4">
+              {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map((day, index) => (
+                <div key={day} className="text-center">
+                  <div className="text-xs text-gray-600 mb-2">{day}</div>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                    progressData.weeklyActivities[index] 
+                      ? 'bg-green-500 text-white shadow-lg transform scale-110' 
+                      : 'bg-gray-200 text-gray-400'
+                  }`}>
+                    {progressData.weeklyActivities[index] ? '✓' : index + 1}
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Progress Bar */}
+            <div className="bg-gray-100 rounded-full h-3 mb-4">
+              <div 
+                className="h-3 rounded-full bg-gradient-to-r from-green-400 to-blue-500 transition-all duration-500"
+                style={{ width: `${weeklyProgress}%` }}
+              ></div>
+            </div>
+            
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-600">Прогресс недели</span>
+              <span className="font-bold text-green-600">{Math.round(weeklyProgress)}%</span>
+            </div>
+          </div>
+
+          {/* Skills Development */}
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-6">Развитие навыков</h2>
+            <div className="space-y-5">
+              {Object.entries(progressData.skillsProgress).map(([key, progress]) => (
+                <div key={key}>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center">
+                      <span className="text-2xl mr-3">{getSkillIcon(key)}</span>
+                      <div>
+                        <span className="font-medium text-gray-800">{getSkillName(key)}</span>
+                        <div className="text-xs text-gray-500">Уровень: {progress >= 90 ? 'Отлично' : progress >= 70 ? 'Хорошо' : progress >= 50 ? 'Средне' : 'Развиваем'}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-lg font-bold text-gray-800">{progress}%</span>
+                    </div>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full transition-all duration-700 ${getSkillColor(key)}`}
+                      style={{ width: `${progress}%` }}
+                    ></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Skills Summary */}
+            <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
+              <h3 className="font-semibold text-gray-800 mb-2">💡 Рекомендации:</h3>
+              <div className="text-sm text-gray-600 space-y-1">
+                {progressData.skillsProgress.logic < 70 && (
+                  <p>• Добавьте больше логических игр и пазлов</p>
+                )}
+                {progressData.skillsProgress.speech < 70 && (
+                  <p>• Больше читайте и разговаривайте с ребенком</p>
+                )}
+                {progressData.skillsProgress.motor < 80 && (
+                  <p>• Включите активности для мелкой моторики</p>
+                )}
+                {Math.min(...Object.values(progressData.skillsProgress)) >= 70 && (
+                  <p>• Отличная работа! Все навыки развиваются гармонично! 🌟</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Achievements */}
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">🏆 Достижения</h2>
+            <div className="grid grid-cols-1 gap-4">
+              {progressData.achievements.map((achievement) => (
+                <div 
+                  key={achievement.id} 
+                  className={`p-4 rounded-lg border-2 transition-all ${
+                    achievement.unlocked 
+                      ? 'border-yellow-300 bg-gradient-to-r from-yellow-50 to-orange-50 shadow-md' 
+                      : 'border-gray-200 bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className={`text-3xl mr-4 ${achievement.unlocked ? 'animate-bounce' : ''}`}>
+                        {achievement.icon}
+                      </div>
+                      <div>
+                        <h3 className={`font-semibold ${
+                          achievement.unlocked ? 'text-yellow-800' : 'text-gray-500'
+                        }`}>
+                          {achievement.title}
+                        </h3>
+                        <p className="text-sm text-gray-600">{achievement.description}</p>
+                        
+                        {!achievement.unlocked && achievement.progress && (
+                          <div className="mt-2">
+                            <div className="flex justify-between text-xs text-gray-500 mb-1">
+                              <span>Прогресс</span>
+                              <span>{achievement.progress}/15</span>
+                            </div>
+                            <div className="w-32 bg-gray-200 rounded-full h-1.5">
+                              <div 
+                                className="h-1.5 rounded-full bg-yellow-400 transition-all duration-500"
+                                style={{ width: `${(achievement.progress / 15) * 100}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {achievement.unlocked && (
+                      <div className="bg-yellow-500 text-white px-3 py-1 rounded-full text-xs font-medium">
+                        Получено!
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Statistics */}
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">📊 Статистика</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4 text-center">
+                <div className="text-2xl font-bold text-blue-600">{progressData.totalActivities}</div>
+                <div className="text-sm text-blue-800">Всего активностей</div>
+              </div>
+              <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-4 text-center">
+                <div className="text-2xl font-bold text-green-600">{progressData.totalTime}ч</div>
+                <div className="text-sm text-green-800">Время развития</div>
+              </div>
+              <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-4 text-center">
+                <div className="text-2xl font-bold text-purple-600">{Math.round(Object.values(progressData.skillsProgress).reduce((a, b) => a + b, 0) / Object.keys(progressData.skillsProgress).length)}%</div>
+                <div className="text-sm text-purple-800">Средний прогресс</div>
+              </div>
+              <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg p-4 text-center">
+                <div className="text-2xl font-bold text-orange-600">{progressData.achievements.filter(a => a.unlocked).length}</div>
+                <div className="text-sm text-orange-800">Достижений</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Activities */}
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">📝 Последние активности</h2>
+            <div className="space-y-3">
+              {progressData.recentActivities.map((activity, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                  <div className="flex items-center flex-1">
+                    <div className="w-10 h-10 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center mr-3">
+                      <span className="text-white text-sm font-bold">{index + 1}</span>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-medium text-gray-800 text-sm">{activity.name}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(activity.category)}`}>
+                          {activity.category}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {new Date(activity.date).toLocaleDateString('ru-RU')}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-gray-700">{activity.duration} мин</p>
+                    <p className="text-xs text-green-600">✓ Завершено</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <button 
+              onClick={() => setCurrentScreen('activities')}
+              className="w-full mt-4 bg-blue-500 text-white py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors"
+            >
+              Начать новую активность
+            </button>
+          </div>
+
+          {/* Motivation Card */}
+          <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-6 text-white text-center">
+            <div className="text-4xl mb-3">🌟</div>
+            <h3 className="text-lg font-bold mb-2">Отличная работа!</h3>
+            <p className="text-sm opacity-90 mb-4">
+              {child.name} делает потрясающие успехи! Каждый день приносит новые знания и навыки.
+            </p>
+            <div className="bg-white bg-opacity-20 rounded-lg p-3">
+              <p className="text-sm font-medium">
+                💡 Совет дня: {weeklyProgress >= 70 ? 'Отлично! Поддерживайте такой ритм!' : 'Попробуйте заниматься каждый день хотя бы 15 минут'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   
 // Экран настроек профиля
   if (currentScreen === 'settings') {
