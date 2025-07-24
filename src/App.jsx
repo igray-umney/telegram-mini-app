@@ -719,7 +719,7 @@ const ChildDevelopmentApp = () => {
             
             <div className="space-y-3">
               <button
-                onClick={createTelegramPayment}
+                onClick={createCardPayment}
                 disabled={paymentStatus === 'processing'}
                 className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
