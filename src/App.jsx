@@ -737,13 +737,6 @@ const ChildDevelopmentApp = () => {
               </button>
               
               <button
-                onClick={simulatePaymentSuccess}
-                className="w-full bg-green-500 text-white py-3 rounded-lg font-medium hover:bg-green-600 transition-colors"
-              >
-                Симулировать успешный платеж (для теста)
-              </button>
-              
-              <button
                 onClick={() => setShowPayment(false)}
                 className="w-full bg-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-400 transition-colors"
               >
