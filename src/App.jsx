@@ -526,6 +526,53 @@ const ChildDevelopmentApp = () => {
     }
   };
 
+  // Функция для создания платежа через карту
+const createCardPayment = async () => {
+  if (!window.Telegram?.WebApp) {
+    alert('Эта функция доступна только в Telegram');
+    return;
+  }
+
+  setPaymentStatus('processing');
+
+  try {
+    // Создаем инвойс через Telegram Bot API (для карт)
+    const response = await fetch('https://telegram-bot-server-production-8dfd.up.railway.app/api/telegram/create-card-invoice', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId: telegramUser?.id,
+        amount: 299
+      })
+    });
+
+    if (response.ok) {
+      const { invoiceUrl } = await response.json();
+      
+      // Открываем инвойс в Telegram
+      window.Telegram.WebApp.openInvoice(invoiceUrl, (status) => {
+        if (status === 'paid') {
+          setPaymentStatus('success');
+          setIsPremium(true);
+          setTimeout(() => {
+            setShowPayment(false);
+            setPaymentStatus('idle');
+          }, 2000);
+        } else {
+          setPaymentStatus('error');
+        }
+      });
+    } else {
+      setPaymentStatus('error');
+    }
+  } catch (error) {
+    console.error('Ошибка при создании платежа:', error);
+    setPaymentStatus('error');
+  }
+};
+
   // Альтернативный способ оплаты через Telegram Stars
   const createStarsPayment = async () => {
     if (!window.Telegram?.WebApp) {
