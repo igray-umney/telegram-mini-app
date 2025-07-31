@@ -1500,18 +1500,35 @@ const createCardPayment = async () => {
 
           {/* Action Buttons */}
           <div className="space-y-3">
-            <button 
-              onClick={() => {
-                if (window.Telegram?.WebApp) {
-                  window.Telegram.WebApp.showAlert(`🚀 Активность "${selectedActivity.title}" начата!\n\nУдачных занятий с ${child.name}! 💪`);
-                } else {
-                  alert(`🚀 Активность "${selectedActivity.title}" начата!\n\nУдачных занятий с ${child.name}! 💪`);
-                }
-              }}
-              className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-4 rounded-xl font-medium text-lg hover:from-green-600 hover:to-blue-600 transition-all"
-            >
-              🚀 Начать активность
-            </button>
+<button 
+  onClick={() => {
+    // Обновляем прогресс
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Показываем расширенное уведомление
+    if (window.Telegram?.WebApp) {
+      window.Telegram.WebApp.showAlert(
+        `🚀 Активность "${selectedActivity.title}" начата!\n\n` +
+        `⏱️ Время: ${selectedActivity.duration}\n` +
+        `🎯 Цель: ${selectedActivity.benefits}\n\n` +
+        `Удачных занятий с ${child.name}! 💪`
+      );
+    } else {
+      alert(`🚀 Активность "${selectedActivity.title}" начата!`);
+    }
+    
+    // Запускаем автоматический таймер (опционально)
+    const minutes = parseInt(selectedActivity.duration);
+    if (minutes && window.Telegram?.WebApp) {
+      setTimeout(() => {
+        window.Telegram.WebApp.showAlert(`⏰ Время вышло! Активность "${selectedActivity.title}" завершена! 🎉`);
+      }, minutes * 60 * 1000);
+    }
+  }}
+  className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-4 rounded-xl font-medium text-lg hover:from-green-600 hover:to-blue-600 transition-all"
+>
+  🚀 Начать активность
+</button>
             
             <div className="grid grid-cols-2 gap-3">
               <button 
