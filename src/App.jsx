@@ -1517,13 +1517,19 @@ const createCardPayment = async () => {
       alert(`🚀 Активность "${selectedActivity.title}" начата!`);
     }
     
-    // Запускаем автоматический таймер (опционально)
-    const minutes = parseInt(selectedActivity.duration);
-    if (minutes && window.Telegram?.WebApp) {
-      setTimeout(() => {
-        window.Telegram.WebApp.showAlert(`⏰ Время вышло! Активность "${selectedActivity.title}" завершена! 🎉`);
-      }, minutes * 60 * 1000);
-    }
+// Запускаем автоматический таймер (опционально)
+const minutes = parseInt(selectedActivity.duration);
+if (minutes && window.Telegram?.WebApp) {
+  // Показываем что таймер запущен
+  setTimeout(() => {
+    window.Telegram.WebApp.showAlert(`⏰ Напоминание!\n\nПрошло ${minutes} минут активности "${selectedActivity.title}"\n\nКак дела? Продолжаете заниматься? 😊`);
+  }, minutes * 60 * 1000);
+  
+  // Показываем уведомление что таймер запущен
+  setTimeout(() => {
+    window.Telegram.WebApp.showAlert(`⏰ Таймер запущен на ${minutes} минут!\n\nМы напомним когда время выйдет! ⏱️`);
+  }, 2000); // Через 2 секунды после первого уведомления
+}
   }}
   className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-4 rounded-xl font-medium text-lg hover:from-green-600 hover:to-blue-600 transition-all"
 >
