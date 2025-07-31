@@ -758,7 +758,7 @@ const createCardPayment = async () => {
             
             {paymentStatus === 'error' && (
               <div className="mb-4 p-4 bg-red-50 rounded-lg">
-                <div className="text-red-500 text-2xl mb-2">✗</div>
+                <div className="text-blue-500 text-2xl mb-2">💬</div>
                 <p className="text-sm text-blue-600">Проверьте Telegram - там должен быть счет для оплаты</p>
               </div>
             )}
