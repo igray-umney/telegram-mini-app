@@ -738,7 +738,7 @@ const createCardPayment = async () => {
                 <span className="text-gray-600">Стоимость:</span>
                 <span className="text-2xl font-bold text-purple-600">299₽/мес</span>
               </div>
-              <p className="text-sm text-gray-500 mt-1">или 50 ⭐ Telegram Stars</p>
+              <p className="text-sm text-gray-500 mt-1">или 100 ⭐ Telegram Stars</p>
             </div>
             
             {paymentStatus === 'processing' && (
@@ -2572,7 +2572,7 @@ const createCardPayment = async () => {
                     <span className="text-gray-600">Стоимость:</span>
                     <span className="text-2xl font-bold text-purple-600">299₽/мес</span>
                   </div>
-                  <p className="text-sm text-gray-500 mt-1">или 50 ⭐ Telegram Stars</p>
+                  <p className="text-sm text-gray-500 mt-1">или 100 ⭐ Telegram Stars</p>
                 </div>
 
                 <button 
