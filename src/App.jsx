@@ -584,7 +584,7 @@ const createCardPayment = async () => {
     
     try {
       // Оплата через Telegram Stars
-      const response = await fetch('/api/telegram/create-stars-invoice', {
+      const response = await fetch('https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/create-stars-invoice', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
