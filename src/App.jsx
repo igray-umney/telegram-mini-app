@@ -537,7 +537,7 @@ const createCardPayment = async () => {
 
   try {
     // Создаем инвойс через Telegram Bot API (для карт)
-    const response = await fetch('https://telegram-bot-server-production-8dfd.up.railway.app/api/telegram/create-invoice', {
+    const response = await fetch('https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/create-invoice', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
