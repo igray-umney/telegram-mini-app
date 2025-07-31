@@ -1277,19 +1277,37 @@ const createCardPayment = async () => {
                           className="bg-blue-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-600 transition-colors text-sm"
                         >
                           Подробнее
-                        </button>
-                        <button 
-                          onClick={() => {
-                            if (window.Telegram?.WebApp) {
-                              window.Telegram.WebApp.showAlert(`Активность "${activity.title}" начата! 🎯`);
-                            } else {
-                              alert(`Активность "${activity.title}" начата! 🎯`);
-                            }
-                          }}
-                          className="bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition-colors text-sm"
-                        >
-                          Начать
-                        </button>
+<button 
+  onClick={() => {
+    // Показываем расширенное уведомление
+    if (window.Telegram?.WebApp) {
+      window.Telegram.WebApp.showAlert(
+        `🚀 Активность "${activity.title}" начата!\n\n` +
+        `⏱️ Время: ${activity.duration}\n` +
+        `🎯 Польза: ${activity.benefits}\n\n` +
+        `Удачных занятий с ${child.name}! 💪`
+      );
+      
+      // Запускаем таймер
+      const minutes = parseInt(activity.duration);
+      if (minutes) {
+        setTimeout(() => {
+          window.Telegram.WebApp.showAlert(`⏰ Прошло ${minutes} минут!\n\nАктивность "${activity.title}" завершена! 🎉\n\nКак прошли занятия?`);
+        }, minutes * 60 * 1000);
+        
+        // Уведомление о запуске таймера
+        setTimeout(() => {
+          window.Telegram.WebApp.showAlert(`⏰ Таймер запущен на ${minutes} минут!\n\nМы напомним когда время выйдет! ⏱️`);
+        }, 2000);
+      }
+    } else {
+      alert(`Активность "${activity.title}" начата! 🎯`);
+    }
+  }}
+  className="bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition-colors text-sm"
+>
+  Начать
+</button>
                       </div>
                     </div>
                   </div>
