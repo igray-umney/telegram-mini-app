@@ -499,7 +499,7 @@ const ChildDevelopmentApp = () => {
           userId: telegramUser?.id,
           amount: 299,
           description: 'Премиум подписка Развивайка',
-          payload: `premium_${Date.now()}`
+          payload: `premium_card_${telegramUser?.id}_${Date.now()}`
         })
       });
 
