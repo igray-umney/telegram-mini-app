@@ -591,7 +591,7 @@ const createCardPayment = async () => {
         },
         body: JSON.stringify({
           userId: telegramUser?.id,
-          stars: 50, // Количество звезд
+          stars: 100, // Количество звезд
           description: 'Премиум подписка Развивайка',
           payload: `premium_stars_${Date.now()}`
         })
