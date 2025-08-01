@@ -1379,7 +1379,12 @@ const createCardPayment = async () => {
                       </div>
                       <div className="ml-4 flex flex-col gap-2">
                         <button 
-                          onClick={() => setSelectedActivity(activity)}
+                          onClick={() => {
+  console.log('🔍 Клик по Подробнее для:', activity.title);
+  console.log('🔍 Объект activity:', activity);
+  setSelectedActivity(activity);
+  console.log('🔍 selectedActivity установлен');
+}}
                           className="bg-blue-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-600 transition-colors text-sm"
                         >
                           Подробнее
