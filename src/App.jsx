@@ -1290,7 +1290,7 @@ const createCardPayment = async () => {
       );
       
       // Запускаем таймер
-      const minutes = parseInt(activity.duration);
+      const minutes = parseInt(activity.duration.replace(' мин', '').trim());
       if (minutes) {
         setTimeout(() => {
           window.Telegram.WebApp.showAlert(`⏰ Прошло ${minutes} минут!\n\nАктивность "${activity.title}" завершена! 🎉\n\nКак прошли занятия?`);
