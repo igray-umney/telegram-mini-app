@@ -1554,6 +1554,13 @@ const createCardPayment = async () => {
     );
   }
 
+// НОВЫЙ экран деталей активности
+if (currentScreen === 'activity-details' && selectedActivity) {
+  return (
+    // Весь код экрана деталей из моего артефакта
+  );
+}
+  
   // Детальный экран активности
   if (selectedActivity) {
     return (
