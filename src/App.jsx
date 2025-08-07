@@ -1378,15 +1378,19 @@ const createCardPayment = async () => {
                         <p className="text-xs text-gray-500 ml-11">Возраст: {activity.ageRange}</p>
                       </div>
                       <div className="ml-4 flex flex-col gap-2">
-                        <button 
+
+<button 
   onClick={() => {
-    alert('КЛИК РАБОТАЕТ!');
+    console.log('🔍 Клик по Подробнее для:', activity.title);
+    console.log('🔍 selectedActivity до:', selectedActivity);
+    setSelectedActivity(activity);
+    console.log('🔍 selectedActivity после:', activity);
   }}
-  className="bg-red-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-600 transition-colors text-sm"
-  style={{ zIndex: 999 }}
+  className="bg-blue-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-600 transition-colors text-sm"
 >
-  ТЕСТ КЛИКА
+  Подробнее
 </button>
+                        
 <button 
   onClick={() => {
     // Показываем расширенное уведомление
