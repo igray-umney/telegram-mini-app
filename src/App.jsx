@@ -1702,7 +1702,6 @@ const createCardPayment = async () => {
 // НОВЫЙ экран деталей активности
 if (currentScreen === 'activity-details' && selectedActivity) {
   return (
-import React, { useState, useEffect } from 'react';
 
 const ChildDevelopmentApp = () => {
   const [currentScreen, setCurrentScreen] = useState('main');
