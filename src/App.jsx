@@ -2400,12 +2400,6 @@ const createCardPayment = async () => {
       </div>
     </div>
   );
-
-};
-
-export default ChildDevelopmentApp;
-  );
-}
   
   // Детальный экран активности
   if (selectedActivity) {
