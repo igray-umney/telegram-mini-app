@@ -4124,3 +4124,7 @@ const ChildDevelopmentApp = () => {
             >
               <span className="text-2xl">←</span>
             </button>
+          )   
+};
+
+export default ChildDevelopmentApp;
