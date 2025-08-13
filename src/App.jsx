@@ -1014,7 +1014,7 @@ export default ChildDevelopmentApp;
             <div className="flex items-center">
               <span className="text-2xl mr-3">{selectedActivity.icon}</span>
               <div>
-                <h1 className="text-xl font-bold text-gray-800">{selectedActivity.title}</h1>import React, { useState } from 'react';
+                <h1 className="text-xl font-bold text-gray-800">{selectedActivity.title}</h1>import React, { useState, useMemo, useCallback } from 'react';
 
 const ChildDevelopmentApp = () => {
   const [currentScreen, setCurrentScreen] = useState('main');
@@ -1051,7 +1051,7 @@ const ChildDevelopmentApp = () => {
   });
 
   // Данные прогресса
-  const [progressData] = useState({
+  const progressData = useMemo(() => ({
     weeklyActivities: [true, true, false, true, true, false, false],
     totalActivities: 45,
     totalTime: 12.5,
@@ -1073,10 +1073,10 @@ const ChildDevelopmentApp = () => {
       { name: 'Рисование пальчиками', category: 'Творчество', date: '2025-01-13', duration: 25 },
       { name: 'Простые пазлы', category: 'Логика', date: '2025-01-12', duration: 15 }
     ]
-  });
+  }), []);
 
   // База материалов библиотеки
-  const [libraryContent] = useState({
+  const libraryContent = useMemo(() => ({
     categories: [
       { id: 'development', name: 'Развитие', icon: '🧠', count: 23 },
       { id: 'health', name: 'Здоровье', icon: '🏥', count: 18 },
@@ -1173,10 +1173,10 @@ const ChildDevelopmentApp = () => {
         views: 1567
       }
     ]
-  });
+  }), []);
 
-  // РАСШИРЕННАЯ база активностей - ИСПРАВЛЕНО
-  const [activitiesDatabase] = useState({
+  // РАСШИРЕННАЯ база активностей - ОПТИМИЗИРОВАНО
+  const activitiesDatabase = useMemo(() => ({
     1: [
       {
         id: 1,
@@ -1214,6 +1214,545 @@ const ChildDevelopmentApp = () => {
           'Налейте воду в одну из них',
           'Покажите малышу, как переливать воду',
           'Пусть ребенок экспериментирует самостоятельно',
+          'Дайте губку - пусть выжимает воду',
+          'Не забудьте про полотенце для уборки!'
+        ],
+        benefits: 'Развивает мелкую моторику, понимание причины и следствия, тактильные ощущения',
+        ageRange: '10-24 месяца'
+      },
+      {
+        id: 3,
+        title: 'Музыкальные инструменты',
+        description: 'Изучаем звуки: погремушки, барабан, колокольчики',
+        duration: '10 мин',
+        category: 'Творчество',
+        premium: true,
+        icon: '🎵',
+        difficulty: 'Легко',
+        materials: ['Погремушки', 'Колокольчики', 'Самодельный барабан', 'Ложки'],
+        instructions: [
+          'Подготовьте разные музыкальные инструменты',
+          'Покажите, как извлекать звуки из каждого',
+          'Пусть малыш попробует сам',
+          'Играйте простые ритмы',
+          'Пойте песенки под аккомпанемент',
+          'Танцуйте под музыку'
+        ],
+        benefits: 'Развивает слух, чувство ритма, координацию движений, творческие способности',
+        ageRange: '8-18 месяцев'
+      }
+    ],
+    2: [
+      {
+        id: 4,
+        title: 'Собираем пирамидку',
+        description: 'Развиваем мелкую моторику и понимание размеров',
+        duration: '15 мин',
+        category: 'Логика',
+        premium: false,
+        icon: '📐',
+        difficulty: 'Легко',
+        materials: ['Пирамидка с кольцами разного размера'],
+        instructions: [
+          'Покажите ребенку пирамидку',
+          'Разберите её на части',
+          'Объясните понятия "большой" и "маленький"',
+          'Пусть ребенок попробует собрать сам',
+          'Помогайте при необходимости',
+          'Хвалите за каждое правильное действие'
+        ],
+        benefits: 'Развивает мелкую моторику, понимание размеров, логическое мышление, терпение',
+        ageRange: '18-30 месяцев'
+      },
+      {
+        id: 5,
+        title: 'Рисование пальчиками',
+        description: 'Творческое развитие с безопасными красками',
+        duration: '25 мин',
+        category: 'Творчество',
+        premium: false,
+        icon: '🎨',
+        difficulty: 'Средне',
+        materials: ['Пальчиковые краски', 'Большой лист бумаги', 'Влажные салфетки'],
+        instructions: [
+          'Подготовьте рабочее место',
+          'Наденьте на ребенка старую одежду',
+          'Покажите, как макать палец в краску',
+          'Начните с простых отпечатков',
+          'Рисуйте вместе простые фигуры',
+          'Не ограничивайте творчество ребенка'
+        ],
+        benefits: 'Развивает творческие способности, мелкую моторику, цветовосприятие, тактильные ощущения',
+        ageRange: '18-36 месяцев'
+      },
+      {
+        id: 6,
+        title: 'Лепка из пластилина',
+        description: 'Развиваем креативность и мелкую моторику',
+        duration: '30 мин',
+        category: 'Творчество',
+        premium: true,
+        icon: '🎭',
+        difficulty: 'Средне',
+        materials: ['Мягкий пластилин', 'Доска для лепки', 'Простые формочки'],
+        instructions: [
+          'Разогрейте пластилин в руках',
+          'Покажите основные приемы: катание, сплющивание',
+          'Лепите простые фигуры: шарики, колбаски',
+          'Используйте формочки для создания фигур',
+          'Создавайте простых животных',
+          'Не стремитесь к идеальному результату'
+        ],
+        benefits: 'Развивает мелкую моторику, творческие способности, пространственное мышление, усидчивость',
+        ageRange: '24-36 месяцев'
+      }
+    ],
+    3: [
+      {
+        id: 7,
+        title: 'Сортировка по цветам',
+        description: 'Изучаем основные цвета и их названия',
+        duration: '20 мин',
+        category: 'Логика',
+        premium: false,
+        icon: '🌈',
+        difficulty: 'Легко',
+        materials: ['Цветные предметы', '4-5 коробочек или емкостей'],
+        instructions: [
+          'Подготовьте предметы 4-5 основных цветов',
+          'Покажите ребенку, как сортировать по цветам',
+          'Называйте каждый цвет при сортировке',
+          'Пусть ребенок повторяет названия цветов',
+          'Проверьте результат вместе',
+          'Усложните задачу, добавив больше цветов'
+        ],
+        benefits: 'Развивает цветовосприятие, логическое мышление, внимание, словарный запас',
+        ageRange: '2-4 года'
+      },
+      {
+        id: 8,
+        title: 'Простые пазлы',
+        description: 'Пазлы из 4-6 элементов, развиваем логику',
+        duration: '25 мин',
+        category: 'Логика',
+        premium: false,
+        icon: '🧩',
+        difficulty: 'Средне',
+        materials: ['Пазлы из 4-6 крупных элементов', 'Картинки для образца'],
+        instructions: [
+          'Выберите пазл с крупными деталями',
+          'Покажите готовую картинку',
+          'Разберите пазл на части',
+          'Помогите найти угловые детали',
+          'Собирайте постепенно, хваля за успехи',
+          'Постепенно увеличивайте количество деталей'
+        ],
+        benefits: 'Развивает логическое мышление, пространственное восприятие, терпение, мелкую моторику',
+        ageRange: '2,5-4 года'
+      },
+      {
+        id: 9,
+        title: 'Ролевые игры',
+        description: 'Играем в доктора, повара, водителя',
+        duration: '30 мин',
+        category: 'Развитие',
+        premium: true,
+        icon: '👨‍⚕️',
+        difficulty: 'Средне',
+        materials: ['Игрушечные инструменты', 'Костюмы или атрибуты', 'Куклы/игрушки'],
+        instructions: [
+          'Выберите роль для игры (доктор, повар, и т.д.)',
+          'Подготовьте необходимые атрибуты',
+          'Покажите, как играть эту роль',
+          'Пусть ребенок попробует сам',
+          'Меняйтесь ролями',
+          'Придумывайте разные сценарии'
+        ],
+        benefits: 'Развивает социальные навыки, воображение, речь, эмпатию, понимание профессий',
+        ageRange: '2,5-5 лет'
+      }
+    ],
+    4: [
+      {
+        id: 10,
+        title: 'Конструктор по схемам',
+        description: 'Строим по образцу, развиваем пространственное мышление',
+        duration: '35 мин',
+        category: 'Логика',
+        premium: false,
+        icon: '🧱',
+        difficulty: 'Средне',
+        materials: ['Крупный конструктор', 'Схемы построек', 'Карточки с образцами'],
+        instructions: [
+          'Выберите простую схему для начала',
+          'Разложите все детали конструктора',
+          'Покажите, как читать схему',
+          'Стройте вместе, следуя образцу',
+          'Поощряйте самостоятельные попытки',
+          'Создавайте собственные постройки'
+        ],
+        benefits: 'Развивает пространственное мышление, следование инструкциям, мелкую моторику, планирование',
+        ageRange: '3-5 лет'
+      }
+    ]
+  }), []);
+
+  // Мотивирующие сообщения - ОПТИМИЗИРОВАНО
+  const motivationalMessages = useMemo(() => ({
+    daily: [
+      '🌟 Время для развития с {name}! Сегодня изучаем что-то новое?',
+      '💫 {name} ждет интересную активность! Что выберем сегодня?',
+      '🎯 Продолжаем streak! Уже {streak} дней развиваемся вместе!',
+      '🚀 Пора заниматься с {name}! Каждый день - новое открытие!',
+      '⭐ {name} готов(а) к новым знаниям! Начинаем?'
+    ],
+    streak: [
+      '🔥 Невероятно! {streak} дней подряд! {name} настоящий чемпион!',
+      '👑 Потрясающий streak - {streak} дней! Продолжаем развиваться!',
+      '🏆 {streak} дней занятий! {name} становится умнее каждый день!'
+    ],
+    encouragement: [
+      '💪 Даже 10 минут занятий принесут пользу {name}!',
+      '🌱 Каждая активность помогает {name} расти и развиваться!',
+      '❤️ {name} любит проводить время с вами за играми!'
+    ]
+  }), []);
+
+  // История уведомлений - ОПТИМИЗИРОВАНО
+  const notificationHistory = useMemo(() => [
+    {
+      id: 1,
+      message: 'Время для развития с Андрей! Сегодня изучаем что-то новое?',
+      timestamp: '2025-01-14 19:00',
+      type: 'daily',
+      opened: true
+    },
+    {
+      id: 2,
+      message: 'Невероятно! 7 дней подряд! Андрей настоящий чемпион!',
+      timestamp: '2025-01-13 19:00',
+      type: 'streak',
+      opened: true
+    }
+  ], []);
+
+  // ОПТИМИЗИРОВАННЫЕ ФУНКЦИИ-ХЕЛПЕРЫ
+    if (age === 1) return 'год';
+    if (age < 5) return 'года';
+    return 'лет';
+  }, []);
+
+  const getCategoryColor = useCallback((category) => {
+    const colors = {
+      'Моторика': 'bg-blue-100 text-blue-800',
+      'Речь': 'bg-green-100 text-green-800',
+      'Логика': 'bg-purple-100 text-purple-800',
+      'Творчество': 'bg-pink-100 text-pink-800',
+      'Развитие': 'bg-orange-100 text-orange-800'
+    };
+    return colors[category] || 'bg-gray-100 text-gray-800';
+  }, []);
+
+  const getDifficultyColor = useCallback((difficulty) => {
+    const colors = {
+      'Легко': 'bg-green-100 text-green-800',
+      'Средне': 'bg-yellow-100 text-yellow-800',
+      'Сложно': 'bg-red-100 text-red-800'
+    };
+    return colors[difficulty] || 'bg-gray-100 text-gray-800';
+  }, []);
+
+  const getNotificationTypeColor = useCallback((type) => {
+    const colors = {
+      'daily': 'bg-blue-100 text-blue-800',
+      'streak': 'bg-orange-100 text-orange-800',
+      'encouragement': 'bg-green-100 text-green-800',
+      'reminder': 'bg-purple-100 text-purple-800'
+    };
+    return colors[type] || 'bg-gray-100 text-gray-800';
+  }, []);
+
+  const getSkillName = useCallback((key) => {
+    const names = {
+      motor: 'Мелкая моторика',
+      speech: 'Речь и коммуникация', 
+      logic: 'Логическое мышление',
+      creativity: 'Творческие способности',
+      development: 'Общее развитие'
+    };
+    return names[key];
+  }, []);
+
+  const getSkillColor = useCallback((key) => {
+    const colors = {
+      motor: 'bg-blue-500',
+      speech: 'bg-green-500',
+      logic: 'bg-purple-500', 
+      creativity: 'bg-pink-500',
+      development: 'bg-orange-500'
+    };
+    return colors[key];
+  }, []);
+
+  const getCategoryInfo = useCallback((categoryId) => {
+    return libraryContent.categories.find(cat => cat.id === categoryId);
+  }, [libraryContent.categories]);
+
+  const getFilteredArticles = useMemo(() => {
+    if (selectedCategory === 'all') {
+      return libraryContent.articles;
+    }
+    return libraryContent.articles.filter(article => article.category === selectedCategory);
+  }, [selectedCategory, libraryContent.articles]);
+
+  const getFilteredActivities = useMemo(() => {
+    const activities = activitiesDatabase[child.age] || [];
+    if (selectedCategory === 'all') {
+      return activities;
+    }
+    return activities.filter(activity => activity.category === selectedCategory);
+  }, [selectedCategory, child.age, activitiesDatabase]);
+
+  const getActivityCategories = useMemo(() => {
+    const activities = activitiesDatabase[child.age] || [];
+    const categories = [...new Set(activities.map(activity => activity.category))];
+    return categories.map(cat => ({
+      id: cat,
+      name: cat,
+      count: activities.filter(a => a.category === cat).length
+    }));
+  }, [child.age, activitiesDatabase]);
+
+  const getRandomMessage = useCallback((type) => {
+    const messages = motivationalMessages[type] || motivationalMessages.daily;
+    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+    return randomMessage
+      .replace('{name}', child.name)
+      .replace('{streak}', child.streak);
+  }, [child.name, child.streak, motivationalMessages]);
+
+  // ОПТИМИЗИРОВАННЫЕ ОБРАБОТЧИКИ СОБЫТИЙ
+  const handleActivitySelect = useCallback((activity) => {
+    setSelectedActivity(activity);
+  }, []);
+
+  const handleCategorySelect = useCallback((category) => {
+    setSelectedCategory(category);
+  }, []);
+
+  const handleScreenChange = useCallback((screen) => {
+    setCurrentScreen(screen);
+    // Сброс состояний при смене экрана
+    if (screen !== 'activities') {
+      setSelectedActivity(null);
+    }
+    if (screen === 'main') {
+      setSelectedCategory('all');
+    }
+  }, []);
+
+  const handleChildAgeChange = useCallback((age) => {
+    setChild(prev => ({ ...prev, age }));
+    // Сброс выбранной активности при смене возраста
+    setSelectedActivity(null);
+    setSelectedCategory('all');
+  }, []);
+
+  // КОМПОНЕНТЫ ЗАГРУЗКИ И ОШИБОК
+  const LoadingSpinner = () => (
+    <div className="flex items-center justify-center py-8">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+    </div>
+  );
+
+  const EmptyState = ({ icon, title, description }) => (
+    <div className="text-center py-8">
+      <div className="text-4xl mb-4">{icon}</div>
+      <h3 className="text-lg font-semibold text-gray-800 mb-2">{title}</h3>
+      <p className="text-gray-600">{description}</p>
+    </div>
+  );
+
+  // УЛУЧШЕННАЯ ДОСТУПНОСТЬ
+  const AccessibleButton = ({ onClick, className, children, disabled = false, ariaLabel }) => (
+    <button
+      onClick={onClick}
+      className={`${className} ${disabled ? 'cursor-not-allowed opacity-50' : ''} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+      disabled={disabled}
+      aria-label={ariaLabel}
+      tabIndex={0}
+    >
+      {children}
+    </button>
+  );
+
+  // ГЛАВНЫЙ ЭКРАН - УЛУЧШЕННЫЙ
+  if (currentScreen === 'main') {
+    const availableActivitiesCount = (activitiesDatabase[child.age] || []).length;
+    
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+        <header className="bg-white shadow-sm px-4 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800">Привет, {child.name}! 👋</h1>
+              <p className="text-gray-600">Возраст: {child.age} {getAgeText(child.age)}</p>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center bg-orange-100 px-3 py-1 rounded-full">
+                <span className="text-sm font-medium text-orange-800">🏆 {child.streak} дней</span>
+              </div>
+              <AccessibleButton
+                onClick={() => handleScreenChange('notifications')}
+                className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors relative"
+                ariaLabel="Настройки уведомлений"
+              >
+                <span className="text-xl">🔔</span>
+                {notificationSettings.enabled && (
+                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full"></span>
+                )}
+              </AccessibleButton>
+              <AccessibleButton
+                onClick={() => handleScreenChange('settings')}
+                className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+                ariaLabel="Настройки приложения"
+              >
+                ⚙️
+              </AccessibleButton>
+            </div>
+          </div>
+        </header>
+
+        <main className="px-4">
+          {/* Notification Preview */}
+          {notificationSettings.enabled && (
+            <div className="mt-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg p-4 text-white">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-bold flex items-center">🔔 Напоминания включены</h3>
+                  <p className="text-sm opacity-90">Следующее в {notificationSettings.time}</p>
+                </div>
+                <AccessibleButton
+                  onClick={() => handleScreenChange('notifications')}
+                  className="bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-30 transition-colors"
+                  ariaLabel="Настроить напоминания"
+                >
+                  Настроить
+                </AccessibleButton>
+              </div>
+            </div>
+          )}
+
+          {/* Premium Banner */}
+          {!isPremium && (
+            <div className="mt-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg p-4 text-white">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-bold flex items-center">👑 Премиум подписка</h3>
+                  <p className="text-sm opacity-90">Открой все активности и возможности</p>
+                </div>
+                <AccessibleButton
+                  onClick={() => setIsPremium(true)}
+                  className="bg-white text-purple-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                  ariaLabel="Подключить премиум подписку"
+                >
+                  Подключить
+                </AccessibleButton>
+              </div>
+            </div>
+          )}
+
+          <div className="py-6">
+            {/* Main Action Card */}
+            <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+              <div className="text-center mb-6">
+                <div className="bg-gradient-to-r from-green-400 to-blue-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white text-3xl" role="img" aria-label="Играть">▶️</span>
+                </div>
+                <h2 className="text-xl font-bold text-gray-800 mb-2">Время для развития!</h2>
+                <p className="text-gray-600">Выбери активность для {child.name}</p>
+              </div>
+              
+              <AccessibleButton
+                onClick={() => handleScreenChange('activities')}
+                className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-4 rounded-xl font-medium text-lg hover:from-green-600 hover:to-blue-600 transition-all transform hover:scale-105"
+                ariaLabel="Начать активность"
+              >
+                Начать активность
+              </AccessibleButton>
+            </div>
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="bg-white rounded-xl p-4 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-2xl font-bold text-blue-600">{availableActivitiesCount}</p>
+                    <p className="text-sm text-gray-600">Активности</p>
+                  </div>
+                  <span className="text-2xl" role="img" aria-label="Активности">🎯</span>
+                </div>
+              </div>
+              <div className="bg-white rounded-xl p-4 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-2xl font-bold text-purple-600">{progressData.totalTime}ч</p>
+                    <p className="text-sm text-gray-600">Время развития</p>
+                  </div>
+                  <span className="text-2xl" role="img" aria-label="Время">⏰</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Navigation Grid */}
+            <div className="grid grid-cols-2 gap-4">
+              <AccessibleButton
+                onClick={() => handleScreenChange('progress')}
+                className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
+                ariaLabel="Посмотреть прогресс"
+              >
+                <div className="flex items-center justify-center mb-2">
+                  <span className="text-2xl" role="img" aria-label="Прогресс">📅</span>
+                </div>
+                <p className="text-sm font-medium text-gray-800">Прогресс</p>
+              </AccessibleButton>
+              <AccessibleButton
+                onClick={() => handleScreenChange('library')}
+                className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
+                ariaLabel="Открыть библиотеку"
+              >
+                <div className="flex items-center justify-center mb-2">
+                  <span className="text-2xl" role="img" aria-label="Библиотека">📚</span>
+                </div>
+                <p className="text-sm font-medium text-gray-800">Библиотека</p>
+              </AccessibleButton>
+            </div>
+          </div>
+
+          {/* Age Selector for testing */}
+          <div className="pb-6">
+            <div className="bg-gray-100 rounded-lg p-4">
+              <p className="text-sm text-gray-600 mb-2">Тест возрастов:</p>
+              <div className="flex gap-2 flex-wrap">
+                {[1,2,3,4,5,6,7].map(age => (
+                  <AccessibleButton
+                    key={age}
+                    onClick={() => handleChildAgeChange(age)}
+                    className={`px-3 py-1 rounded text-sm transition-colors ${
+                      child.age === age ? 'bg-blue-500 text-white' : 'bg-white text-gray-600 hover:bg-blue-50'
+                    }`}
+                    ariaLabel={`Установить возраст ${age} ${getAgeText(age)}`}
+                  >
+                    {age} {getAgeText(age)}
+                  </AccessibleButton>
+                ))}
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  } самостоятельно',
           'Дайте губку - пусть выжимает воду',
           'Не забудьте про полотенце для уборки!'
         ],
