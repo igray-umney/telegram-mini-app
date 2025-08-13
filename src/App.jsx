@@ -1698,25 +1698,6 @@ const createCardPayment = async () => {
       </div>
     );
   }
-
-// НОВЫЙ экран деталей активности
-if (currentScreen === 'activity-details' && selectedActivity) {
-  return (
-
-const ChildDevelopmentApp = () => {
-  const [currentScreen, setCurrentScreen] = useState('main');
-  const [isPremium, setIsPremium] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedActivity, setSelectedActivity] = useState(null);
-  const [showPayment, setShowPayment] = useState(false);
-  const [paymentStatus, setPaymentStatus] = useState('idle');
-  const [telegramUser, setTelegramUser] = useState(null);
-  const [botConnected, setBotConnected] = useState(false);
-  const [child, setChild] = useState({
-    name: 'Андрей',
-    age: 2,
-    streak: 7
-  });
   
   // Настройки уведомлений через Telegram Bot
   const [notificationSettings, setNotificationSettings] = useState({
