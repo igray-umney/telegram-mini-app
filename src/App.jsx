@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 const ChildDevelopmentApp = () => {
   const [currentScreen, setCurrentScreen] = useState('main');
   const [isPremium, setIsPremium] = useState(false);
@@ -13,30 +14,6 @@ const ChildDevelopmentApp = () => {
     streak: 7
   });
   
-  // Настройки уведомлений через Telegram Bot
-  const [notificationSettings, setNotificationSettings] = useState({
-    enabled: false,
-    time: '19:00',
-    frequency: 'daily',
-    reminderType: 'motivational',
-    botUsername: 'razvivayка_bot', // Замените на имя вашего бота
-    quietHours: {
-      enabled: true,
-      start: '21:00',
-      end: '08:00'
-    },
-    weekendMode: false,
-    customDays: {
-      monday: true,
-      tuesday: true,
-      wednesday: true,
-      thursday: true,
-      friday: true,
-      saturday: true,
-      sunday: false
-    }
-  });
-
   // Данные прогресса
   const [progressData] = useState({
     weeklyActivities: [true, true, false, true, true, false, false],
