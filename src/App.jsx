@@ -1,5 +1,3 @@
-import React, { useState, useEffect } from 'react';
-
 const ChildDevelopmentApp = () => {
   const [currentScreen, setCurrentScreen] = useState('main');
   const [isPremium, setIsPremium] = useState(false);
