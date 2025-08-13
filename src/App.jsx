@@ -3699,7 +3699,5 @@ if (minutes && window.Telegram?.WebApp) {
       </div>
     </div>
   );
-
 };
-
 export default ChildDevelopmentApp;
