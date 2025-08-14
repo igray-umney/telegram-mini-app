@@ -710,6 +710,7 @@ const ChildDevelopmentApp = () => {
   };
 
   const createCardPayment = async () => {
+    alert('🎯 createCardPayment function called!');
     console.log('🎯 createCardPayment called!');
     setPaymentStatus('processing');
     
