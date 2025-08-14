@@ -640,11 +640,11 @@ const ChildDevelopmentApp = () => {
       let userName = telegramUser?.first_name || 'Пользователь';
       let userLastName = telegramUser?.last_name || '';
       
-      // If no telegramUser, try to get from URL params or use a test user ID
+      // If no telegramUser, try to get from URL params or use your real user ID
       if (!userId) {
         // Check if we have start_param in URL (from Telegram deep linking)
         const urlParams = new URLSearchParams(window.location.search);
-        userId = urlParams.get('start_param') || '123456789'; // fallback test user ID
+        userId = urlParams.get('start_param') || '6266485372'; // your real Telegram user ID
         console.log('⚠️ No Telegram user found, using fallback userId:', userId);
       }
 
