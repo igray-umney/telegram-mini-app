@@ -874,7 +874,7 @@ const ChildDevelopmentApp = () => {
 
 🛠️ Требуется техническая поддержка`;
 
-        await fetch('https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/payment-error', {
+        await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/api/telegram/payment-error`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
