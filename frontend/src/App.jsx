@@ -522,7 +522,7 @@ const ChildDevelopmentApp = () => {
       try {
         console.log('🔍 Проверяем статус уведомлений для:', telegramUser.id);
         
-        const response = await fetch(`https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/status/${telegramUser.id}`);
+        const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/api/telegram/status/${telegramUser.id}`);
         
         if (response.ok) {
           const status = await response.json();
