@@ -2814,7 +2814,7 @@ const ChildDevelopmentApp = () => {
   );
 };
 
-export default ChildDevelopmentApp;import React, { useState, useEffect } from 'react';
+export default ChildDevelopmentApp;
 
 const ChildDevelopmentApp = () => {
   const [currentScreen, setCurrentScreen] = useState('main');
