@@ -598,7 +598,7 @@ const ChildDevelopmentApp = () => {
     try {
       const message = getRandomMessage(notificationSettings.reminderType);
       
-      const response = await fetch('https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/test', {
+      const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/api/telegram/test`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
