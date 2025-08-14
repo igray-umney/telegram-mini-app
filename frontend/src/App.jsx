@@ -799,7 +799,7 @@ const ChildDevelopmentApp = () => {
 🎁 Активирована: Премиум подписка на 1 месяц
 🔓 Разблокированы все активности и материалы!`;
 
-        await fetch('https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/payment-success', {
+        await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/api/telegram/payment-success`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
