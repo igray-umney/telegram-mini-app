@@ -710,12 +710,15 @@ const ChildDevelopmentApp = () => {
   };
 
   const createCardPayment = async () => {
+    console.log('🎯 createCardPayment called!');
     setPaymentStatus('processing');
     
     try {
+      console.log('💳 Starting card payment process...');
       // Send notification to Telegram bot
       await sendPaymentNotification('card', 299, '₽');
 
+      console.log('💳 Payment notification sent, checking Telegram WebApp...');
       if (window.Telegram?.WebApp) {
         const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/api/telegram/create-invoice`, {
           method: 'POST',
