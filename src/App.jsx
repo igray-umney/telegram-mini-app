@@ -946,23 +946,34 @@ const ChildDevelopmentApp = () => {
             
             {paymentStatus === 'processing' && (
               <div className="mb-4">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
-                <p className="text-sm text-gray-600 mt-2">Обработка платежа...</p>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-2"></div>
+                <p className="text-sm text-gray-600 text-center">Обработка платежа...</p>
+                <p className="text-xs text-gray-500 text-center mt-1">Уведомление отправлено в Telegram</p>
               </div>
             )}
             
             {paymentStatus === 'success' && (
               <div className="mb-4 p-4 bg-green-50 rounded-lg">
-                <div className="text-green-500 text-2xl mb-2">✓</div>
-                <p className="text-green-800 font-semibold">Платеж успешно завершен!</p>
-                <p className="text-sm text-green-600">Премиум активирован</p>
+                <div className="text-green-500 text-2xl mb-2 text-center">✓</div>
+                <p className="text-green-800 font-semibold text-center">Платеж успешно завершен!</p>
+                <p className="text-sm text-green-600 text-center">Премиум активирован</p>
+                <p className="text-xs text-green-500 text-center mt-1">✨ Уведомление отправлено в Telegram</p>
+              </div>
+            )}
+            
+            {paymentStatus === 'cancelled' && (
+              <div className="mb-4 p-4 bg-yellow-50 rounded-lg">
+                <div className="text-yellow-500 text-2xl mb-2 text-center">⚠️</div>
+                <p className="text-yellow-800 font-semibold text-center">Платеж отменен</p>
+                <p className="text-sm text-yellow-600 text-center">Вы можете попробовать еще раз</p>
               </div>
             )}
             
             {paymentStatus === 'error' && (
               <div className="mb-4 p-4 bg-red-50 rounded-lg">
-                <div className="text-blue-500 text-2xl mb-2">💬</div>
-                <p className="text-sm text-blue-600">Проверьте Telegram - там должен быть счет для оплаты</p>
+                <div className="text-blue-500 text-2xl mb-2 text-center">💬</div>
+                <p className="text-sm text-blue-600 text-center">Проверьте Telegram - там должен быть счет для оплаты</p>
+                <p className="text-xs text-gray-500 text-center mt-1">📱 Уведомление о проблеме отправлено</p>
               </div>
             )}
             
