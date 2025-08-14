@@ -635,11 +635,23 @@ const ChildDevelopmentApp = () => {
   // Send payment notification to Telegram bot
   const sendPaymentNotification = async (paymentType, amount, currency = '₽') => {
     try {
-      if (telegramUser?.id) {
-        const notificationMessage = `🎯 Новая попытка оплаты премиум подписки!
+      // Try to get user ID from Telegram WebApp first, then use a fallback
+      let userId = telegramUser?.id;
+      let userName = telegramUser?.first_name || 'Пользователь';
+      let userLastName = telegramUser?.last_name || '';
+      
+      // If no telegramUser, try to get from URL params or use a test user ID
+      if (!userId) {
+        // Check if we have start_param in URL (from Telegram deep linking)
+        const urlParams = new URLSearchParams(window.location.search);
+        userId = urlParams.get('start_param') || '123456789'; // fallback test user ID
+        console.log('⚠️ No Telegram user found, using fallback userId:', userId);
+      }
 
-👤 Пользователь: ${telegramUser.first_name} ${telegramUser.last_name || ''}
-🆔 ID: ${telegramUser.id}
+      const notificationMessage = `🎯 Новая попытка оплаты премиум подписки!
+
+👤 Пользователь: ${userName} ${userLastName}
+🆔 ID: ${userId}
 👶 Ребенок: ${child.name} (${child.age} ${getAgeText(child.age)})
 
 💳 Способ оплаты: ${paymentType === 'card' ? 'Банковская карта' : 'Telegram Stars'}
@@ -649,25 +661,33 @@ const ChildDevelopmentApp = () => {
 ✨ Подписка: Премиум на 1 месяц
 🎁 Включает: Все активности, персональные программы, подробная аналитика`;
 
-        await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/api/telegram/payment-notification`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            userId: telegramUser.id,
-            message: notificationMessage,
-            paymentType: paymentType,
-            amount: amount,
-            currency: currency,
-            childInfo: {
-              name: child.name,
-              age: child.age
-            }
-          }),
-        });
+      console.log('📤 Sending payment notification to userId:', userId);
 
+      const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/api/telegram/payment-notification`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: userId,
+          message: notificationMessage,
+          paymentType: paymentType,
+          amount: amount,
+          currency: currency,
+          childInfo: {
+            name: child.name,
+            age: child.age
+          }
+        }),
+      });
+
+      const result = await response.json();
+      console.log('🔄 Backend response:', result);
+
+      if (result.success) {
         console.log('✅ Payment notification sent to Telegram bot');
+      } else {
+        console.log('❌ Payment notification failed:', result.error);
       }
     } catch (error) {
       console.error('❌ Error sending payment notification:', error);
