@@ -736,7 +736,7 @@ const ChildDevelopmentApp = () => {
       await sendPaymentNotification('stars', 100, ' ⭐');
 
       if (window.Telegram?.WebApp) {
-        const response = await fetch('https://telegram-bot-server-production-8dfb.up.railway.app/api/payments/stars', {
+        const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/api/telegram/create-stars-invoice`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
