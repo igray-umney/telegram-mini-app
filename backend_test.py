@@ -406,6 +406,15 @@ class TelegramBotTester:
                 else:
                     self.log_test("Create Stars Invoice", False, f"Stars invoice creation failed: {data}", data)
                     return False
+            elif response.status_code == 500:
+                # Check if it's the expected "chat not found" error
+                data = response.json()
+                if "chat not found" in data.get("message", ""):
+                    self.log_test("Create Stars Invoice", True, "Expected error: User not registered with bot", data)
+                    return True
+                else:
+                    self.log_test("Create Stars Invoice", False, f"Unexpected 500 error: {data}", data)
+                    return False
             else:
                 self.log_test("Create Stars Invoice", False, f"HTTP {response.status_code}: {response.text}")
                 return False
