@@ -928,7 +928,10 @@ const ChildDevelopmentApp = () => {
             </div>
             
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Премиум подписка</h2>
-            <p className="text-gray-600 mb-6">Разблокируйте все возможности приложения</p>
+            <div className="text-gray-600 text-sm mb-4">
+              <p>👤 Пользователь: {telegramUser ? `${telegramUser.first_name} (ID: ${telegramUser.id})` : 'Не определен'}</p>
+              <p>🎯 Backend: {import.meta.env.REACT_APP_BACKEND_URL}</p>
+            </div>
             
             <div className="bg-gray-50 rounded-lg p-4 mb-6">
               <h3 className="font-semibold text-gray-800 mb-3">Что входит в премиум:</h3>
