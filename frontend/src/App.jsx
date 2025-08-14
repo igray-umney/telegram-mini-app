@@ -556,7 +556,7 @@ const ChildDevelopmentApp = () => {
     try {
       console.log('🔗 Подключение к боту, telegramUser:', telegramUser);
       
-      const response = await fetch('https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/connect', {
+      const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/api/telegram/connect`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
