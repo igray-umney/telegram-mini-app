@@ -632,10 +632,56 @@ const ChildDevelopmentApp = () => {
     }
   };
 
+  // Send payment notification to Telegram bot
+  const sendPaymentNotification = async (paymentType, amount, currency = '₽') => {
+    try {
+      if (telegramUser?.id) {
+        const notificationMessage = `🎯 Новая попытка оплаты премиум подписки!
+
+👤 Пользователь: ${telegramUser.first_name} ${telegramUser.last_name || ''}
+🆔 ID: ${telegramUser.id}
+👶 Ребенок: ${child.name} (${child.age} ${getAgeText(child.age)})
+
+💳 Способ оплаты: ${paymentType === 'card' ? 'Банковская карта' : 'Telegram Stars'}
+💰 Сумма: ${amount}${currency}
+📅 Время: ${new Date().toLocaleString('ru-RU')}
+
+✨ Подписка: Премиум на 1 месяц
+🎁 Включает: Все активности, персональные программы, подробная аналитика`;
+
+        await fetch('https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/payment-notification', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: telegramUser.id,
+            message: notificationMessage,
+            paymentType: paymentType,
+            amount: amount,
+            currency: currency,
+            childInfo: {
+              name: child.name,
+              age: child.age
+            }
+          }),
+        });
+
+        console.log('✅ Payment notification sent to Telegram bot');
+      }
+    } catch (error) {
+      console.error('❌ Error sending payment notification:', error);
+      // Don't block payment flow if notification fails
+    }
+  };
+
   const createCardPayment = async () => {
     setPaymentStatus('processing');
     
     try {
+      // Send notification to Telegram bot
+      await sendPaymentNotification('card', 299, '₽');
+
       if (window.Telegram?.WebApp) {
         const response = await fetch('https://telegram-bot-server-production-8dfb.up.railway.app/api/payments/card', {
           method: 'POST',
@@ -655,18 +701,30 @@ const ChildDevelopmentApp = () => {
           if (status === 'paid') {
             setPaymentStatus('success');
             setIsPremium(true);
+            // Send success notification
+            sendSuccessPaymentNotification('card', 299, '₽');
             setTimeout(() => {
               setShowPayment(false);
               setPaymentStatus('idle');
             }, 2000);
+          } else if (status === 'cancelled') {
+            setPaymentStatus('cancelled');
+            // Send cancellation notification
+            sendCancelledPaymentNotification('card', 299, '₽');
+            setTimeout(() => {
+              setPaymentStatus('idle');
+            }, 2000);
           } else {
             setPaymentStatus('error');
+            // Send error notification
+            sendErrorPaymentNotification('card', 299, '₽');
           }
         });
       }
     } catch (error) {
       console.error('Ошибка при создании платежа:', error);
       setPaymentStatus('error');
+      sendErrorPaymentNotification('card', 299, '₽');
     }
   };
 
@@ -674,6 +732,9 @@ const ChildDevelopmentApp = () => {
     setPaymentStatus('processing');
     
     try {
+      // Send notification to Telegram bot
+      await sendPaymentNotification('stars', 100, ' ⭐');
+
       if (window.Telegram?.WebApp) {
         const response = await fetch('https://telegram-bot-server-production-8dfb.up.railway.app/api/payments/stars', {
           method: 'POST',
@@ -693,18 +754,144 @@ const ChildDevelopmentApp = () => {
           if (status === 'paid') {
             setPaymentStatus('success');
             setIsPremium(true);
+            // Send success notification
+            sendSuccessPaymentNotification('stars', 100, ' ⭐');
             setTimeout(() => {
               setShowPayment(false);
               setPaymentStatus('idle');
             }, 2000);
+          } else if (status === 'cancelled') {
+            setPaymentStatus('cancelled');
+            // Send cancellation notification
+            sendCancelledPaymentNotification('stars', 100, ' ⭐');
+            setTimeout(() => {
+              setPaymentStatus('idle');
+            }, 2000);
           } else {
             setPaymentStatus('error');
+            // Send error notification
+            sendErrorPaymentNotification('stars', 100, ' ⭐');
           }
         });
       }
     } catch (error) {
       console.error('Ошибка при создании платежа:', error);
       setPaymentStatus('error');
+      sendErrorPaymentNotification('stars', 100, ' ⭐');
+    }
+  };
+
+  // Send payment success notification
+  const sendSuccessPaymentNotification = async (paymentType, amount, currency) => {
+    try {
+      if (telegramUser?.id) {
+        const successMessage = `🎉 УСПЕШНАЯ ОПЛАТА ПРЕМИУМ ПОДПИСКИ!
+
+👤 Пользователь: ${telegramUser.first_name} ${telegramUser.last_name || ''}
+🆔 ID: ${telegramUser.id}
+👶 Ребенок: ${child.name} (${child.age} ${getAgeText(child.age)})
+
+✅ Платеж завершен успешно!
+💳 Способ: ${paymentType === 'card' ? 'Банковская карта' : 'Telegram Stars'}
+💰 Сумма: ${amount}${currency}
+📅 Время: ${new Date().toLocaleString('ru-RU')}
+
+🎁 Активирована: Премиум подписка на 1 месяц
+🔓 Разблокированы все активности и материалы!`;
+
+        await fetch('https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/payment-success', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: telegramUser.id,
+            message: successMessage,
+            paymentType: paymentType,
+            amount: amount,
+            currency: currency
+          }),
+        });
+
+        console.log('✅ Payment success notification sent');
+      }
+    } catch (error) {
+      console.error('❌ Error sending success notification:', error);
+    }
+  };
+
+  // Send payment cancellation notification
+  const sendCancelledPaymentNotification = async (paymentType, amount, currency) => {
+    try {
+      if (telegramUser?.id) {
+        const cancelMessage = `❌ Платеж отменен пользователем
+
+👤 Пользователь: ${telegramUser.first_name} ${telegramUser.last_name || ''}
+🆔 ID: ${telegramUser.id}
+👶 Ребенок: ${child.name}
+
+💳 Способ: ${paymentType === 'card' ? 'Банковская карта' : 'Telegram Stars'}
+💰 Сумма: ${amount}${currency}
+📅 Время: ${new Date().toLocaleString('ru-RU')}
+
+🤔 Возможно, нужна помощь с оплатой?`;
+
+        await fetch('https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/payment-cancelled', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: telegramUser.id,
+            message: cancelMessage,
+            paymentType: paymentType,
+            amount: amount,
+            currency: currency
+          }),
+        });
+
+        console.log('⚠️ Payment cancellation notification sent');
+      }
+    } catch (error) {
+      console.error('❌ Error sending cancellation notification:', error);
+    }
+  };
+
+  // Send payment error notification
+  const sendErrorPaymentNotification = async (paymentType, amount, currency) => {
+    try {
+      if (telegramUser?.id) {
+        const errorMessage = `⚠️ ОШИБКА ПРИ ОПЛАТЕ
+
+👤 Пользователь: ${telegramUser.first_name} ${telegramUser.last_name || ''}
+🆔 ID: ${telegramUser.id}
+👶 Ребенок: ${child.name}
+
+❌ Платеж завершился с ошибкой
+💳 Способ: ${paymentType === 'card' ? 'Банковская карта' : 'Telegram Stars'}
+💰 Сумма: ${amount}${currency}
+📅 Время: ${new Date().toLocaleString('ru-RU')}
+
+🛠️ Требуется техническая поддержка`;
+
+        await fetch('https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/payment-error', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: telegramUser.id,
+            message: errorMessage,
+            paymentType: paymentType,
+            amount: amount,
+            currency: currency
+          }),
+        });
+
+        console.log('❌ Payment error notification sent');
+      }
+    } catch (error) {
+      console.error('❌ Error sending error notification:', error);
     }
   };
 
