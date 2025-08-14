@@ -1446,7 +1446,299 @@ const ChildDevelopmentApp = () => {
                   },
                   { 
                     value: 'streak', 
-                    label
+                    label: 'С акцентом на streak', 
+                    description: 'Фокус на достижениях и регулярности',
+                    example: getRandomMessage('streak')
+                  }
+                ].map((type) => (
+                  <button
+                    key={type.value}
+                    onClick={() => setNotificationSettings({
+                      ...notificationSettings,
+                      reminderType: type.value
+                    })}
+                    className={`w-full p-4 rounded-lg border-2 transition-colors text-left ${
+                      notificationSettings.reminderType === type.value
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-semibold text-gray-800">{type.label}</h3>
+                      {notificationSettings.reminderType === type.value && (
+                        <span className="text-blue-500">✓</span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-600 mb-2">{type.description}</p>
+                    <p className="text-xs text-gray-500 italic">"{type.example}"</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Test Notification */}
+          {botConnected && (
+            <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+              <h2 className="text-lg font-bold text-gray-800 mb-4">Тестовое уведомление</h2>
+              <p className="text-sm text-gray-600 mb-4">
+                Посмотрите, как будет выглядеть ваше уведомление
+              </p>
+              
+              <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg mb-4">
+                <div className="flex items-center mb-2">
+                  <span className="text-blue-500 mr-2">🔔</span>
+                  <span className="font-semibold text-blue-900">Развивайка</span>
+                  <span className="text-xs text-blue-600 ml-auto">{notificationSettings.time}</span>
+                </div>
+                <p className="text-blue-800">
+                  {getRandomMessage(notificationSettings.reminderType)}
+                </p>
+              </div>
+
+              <button 
+                onClick={sendTestNotification}
+                className="w-full bg-blue-500 text-white py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors"
+              >
+                Отправить тестовое уведомление
+              </button>
+            </div>
+          )}
+
+          {/* Notification History */}
+          <div className="bg-white rounded-xl p-6 shadow-sm">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">История уведомлений</h2>
+            <div className="space-y-3">
+              {notificationHistory.map((notification) => (
+                <div 
+                  key={notification.id} 
+                  className={`p-3 rounded-lg ${
+                    notification.opened ? 'bg-gray-50' : 'bg-blue-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getNotificationTypeColor(notification.type)}`}>
+                      {notification.type === 'daily' ? 'Ежедневное' : 
+                       notification.type === 'streak' ? 'Streak' : 'Другое'}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {new Date(notification.timestamp).toLocaleString('ru-RU')}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-700">{notification.message}</p>
+                  {!notification.opened && (
+                    <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mt-2"></span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Экран настроек профиля
+  if (currentScreen === 'settings') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm px-4 py-4 sticky top-0 z-10">
+          <div className="flex items-center">
+            <button 
+              onClick={() => setCurrentScreen('main')}
+              className="mr-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <span className="text-2xl">←</span>
+            </button>
+            <h1 className="text-xl font-bold text-gray-800">Настройки</h1>
+          </div>
+        </div>
+
+        <div className="px-4 py-6">
+          {/* Child Info */}
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">Информация о ребенке</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Имя</label>
+                <input 
+                  type="text" 
+                  value={child.name}
+                  onChange={(e) => setChild({...child, name: e.target.value})}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Введите имя ребенка"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Возраст</label>
+                <select 
+                  value={child.age}
+                  onChange={(e) => setChild({...child, age: parseInt(e.target.value)})}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  {[1,2,3,4,5,6,7].map(age => (
+                    <option key={age} value={age}>{age} {getAgeText(age)}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* App Info */}
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">О приложении</h2>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between py-2">
+                <span className="text-gray-600">Версия приложения</span>
+                <span className="font-medium text-gray-800">1.0.0</span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-gray-600">Всего активностей</span>
+                <span className="font-medium text-gray-800">{Object.values(activitiesDatabase).flat().length}</span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-gray-600">Статей в библиотеке</span>
+                <span className="font-medium text-gray-800">{libraryContent.articles.length}</span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-gray-600">Telegram интеграция</span>
+                <span className={`font-medium ${botConnected ? 'text-green-600' : 'text-gray-600'}`}>
+                  {botConnected ? 'Подключена' : 'Не подключена'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Premium Status */}
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">Подписка</h2>
+            {isPremium ? (
+              <div className="text-center py-4">
+                <div className="bg-gradient-to-r from-purple-600 to-pink-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white text-2xl">👑</span>
+                </div>
+                <h3 className="text-lg font-bold text-gray-800">Премиум активен</h3>
+                <p className="text-gray-600 mb-2">Все активности разблокированы</p>
+                <p className="text-sm text-gray-500">Подписка продлевается автоматически</p>
+                <button 
+                  onClick={() => setIsPremium(false)}
+                  className="mt-4 text-red-600 hover:text-red-700 text-sm"
+                >
+                  Отключить премиум (для теста)
+                </button>
+              </div>
+            ) : (
+              <div className="text-center py-4">
+                <h3 className="text-lg font-bold text-gray-800 mb-2">Разблокируй все возможности</h3>
+                <p className="text-gray-600 mb-4">
+                  • Неограниченные активности<br/>
+                  • Персональные программы<br/>
+                  • Подробная аналитика
+                </p>
+                <button 
+                  onClick={() => setShowPayment(true)}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition-all"
+                >
+                  Подписаться - 299₽/мес
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Support & Feedback */}
+          <div className="bg-white rounded-xl p-6 shadow-sm">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">Поддержка и обратная связь</h2>
+            <div className="space-y-3">
+              <button 
+                className="w-full p-3 text-left bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                onClick={() => {
+                  if (window.Telegram?.WebApp) {
+                    window.Telegram.WebApp.showAlert('Связываемся с поддержкой...');
+                  } else {
+                    alert('Связываемся с поддержкой...');
+                  }
+                }}
+              >
+                <div className="flex items-center">
+                  <span className="text-2xl mr-3">💬</span>
+                  <div>
+                    <h3 className="font-medium text-gray-800">Связаться с поддержкой</h3>
+                    <p className="text-sm text-gray-600">Помощь и консультации</p>
+                  </div>
+                </div>
+              </button>
+              
+              <button 
+                className="w-full p-3 text-left bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                onClick={() => {
+                  if (window.Telegram?.WebApp) {
+                    window.Telegram.WebApp.showAlert('Спасибо за желание оценить приложение!');
+                  } else {
+                    alert('Спасибо за желание оценить приложение!');
+                  }
+                }}
+              >
+                <div className="flex items-center">
+                  <span className="text-2xl mr-3">⭐</span>
+                  <div>
+                    <h3 className="font-medium text-gray-800">Оценить приложение</h3>
+                    <p className="text-sm text-gray-600">Поделитесь впечатлениями</p>
+                  </div>
+                </div>
+              </button>
+              
+              <button 
+                className="w-full p-3 text-left bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                onClick={() => {
+                  if (window.Telegram?.WebApp) {
+                    window.Telegram.WebApp.showAlert('Ваши идеи очень важны для нас!');
+                  } else {
+                    alert('Ваши идеи очень важны для нас!');
+                  }
+                }}
+              >
+                <div className="flex items-center">
+                  <span className="text-2xl mr-3">📧</span>
+                  <div>
+                    <h3 className="font-medium text-gray-800">Предложить идею</h3>
+                    <p className="text-sm text-gray-600">Идеи для новых активностей</p>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Заглушка для неизвестных экранов
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-white shadow-sm px-4 py-4 sticky top-0 z-10">
+        <div className="flex items-center">
+          <button 
+            onClick={() => setCurrentScreen('main')}
+            className="mr-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            <span className="text-2xl">←</span>
+          </button>
+          <h1 className="text-xl font-bold text-gray-800">Экран: {currentScreen}</h1>
+        </div>
+      </div>
+      
+      <div className="px-4 py-20 text-center">
+        <h2 className="text-xl font-bold mb-4">Раздел в разработке</h2>
+        <p className="text-gray-600 mb-6">Функционал будет добавлен в следующих версиях</p>
+        <button 
+          onClick={() => setCurrentScreen('main')}
+          className="bg-blue-500 text-white px-6 py-2 rounded-lg"
+        >
+          Вернуться на главную
+        </button>
+      </div>
+    </div>
+  );
 
   // Telegram Mini App integration
   useEffect(() => {
