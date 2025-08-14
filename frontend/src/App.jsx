@@ -662,32 +662,46 @@ const ChildDevelopmentApp = () => {
 🎁 Включает: Все активности, персональные программы, подробная аналитика`;
 
       console.log('📤 Sending payment notification to userId:', userId);
+      console.log('🌐 Backend URL:', import.meta.env.REACT_APP_BACKEND_URL);
 
-      const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/api/telegram/payment-notification`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: userId,
-          message: notificationMessage,
-          paymentType: paymentType,
-          amount: amount,
-          currency: currency,
-          childInfo: {
-            name: child.name,
-            age: child.age
-          }
-        }),
-      });
+      try {
+        const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/api/telegram/payment-notification`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: userId,
+            message: notificationMessage,
+            paymentType: paymentType,
+            amount: amount,
+            currency: currency,
+            childInfo: {
+              name: child.name,
+              age: child.age
+            }
+          }),
+        });
 
-      const result = await response.json();
-      console.log('🔄 Backend response:', result);
+        console.log('📡 Response status:', response.status);
+        console.log('📡 Response ok:', response.ok);
 
-      if (result.success) {
-        console.log('✅ Payment notification sent to Telegram bot');
-      } else {
-        console.log('❌ Payment notification failed:', result.error);
+        if (!response.ok) {
+          console.log('❌ HTTP Error:', response.status, response.statusText);
+          return;
+        }
+
+        const result = await response.json();
+        console.log('🔄 Backend response:', result);
+
+        if (result.success) {
+          console.log('✅ Payment notification sent to Telegram bot');
+        } else {
+          console.log('❌ Payment notification failed:', result.error);
+        }
+      } catch (fetchError) {
+        console.error('🚫 Fetch error:', fetchError);
+        console.error('🚫 Error details:', fetchError.message);
       }
     } catch (error) {
       console.error('❌ Error sending payment notification:', error);
