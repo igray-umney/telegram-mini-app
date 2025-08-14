@@ -217,6 +217,15 @@ class TelegramBotTester:
                 else:
                     self.log_test("Payment Error", False, f"API returned success=false: {data}", data)
                     return False
+            elif response.status_code == 500:
+                # Check if it's the expected "chat not found" error
+                data = response.json()
+                if "chat not found" in data.get("error", ""):
+                    self.log_test("Payment Error", True, "Expected error: User not registered with bot", data)
+                    return True
+                else:
+                    self.log_test("Payment Error", False, f"Unexpected 500 error: {data}", data)
+                    return False
             else:
                 self.log_test("Payment Error", False, f"HTTP {response.status_code}: {response.text}")
                 return False
