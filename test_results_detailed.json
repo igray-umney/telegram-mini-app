@@ -1,0 +1,122 @@
+{
+  "summary": {
+    "total": 12,
+    "passed": 5,
+    "failed": 7,
+    "success_rate": 41.66666666666667,
+    "timestamp": "2025-08-14T11:59:18.122253"
+  },
+  "failed_tests": [
+    "Payment Notification",
+    "Payment Success",
+    "Payment Cancelled",
+    "Payment Error",
+    "Test Notification",
+    "Create Invoice",
+    "Create Stars Invoice"
+  ],
+  "detailed_results": [
+    {
+      "test": "Health Check",
+      "success": true,
+      "message": "Server is running - Telegram Bot Server \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442!",
+      "response": {
+        "message": "Telegram Bot Server \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442!",
+        "timestamp": "2025-08-14T11:59:10.228Z",
+        "uptime": 95.101550697
+      },
+      "timestamp": "2025-08-14T11:59:10.231344"
+    },
+    {
+      "test": "Payment Notification",
+      "success": false,
+      "message": "HTTP 500: {\"success\":false,\"error\":\"ETELEGRAM: 400 Bad Request: chat not found\"}",
+      "response": null,
+      "timestamp": "2025-08-14T11:59:11.389187"
+    },
+    {
+      "test": "Payment Success",
+      "success": false,
+      "message": "HTTP 500: {\"success\":false,\"error\":\"ETELEGRAM: 400 Bad Request: chat not found\"}",
+      "response": null,
+      "timestamp": "2025-08-14T11:59:12.221832"
+    },
+    {
+      "test": "Payment Cancelled",
+      "success": false,
+      "message": "HTTP 500: {\"success\":false,\"error\":\"ETELEGRAM: 400 Bad Request: chat not found\"}",
+      "response": null,
+      "timestamp": "2025-08-14T11:59:12.937081"
+    },
+    {
+      "test": "Payment Error",
+      "success": false,
+      "message": "HTTP 500: {\"success\":false,\"error\":\"ETELEGRAM: 400 Bad Request: chat not found\"}",
+      "response": null,
+      "timestamp": "2025-08-14T11:59:13.574239"
+    },
+    {
+      "test": "Test Notification",
+      "success": false,
+      "message": "HTTP 500: {\"success\":false,\"error\":\"ETELEGRAM: 400 Bad Request: chat not found\"}",
+      "response": null,
+      "timestamp": "2025-08-14T11:59:14.211809"
+    },
+    {
+      "test": "User Status",
+      "success": true,
+      "message": "Status retrieved: connected=False",
+      "response": {
+        "connected": false,
+        "enabled": false,
+        "time": "19:00",
+        "timezone": "\u041c\u043e\u0441\u043a\u0432\u0430",
+        "type": "motivational"
+      },
+      "timestamp": "2025-08-14T11:59:14.716136"
+    },
+    {
+      "test": "User Connect",
+      "success": true,
+      "message": "Connect response: \u0421\u043d\u0430\u0447\u0430\u043b\u0430 \u043d\u0430\u043f\u0438\u0448\u0438\u0442\u0435 \u0431\u043e\u0442\u0443 /start",
+      "response": {
+        "success": false,
+        "message": "\u0421\u043d\u0430\u0447\u0430\u043b\u0430 \u043d\u0430\u043f\u0438\u0448\u0438\u0442\u0435 \u0431\u043e\u0442\u0443 /start",
+        "botUsername": "razvivayka_bot"
+      },
+      "timestamp": "2025-08-14T11:59:15.220167"
+    },
+    {
+      "test": "Create Invoice",
+      "success": false,
+      "message": "HTTP 500: {\"success\":false,\"message\":\"\u041e\u0448\u0438\u0431\u043a\u0430 \u0441\u043e\u0437\u0434\u0430\u043d\u0438\u044f \u043f\u043b\u0430\u0442\u0435\u0436\u0430: ETELEGRAM: 400 Bad Request: chat not found\"}",
+      "response": null,
+      "timestamp": "2025-08-14T11:59:15.859099"
+    },
+    {
+      "test": "Create Stars Invoice",
+      "success": false,
+      "message": "HTTP 500: {\"success\":false,\"message\":\"\u041e\u0448\u0438\u0431\u043a\u0430 \u0441\u043e\u0437\u0434\u0430\u043d\u0438\u044f Stars \u043f\u043b\u0430\u0442\u0435\u0436\u0430: ETELEGRAM: 400 Bad Request: chat not found\"}",
+      "response": null,
+      "timestamp": "2025-08-14T11:59:16.497600"
+    },
+    {
+      "test": "Premium Status",
+      "success": true,
+      "message": "Premium status: False",
+      "response": {
+        "isPremium": false,
+        "activatedAt": null,
+        "paymentHistory": []
+      },
+      "timestamp": "2025-08-14T11:59:17.001893"
+    },
+    {
+      "test": "Error Handling",
+      "success": true,
+      "message": "Properly handles missing userId",
+      "response": null,
+      "timestamp": "2025-08-14T11:59:17.621825"
+    }
+  ]
+}
