@@ -1250,6 +1250,851 @@ const ChildDevelopmentApp = () => {
     );
   }
 
+  // Progress screen
+  if (currentScreen === 'progress') {
+    const completedThisWeek = progressData.weeklyActivities.filter(Boolean).length;
+    const totalDaysThisWeek = 7;
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm px-4 py-4 sticky top-0 z-10">
+          <div className="flex items-center">
+            <button 
+              onClick={() => setCurrentScreen('main')}
+              className="mr-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <span className="text-2xl">←</span>
+            </button>
+            <div>
+              <h1 className="text-xl font-bold text-gray-800">Прогресс развития</h1>
+              <p className="text-sm text-gray-600">{child.name} • {child.age} {getAgeText(child.age)}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-4 py-6">
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-800">Эта неделя</h2>
+              <div className="flex items-center bg-green-100 px-3 py-1 rounded-full">
+                <span className="text-sm font-medium text-green-800">🔥 {child.streak} дней подряд</span>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-7 gap-2 mb-4">
+              {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map((day, index) => (
+                <div key={day} className="text-center">
+                  <div className="text-xs text-gray-600 mb-1">{day}</div>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    progressData.weeklyActivities[index] ? 'bg-green-500 text-white' : 'bg-gray-200'
+                  }`}>
+                    {progressData.weeklyActivities[index] ? '✓' : ''}
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="bg-gray-100 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-gray-700">Выполнено активностей</span>
+                <span className="font-bold text-green-600">{completedThisWeek} из {totalDaysThisWeek}</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="h-2 rounded-full bg-green-500"
+                  style={{ width: `${(completedThisWeek / totalDaysThisWeek) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">Развитие навыков</h2>
+            <div className="space-y-4">
+              {Object.entries(progressData.skillsProgress).map(([key, progress]) => (
+                <div key={key}>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-medium text-gray-700">{getSkillName(key)}</span>
+                    <span className="text-sm text-gray-500">{progress}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${getSkillColor(key)}`}
+                      style={{ width: `${progress}%` }}
+                    ></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">Достижения</h2>
+            <div className="grid grid-cols-2 gap-4">
+              {progressData.achievements.map((achievement) => (
+                <div 
+                  key={achievement.id} 
+                  className={`p-4 rounded-lg border-2 ${
+                    achievement.unlocked 
+                      ? 'border-yellow-300 bg-yellow-50' 
+                      : 'border-gray-200 bg-gray-50'
+                  }`}
+                >
+                  <div className="text-2xl mb-2">{achievement.icon}</div>
+                  <h3 className={`font-medium text-sm ${
+                    achievement.unlocked ? 'text-yellow-800' : 'text-gray-500'
+                  }`}>
+                    {achievement.title}
+                  </h3>
+                  <p className="text-xs text-gray-600 mt-1">{achievement.description}</p>
+                  
+                  {!achievement.unlocked && achievement.progress && (
+                    <div className="mt-3">
+                      <div className="flex justify-between text-xs text-gray-500 mb-1">
+                        <span>Прогресс</span>
+                        <span>{achievement.progress}/15</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-1">
+                        <div 
+                          className="h-1 rounded-full bg-yellow-400"
+                          style={{ width: `${(achievement.progress / 15) * 100}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl p-6 shadow-sm">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">Последние активности</h2>
+            <div className="space-y-3">
+              {progressData.recentActivities.map((activity, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex-1">
+                    <h3 className="font-medium text-gray-800 text-sm">{activity.name}</h3>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(activity.category)}`}>
+                        {activity.category}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {new Date(activity.date).toLocaleDateString('ru-RU')}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-gray-700">{activity.duration} мин</p>
+                    <span className="text-xs text-gray-500">выполнено</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Library screen
+  if (currentScreen === 'library') {
+    const filteredArticles = getFilteredArticles();
+    const freeArticles = filteredArticles.filter(article => !article.premium);
+    const premiumArticles = filteredArticles.filter(article => article.premium);
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm px-4 py-4 sticky top-0 z-10">
+          <div className="flex items-center">
+            <button 
+              onClick={() => setCurrentScreen('main')}
+              className="mr-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <span className="text-2xl">←</span>
+            </button>
+            <div>
+              <h1 className="text-xl font-bold text-gray-800">Библиотека</h1>
+              <p className="text-sm text-gray-600">Материалы для родителей</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-4 py-6">
+          <div className="mb-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">Категории</h2>
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              {libraryContent.categories.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={`p-4 rounded-xl text-left transition-all ${
+                    selectedCategory === category.id
+                      ? 'bg-blue-500 text-white shadow-lg'
+                      : 'bg-white shadow-sm hover:shadow-md'
+                  }`}
+                >
+                  <div className="text-2xl mb-2">{category.icon}</div>
+                  <h3 className="font-semibold text-sm">{category.name}</h3>
+                  <p className={`text-xs ${
+                    selectedCategory === category.id ? 'text-blue-100' : 'text-gray-500'
+                  }`}>
+                    {category.count} материалов
+                  </p>
+                </button>
+              ))}
+            </div>
+            
+            <button
+              onClick={() => setSelectedCategory('all')}
+              className={`w-full p-3 rounded-lg text-center transition-all ${
+                selectedCategory === 'all'
+                  ? 'bg-gray-800 text-white'
+                  : 'bg-white text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              Все категории ({libraryContent.articles.length} статей)
+            </button>
+          </div>
+
+          <div className="mb-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">🎥 Популярные видео</h2>
+            <div className="space-y-3">
+              {libraryContent.videos.map((video) => (
+                <div 
+                  key={video.id} 
+                  className={`bg-white rounded-xl p-4 shadow-sm ${!video.premium || isPremium ? 'hover:shadow-md transition-shadow' : 'opacity-75'}`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center flex-1">
+                      <div className="w-16 h-16 bg-gradient-to-br from-red-400 to-pink-500 rounded-lg flex items-center justify-center mr-4">
+                        <span className="text-2xl">{video.thumbnail}</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-800 flex items-center">
+                          {video.title}
+                          {video.premium && !isPremium && <span className="ml-2 text-gray-400">🔒</span>}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs text-gray-500">⏱️ {video.duration}</span>
+                          <span className="text-xs text-gray-500">👁️ {video.views}</span>
+                          {video.premium && (
+                            <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full font-medium">
+                              Премиум
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <button 
+                      className={`ml-4 px-4 py-2 rounded-lg font-medium transition-colors ${
+                        video.premium && !isPremium
+                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          : 'bg-red-500 text-white hover:bg-red-600'
+                      }`}
+                      onClick={() => {
+                        if (video.premium && !isPremium) {
+                          setShowPayment(true);
+                        } else {
+                          if (window.Telegram?.WebApp) {
+                            window.Telegram.WebApp.showAlert(`Запускаем видео: ${video.title}`);
+                          } else {
+                            alert(`Запускаем видео: ${video.title}`);
+                          }
+                        }
+                      }}
+                    >
+                      {video.premium && !isPremium ? 'Премиум' : 'Смотреть'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {freeArticles.length > 0 && (
+            <div className="mb-6">
+              <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                <span className="text-green-500 mr-2">🆓</span>
+                Бесплатные статьи ({freeArticles.length})
+              </h2>
+              <div className="space-y-3">
+                {freeArticles.map((article) => (
+                  <div key={article.id} className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-800 mb-2">{article.title}</h3>
+                        <p className="text-sm text-gray-600 mb-3">{article.description}</p>
+                        <div className="flex items-center gap-3 text-xs text-gray-500">
+                          <span>👤 {article.author}</span>
+                          <span>⏱️ {article.readTime}</span>
+                          <span>⭐ {article.rating}</span>
+                          <span>👁️ {article.views}</span>
+                        </div>
+                      </div>
+                      <button 
+                        className="ml-4 bg-blue-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-600 transition-colors"
+                        onClick={() => {
+                          if (window.Telegram?.WebApp) {
+                            window.Telegram.WebApp.showAlert(`Открываем статью: ${article.title}`);
+                          } else {
+                            alert(`Открываем статью: ${article.title}`);
+                          }
+                        }}
+                      >
+                        Читать
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {premiumArticles.length > 0 && (
+            <div className="mb-6">
+              <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                <span className="text-yellow-500 mr-2">👑</span>
+                Премиум статьи ({premiumArticles.length})
+              </h2>
+              <div className="space-y-3">
+                {premiumArticles.map((article) => (
+                  <div key={article.id} className={`bg-white rounded-xl p-4 shadow-sm ${!isPremium ? 'opacity-75' : 'hover:shadow-md transition-shadow'}`}>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-800 mb-2 flex items-center">
+                          {article.title}
+                          {!isPremium && <span className="ml-2 text-gray-400">🔒</span>}
+                        </h3>
+                        <p className="text-sm text-gray-600 mb-3">{article.description}</p>
+                        <div className="flex items-center gap-3 text-xs text-gray-500">
+                          <span>👤 {article.author}</span>
+                          <span>⏱️ {article.readTime}</span>
+                          <span>⭐ {article.rating}</span>
+                          <span>👁️ {article.views}</span>
+                        </div>
+                      </div>
+                      <button 
+                        className={`ml-4 px-4 py-2 rounded-lg font-medium transition-colors ${
+                          isPremium 
+                            ? 'bg-purple-500 text-white hover:bg-purple-600' 
+                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        }`}
+                        onClick={() => {
+                          if (isPremium) {
+                            if (window.Telegram?.WebApp) {
+                              window.Telegram.WebApp.showAlert(`Открываем премиум статью: ${article.title}`);
+                            } else {
+                              alert(`Открываем премиум статью: ${article.title}`);
+                            }
+                          } else {
+                            setShowPayment(true);
+                          }
+                        }}
+                      >
+                        {isPremium ? 'Читать' : 'Премиум'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {!isPremium && premiumArticles.length > 0 && (
+            <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-6 text-white text-center">
+              <h3 className="text-lg font-bold mb-2">📚 Доступ ко всей библиотеке!</h3>
+              <p className="text-sm opacity-90 mb-4">
+                Получи доступ к {premiumArticles.length} эксклюзивным статьям, видеоурокам и материалам от экспертов
+              </p>
+              <button 
+                onClick={() => setShowPayment(true)}
+                className="bg-white text-purple-600 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+              >
+                Подключить премиум - 299₽/мес
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Settings screen
+  if (currentScreen === 'settings') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm px-4 py-4 sticky top-0 z-10">
+          <div className="flex items-center">
+            <button 
+              onClick={() => setCurrentScreen('main')}
+              className="mr-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <span className="text-2xl">←</span>
+            </button>
+            <div>
+              <h1 className="text-xl font-bold text-gray-800">Настройки</h1>
+              <p className="text-sm text-gray-600">Профиль и настройки приложения</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-4 py-6">
+          {/* Child Profile Section */}
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-800">Профиль ребенка</h2>
+              <div className="bg-blue-100 p-2 rounded-full">
+                <span className="text-2xl">👶</span>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Имя ребенка
+                </label>
+                <input 
+                  type="text" 
+                  value={child.name}
+                  onChange={(e) => setChild({...child, name: e.target.value})}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Введите имя ребенка"
+                />
+                <p className="text-xs text-gray-500 mt-1">Имя будет использоваться в активностях и уведомлениях</p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Возраст
+                </label>
+                <select 
+                  value={child.age}
+                  onChange={(e) => setChild({...child, age: parseInt(e.target.value)})}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  {[1,2,3,4,5,6,7].map(age => (
+                    <option key={age} value={age}>{age} {getAgeText(age)}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">Активности будут подобраны под возраст ребенка</p>
+              </div>
+
+              <div className="bg-blue-50 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-blue-900">Streak</h3>
+                    <p className="text-sm text-blue-700">Дней занятий подряд</p>
+                  </div>
+                  <div className="flex items-center bg-blue-500 text-white px-3 py-1 rounded-full">
+                    <span className="text-lg font-bold">🔥 {child.streak}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* App Statistics */}
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">Статистика</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-gray-50 rounded-lg p-4 text-center">
+                <div className="text-2xl font-bold text-blue-600 mb-1">
+                  {Object.values(activitiesDatabase).flat().length}
+                </div>
+                <p className="text-sm text-gray-600">Всего активностей</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4 text-center">
+                <div className="text-2xl font-bold text-purple-600 mb-1">
+                  {progressData.totalActivities}
+                </div>
+                <p className="text-sm text-gray-600">Выполнено</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4 text-center">
+                <div className="text-2xl font-bold text-green-600 mb-1">
+                  {progressData.totalTime}ч
+                </div>
+                <p className="text-sm text-gray-600">Время развития</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4 text-center">
+                <div className="text-2xl font-bold text-orange-600 mb-1">
+                  {libraryContent.articles.length}
+                </div>
+                <p className="text-sm text-gray-600">Статей</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Premium Status */}
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">Подписка</h2>
+            {isPremium ? (
+              <div className="text-center py-4">
+                <div className="bg-gradient-to-r from-purple-600 to-pink-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white text-2xl">👑</span>
+                </div>
+                <h3 className="text-lg font-bold text-gray-800 mb-2">Премиум активен</h3>
+                <p className="text-gray-600 mb-2">Все активности и материалы разблокированы</p>
+                <p className="text-sm text-gray-500 mb-4">Подписка продлевается автоматически</p>
+                
+                <div className="bg-green-50 rounded-lg p-4 mb-4">
+                  <div className="flex items-center justify-center mb-2">
+                    <span className="text-green-500 text-xl mr-2">✨</span>
+                    <span className="text-green-800 font-semibold">Премиум возможности:</span>
+                  </div>
+                  <ul className="text-sm text-green-700 space-y-1">
+                    <li>• Неограниченные активности</li>
+                    <li>• Персональные программы развития</li>
+                    <li>• Подробная аналитика прогресса</li>
+                    <li>• Эксклюзивные материалы</li>
+                  </ul>
+                </div>
+                
+                <button 
+                  onClick={() => setIsPremium(false)}
+                  className="text-red-600 hover:text-red-700 text-sm underline"
+                >
+                  Отключить премиум (для тестирования)
+                </button>
+              </div>
+            ) : (
+              <div className="text-center py-4">
+                <div className="bg-gray-200 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-gray-500 text-2xl">👑</span>
+                </div>
+                <h3 className="text-lg font-bold text-gray-800 mb-2">Базовая версия</h3>
+                <p className="text-gray-600 mb-4">
+                  Разблокируй все возможности приложения
+                </p>
+                
+                <div className="bg-purple-50 rounded-lg p-4 mb-4">
+                  <h4 className="font-semibold text-purple-800 mb-2">С премиум подпиской:</h4>
+                  <ul className="text-sm text-purple-700 space-y-1">
+                    <li>• Все активности без ограничений</li>
+                    <li>• Персональные программы развития</li>
+                    <li>• Подробная аналитика прогресса</li>
+                    <li>• Эксклюзивные материалы от экспертов</li>
+                    <li>• Приоритетная поддержка</li>
+                  </ul>
+                </div>
+                
+                <button 
+                  onClick={() => setShowPayment(true)}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition-all"
+                >
+                  Подключить премиум - 299₽/мес
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* App Information */}
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">О приложении</h2>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between py-2">
+                <span className="text-gray-600">Версия приложения</span>
+                <span className="font-medium text-gray-800">1.0.0</span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-gray-600">Telegram интеграция</span>
+                <div className="flex items-center">
+                  <span className={`w-2 h-2 rounded-full mr-2 ${botConnected ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+                  <span className={`font-medium text-sm ${botConnected ? 'text-green-600' : 'text-gray-600'}`}>
+                    {botConnected ? 'Подключена' : 'Не подключена'}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-gray-600">Уведомления</span>
+                <button 
+                  onClick={() => setCurrentScreen('notifications')}
+                  className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                >
+                  Настроить →
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Support & Feedback */}
+          <div className="bg-white rounded-xl p-6 shadow-sm">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">Поддержка</h2>
+            <div className="space-y-3">
+              <button 
+                className="w-full p-3 text-left bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors flex items-center"
+                onClick={() => {
+                  if (window.Telegram?.WebApp) {
+                    window.Telegram.WebApp.showAlert('Связываемся с поддержкой...\n\nВы можете написать нам в Telegram: @support');
+                  } else {
+                    alert('Связываемся с поддержкой...\n\nВы можете написать нам в Telegram: @support');
+                  }
+                }}
+              >
+                <span className="text-2xl mr-3">💬</span>
+                <div className="flex-1">
+                  <h3 className="font-medium text-gray-800">Связаться с поддержкой</h3>
+                  <p className="text-sm text-gray-600">Помощь по использованию приложения</p>
+                </div>
+                <span className="text-gray-400">→</span>
+              </button>
+              
+              <button 
+                className="w-full p-3 text-left bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors flex items-center"
+                onClick={() => {
+                  if (window.Telegram?.WebApp) {
+                    window.Telegram.WebApp.showAlert('Спасибо за желание оценить приложение!\n\nВаше мнение очень важно для нас! ⭐');
+                  } else {
+                    alert('Спасибо за желание оценить приложение!\n\nВаше мнение очень важно для нас! ⭐');
+                  }
+                }}
+              >
+                <span className="text-2xl mr-3">⭐</span>
+                <div className="flex-1">
+                  <h3 className="font-medium text-gray-800">Оценить приложение</h3>
+                  <p className="text-sm text-gray-600">Поделитесь впечатлениями</p>
+                </div>
+                <span className="text-gray-400">→</span>
+              </button>
+              
+              <button 
+                className="w-full p-3 text-left bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors flex items-center"
+                onClick={() => {
+                  if (window.Telegram?.WebApp) {
+                    window.Telegram.WebApp.showAlert('Есть идея для новой активности?\n\nМы всегда рады новым предложениям! 💡');
+                  } else {
+                    alert('Есть идея для новой активности?\n\nМы всегда рады новым предложениям! 💡');
+                  }
+                }}
+              >
+                <span className="text-2xl mr-3">💡</span>
+                <div className="flex-1">
+                  <h3 className="font-medium text-gray-800">Предложить идею</h3>
+                  <p className="text-sm text-gray-600">Идеи для новых активностей</p>
+                </div>
+                <span className="text-gray-400">→</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Notifications screen
+  if (currentScreen === 'notifications') {
+    const getNotificationTypeColor = (type) => {
+      const colors = {
+        'daily': 'bg-blue-100 text-blue-800',
+        'streak': 'bg-orange-100 text-orange-800',
+        'encouragement': 'bg-green-100 text-green-800',
+        'reminder': 'bg-purple-100 text-purple-800'
+      };
+      return colors[type] || 'bg-gray-100 text-gray-800';
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm px-4 py-4 sticky top-0 z-10">
+          <div className="flex items-center">
+            <button 
+              onClick={() => setCurrentScreen('main')}
+              className="mr-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <span className="text-2xl">←</span>
+            </button>
+            <div>
+              <h1 className="text-xl font-bold text-gray-800">Уведомления</h1>
+              <p className="text-sm text-gray-600">Настройка напоминаний через Telegram</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-4 py-6">
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-lg font-bold text-gray-800">Telegram Bot</h2>
+                <p className="text-sm text-gray-600">@{notificationSettings.botUsername}</p>
+              </div>
+              <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                botConnected ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+              }`}>
+                {botConnected ? 'Подключен' : 'Не подключен'}
+              </div>
+            </div>
+
+            {!botConnected ? (
+              <div className="space-y-4">
+                <div className="bg-blue-50 rounded-lg p-4">
+                  <h3 className="font-semibold text-blue-900 mb-2">Как подключить уведомления:</h3>
+                  <ol className="text-sm text-blue-800 space-y-1">
+                    <li>1. Найдите бота @{notificationSettings.botUsername} в Telegram</li>
+                    <li>2. Нажмите /start</li>
+                    <li>3. Вернитесь в приложение и нажмите "Подключить"</li>
+                  </ol>
+                </div>
+                
+                <button
+                  onClick={connectToBot}
+                  className="w-full bg-blue-500 text-white py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors"
+                >
+                  Подключить бота
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="bg-green-50 rounded-lg p-4">
+                  <h3 className="font-semibold text-green-900 mb-2">✅ Бот успешно подключен!</h3>
+                  <p className="text-sm text-green-800">
+                    Теперь вы будете получать напоминания о занятиях прямо в Telegram
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Время напоминания
+                  </label>
+                  <input 
+                    type="time" 
+                    value={notificationSettings.time}
+                    onChange={(e) => setNotificationSettings({
+                      ...notificationSettings, 
+                      time: e.target.value
+                    })}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Частота напоминаний
+                  </label>
+                  <select 
+                    value={notificationSettings.frequency}
+                    onChange={(e) => setNotificationSettings({
+                      ...notificationSettings, 
+                      frequency: e.target.value
+                    })}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="daily">Ежедневно</option>
+                    <option value="weekly">Еженедельно</option>
+                    <option value="custom">Выбрать дни</option>
+                  </select>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {botConnected && (
+            <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+              <h2 className="text-lg font-bold text-gray-800 mb-4">Тип сообщений</h2>
+              <div className="space-y-3">
+                {[
+                  { 
+                    value: 'motivational', 
+                    label: 'Мотивирующие', 
+                    description: 'Вдохновляющие сообщения для занятий',
+                    example: getRandomMessage('daily')
+                  },
+                  { 
+                    value: 'simple', 
+                    label: 'Простые', 
+                    description: 'Краткие напоминания о времени занятий',
+                    example: `Время для занятий с ${child.name}!`
+                  },
+                  { 
+                    value: 'streak', 
+                    label: 'С акцентом на streak', 
+                    description: 'Фокус на достижениях и регулярности',
+                    example: getRandomMessage('streak')
+                  }
+                ].map((type) => (
+                  <button
+                    key={type.value}
+                    onClick={() => setNotificationSettings({
+                      ...notificationSettings,
+                      reminderType: type.value
+                    })}
+                    className={`w-full p-4 rounded-lg border-2 transition-colors text-left ${
+                      notificationSettings.reminderType === type.value
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-semibold text-gray-800">{type.label}</h3>
+                      {notificationSettings.reminderType === type.value && (
+                        <span className="text-blue-500">✓</span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-600 mb-2">{type.description}</p>
+                    <p className="text-xs text-gray-500 italic">"{type.example}"</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {botConnected && (
+            <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+              <h2 className="text-lg font-bold text-gray-800 mb-4">Тестовое уведомление</h2>
+              <p className="text-sm text-gray-600 mb-4">
+                Посмотрите, как будет выглядеть ваше уведомление
+              </p>
+              
+              <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg mb-4">
+                <div className="flex items-center mb-2">
+                  <span className="text-blue-500 mr-2">🔔</span>
+                  <span className="font-semibold text-blue-900">Развивайка</span>
+                  <span className="text-xs text-blue-600 ml-auto">{notificationSettings.time}</span>
+                </div>
+                <p className="text-blue-800">
+                  {getRandomMessage(notificationSettings.reminderType)}
+                </p>
+              </div>
+
+              <button 
+                onClick={sendTestNotification}
+                className="w-full bg-blue-500 text-white py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors"
+              >
+                Отправить тестовое уведомление
+              </button>
+            </div>
+          )}
+
+          <div className="bg-white rounded-xl p-6 shadow-sm">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">История уведомлений</h2>
+            <div className="space-y-3">
+              {notificationHistory.map((notification) => (
+                <div 
+                  key={notification.id} 
+                  className={`p-3 rounded-lg ${
+                    notification.opened ? 'bg-gray-50' : 'bg-blue-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getNotificationTypeColor(notification.type)}`}>
+                      {notification.type === 'daily' ? 'Ежедневное' : 
+                       notification.type === 'streak' ? 'Streak' : 'Другое'}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {new Date(notification.timestamp).toLocaleString('ru-RU')}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-700">{notification.message}</p>
+                  {!notification.opened && (
+                    <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mt-2"></span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Default fallback
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
