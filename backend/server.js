@@ -11,6 +11,7 @@ const TOKEN = process.env.TELEGRAM_BOT_TOKEN || process.env.BOT_TOKEN;
 const PAYMENT_TOKEN = process.env.PAYMENT_TOKEN || process.env.TELEGRAM_PAYMENT_TOKEN;
 const STARS_ENABLED = true; // Включить оплату через Stars
 const PROVIDER_TOKEN = process.env.YUKASSA_PROVIDER_TOKEN; //
+const APP_URL = process.env.APP_URL || 'https://telegram-mini-app-gules-nine.vercel.app/';
 
 // Middleware
 app.use(cors());
