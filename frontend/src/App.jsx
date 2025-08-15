@@ -2299,4 +2299,4 @@ const sendPaymentNotification = async (paymentType, amount, currency = '₽') =>
   );
 };
 
-export default ChildDevelopmentApp;
+export default App;
