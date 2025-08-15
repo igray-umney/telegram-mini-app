@@ -1113,7 +1113,7 @@ async function showPremiumMenu(chatId, userId) {
     const keyboard = {
       reply_markup: {
         inline_keyboard: [
-          [{ text: '🚀 Открыть приложение', web_app: { url: 'https://your-app-url.com' } }],
+          [{ text: '🚀 Открыть приложение', web_app: { url: APP_URL } }],
           [{ text: '◀️ Назад к настройкам', callback_data: 'back_to_settings' }]
         ]
       }
