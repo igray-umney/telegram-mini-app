@@ -493,7 +493,7 @@ bot.onText(/\/app/, async (msg) => {
   const keyboard = {
     reply_markup: {
       inline_keyboard: [
-        [{ text: '🚀 Открыть приложение', web_app: { url: 'https://telegram-mini-app-gules-nine.vercel.app/' } }],
+        [{ text: '🚀 Открыть приложение', web_app: { url: APP_URL } }],
         [{ text: '🏠 Главное меню', callback_data: 'main_menu' }]
       ]
     }
