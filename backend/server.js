@@ -561,7 +561,7 @@ bot.on('successful_payment', async (msg) => {
     const keyboard = {
       reply_markup: {
         inline_keyboard: [
-          [{ text: '🚀 Открыть приложение', web_app: { url: 'https://your-app-url.com' } }],
+          [{ text: '🚀 Открыть приложение', web_app: { url: APP_URL } }],
           [{ text: '🏠 Главное меню', callback_data: 'main_menu' }]
         ]
       }
