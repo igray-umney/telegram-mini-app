@@ -2,6 +2,7 @@
   "name": "child-development-app",
   "version": "1.0.0",
   "scripts": {
+    "start": "vite --host 0.0.0.0 --port 3000",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
