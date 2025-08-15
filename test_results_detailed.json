@@ -4,7 +4,7 @@
     "passed": 12,
     "failed": 0,
     "success_rate": 100.0,
-    "timestamp": "2025-08-14T12:01:02.409302"
+    "timestamp": "2025-08-15T06:17:39.730397"
   },
   "failed_tests": [],
   "detailed_results": [
@@ -14,10 +14,10 @@
       "message": "Server is running - Telegram Bot Server \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442!",
       "response": {
         "message": "Telegram Bot Server \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442!",
-        "timestamp": "2025-08-14T12:00:54.423Z",
-        "uptime": 199.297097611
+        "timestamp": "2025-08-15T06:17:29.547Z",
+        "uptime": 55143.660338276
       },
-      "timestamp": "2025-08-14T12:00:54.425148"
+      "timestamp": "2025-08-15T06:17:29.646033"
     },
     {
       "test": "Payment Notification",
@@ -27,7 +27,7 @@
         "success": false,
         "error": "ETELEGRAM: 400 Bad Request: chat not found"
       },
-      "timestamp": "2025-08-14T12:00:55.349974"
+      "timestamp": "2025-08-15T06:17:30.833743"
     },
     {
       "test": "Payment Success",
@@ -37,7 +37,7 @@
         "success": false,
         "error": "ETELEGRAM: 400 Bad Request: chat not found"
       },
-      "timestamp": "2025-08-14T12:00:56.038751"
+      "timestamp": "2025-08-15T06:17:31.830849"
     },
     {
       "test": "Payment Cancelled",
@@ -47,7 +47,7 @@
         "success": false,
         "error": "ETELEGRAM: 400 Bad Request: chat not found"
       },
-      "timestamp": "2025-08-14T12:00:56.682725"
+      "timestamp": "2025-08-15T06:17:32.670274"
     },
     {
       "test": "Payment Error",
@@ -57,7 +57,7 @@
         "success": false,
         "error": "ETELEGRAM: 400 Bad Request: chat not found"
       },
-      "timestamp": "2025-08-14T12:00:57.336332"
+      "timestamp": "2025-08-15T06:17:33.478068"
     },
     {
       "test": "Test Notification",
@@ -67,7 +67,7 @@
         "success": false,
         "error": "ETELEGRAM: 400 Bad Request: chat not found"
       },
-      "timestamp": "2025-08-14T12:00:58.021222"
+      "timestamp": "2025-08-15T06:17:34.292212"
     },
     {
       "test": "User Status",
@@ -80,7 +80,7 @@
         "timezone": "\u041c\u043e\u0441\u043a\u0432\u0430",
         "type": "motivational"
       },
-      "timestamp": "2025-08-14T12:00:58.524892"
+      "timestamp": "2025-08-15T06:17:35.088009"
     },
     {
       "test": "User Connect",
@@ -91,7 +91,7 @@
         "message": "\u0421\u043d\u0430\u0447\u0430\u043b\u0430 \u043d\u0430\u043f\u0438\u0448\u0438\u0442\u0435 \u0431\u043e\u0442\u0443 /start",
         "botUsername": "razvivayka_bot"
       },
-      "timestamp": "2025-08-14T12:00:59.029195"
+      "timestamp": "2025-08-15T06:17:35.876013"
     },
     {
       "test": "Create Invoice",
@@ -101,7 +101,7 @@
         "success": false,
         "message": "\u041e\u0448\u0438\u0431\u043a\u0430 \u0441\u043e\u0437\u0434\u0430\u043d\u0438\u044f \u043f\u043b\u0430\u0442\u0435\u0436\u0430: ETELEGRAM: 400 Bad Request: chat not found"
       },
-      "timestamp": "2025-08-14T12:00:59.835502"
+      "timestamp": "2025-08-15T06:17:36.750832"
     },
     {
       "test": "Create Stars Invoice",
@@ -111,7 +111,7 @@
         "success": false,
         "message": "\u041e\u0448\u0438\u0431\u043a\u0430 \u0441\u043e\u0437\u0434\u0430\u043d\u0438\u044f Stars \u043f\u043b\u0430\u0442\u0435\u0436\u0430: ETELEGRAM: 400 Bad Request: chat not found"
       },
-      "timestamp": "2025-08-14T12:01:00.784792"
+      "timestamp": "2025-08-15T06:17:37.575882"
     },
     {
       "test": "Premium Status",
@@ -122,14 +122,14 @@
         "activatedAt": null,
         "paymentHistory": []
       },
-      "timestamp": "2025-08-14T12:01:01.288291"
+      "timestamp": "2025-08-15T06:17:38.353485"
     },
     {
       "test": "Error Handling",
       "success": true,
       "message": "Properly handles missing userId",
       "response": null,
-      "timestamp": "2025-08-14T12:01:01.908883"
+      "timestamp": "2025-08-15T06:17:39.229756"
     }
   ]
 }
