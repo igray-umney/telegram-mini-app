@@ -11,7 +11,7 @@ import sys
 from datetime import datetime
 
 # Configuration
-BASE_URL = "http://localhost:8001"
+BASE_URL = "https://telegram-mini-app-production-39d0.up.railway.app"
 TEST_USER_ID = "123456789"
 TEST_USERNAME = "testuser"
 
