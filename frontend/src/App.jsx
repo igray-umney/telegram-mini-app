@@ -526,7 +526,7 @@ const ChildDevelopmentApp = () => {
 
   return <div>Экран не найден</div>;
 };
-
+  
 export default ChildDevelopmentApp;
 
   const createStarsPayment = async () => {
