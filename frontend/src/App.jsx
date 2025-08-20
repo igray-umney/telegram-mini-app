@@ -41,48 +41,6 @@ const ChildDevelopmentApp = () => {
   }, []);
 
   // Payment functions
-
-const ChildDevelopmentApp = () => {
-  const [currentScreen, setCurrentScreen] = useState('main');
-  const [isPremium, setIsPremium] = useState(false);
-  const [showPayment, setShowPayment] = useState(false);
-  const [paymentStatus, setPaymentStatus] = useState('idle');
-  const [telegramUser, setTelegramUser] = useState(null);
-  const [child, setChild] = useState({
-    name: 'Андрей',
-    age: 2,
-    streak: 7
-  });
-
-  // Debug logs
-  const [debugLogs, setDebugLogs] = useState([]);
-  
-  const addLog = (message) => {
-    const time = new Date().toLocaleTimeString();
-    setDebugLogs(prev => [...prev, `${time}: ${message}`].slice(-10));
-  };
-
-  // Telegram WebApp integration
-  useEffect(() => {
-    if (window.Telegram && window.Telegram.WebApp) {
-      const tg = window.Telegram.WebApp;
-      tg.ready();
-      
-      const user = tg.initDataUnsafe?.user;
-      if (user) {
-        setTelegramUser(user);
-        setChild(prev => ({
-          ...prev,
-          name: user.first_name || 'Малыш'
-        }));
-      }
-      
-      tg.setHeaderColor('#ffffff');
-      tg.setBackgroundColor('#f8fafc');
-    }
-  }, []);
-
-  // Payment functions
   const createCardPayment = async () => {
     addLog('🎯 Начинаем оплату картой');
     
