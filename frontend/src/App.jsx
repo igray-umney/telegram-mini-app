@@ -41,6 +41,7 @@ const ChildDevelopmentApp = () => {
   }, []);
 
   // Payment functions
+
 const ChildDevelopmentApp = () => {
   const [currentScreen, setCurrentScreen] = useState('main');
   const [isPremium, setIsPremium] = useState(false);
@@ -119,7 +120,8 @@ const ChildDevelopmentApp = () => {
       
       if (response.ok) {
         const data = await response.json();
-        addLog(`✅ Получили данные: ${JSON.stringify(data)}`);
+        addLog('✅ Получили данные от сервера');
+        addLog(`📦 Данные: ${JSON.stringify(data).substring(0, 100)}`);
         
         if (data.invoiceUrl || data.success) {
           addLog('💳 Открываем инвойс...');
@@ -136,12 +138,12 @@ const ChildDevelopmentApp = () => {
           }, 2000);
           
         } else {
-          addLog(`❌ invoiceUrl не получен. Данные: ${JSON.stringify(data)}`);
+          addLog('❌ invoiceUrl не получен в ответе');
           setPaymentStatus('error');
         }
       } else {
         const errorText = await response.text();
-        addLog(`❌ Ошибка сервера: ${response.status} - ${errorText}`);
+        addLog(`❌ Ошибка ${response.status}: ${errorText.substring(0, 100)}`);
         setPaymentStatus('error');
       }
     } catch (error) {
