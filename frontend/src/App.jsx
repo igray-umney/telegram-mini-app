@@ -658,62 +658,30 @@ const sendPaymentNotification = async (paymentType, amount, currency = '₽') =>
   }
 };
 
-  const createCardPayment = async () => {
-    alert('🎯 createCardPayment function called!');
-    console.log('🎯 createCardPayment called!');
-    setPaymentStatus('processing');
-    
-    try {
-      console.log('💳 Starting card payment process...');
-      // Send notification to Telegram bot
-      await sendPaymentNotification('card', 299, '₽');
-
-      console.log('💳 Payment notification sent, checking Telegram WebApp...');
-      if (window.Telegram?.WebApp) {
-        const response = await fetch(`${import.meta.env.REACT_APP_BACKEND_URL}/api/telegram/create-invoice`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            userId: telegramUser.id,
-            amount: 299,
-            description: 'Премиум подписка на 1 месяц'
-          }),
-        });
-
-        const { invoiceUrl } = await response.json();
-        
-        window.Telegram.WebApp.openInvoice(invoiceUrl, (status) => {
-          if (status === 'paid') {
-            setPaymentStatus('success');
-            setIsPremium(true);
-            // Send success notification
-            sendSuccessPaymentNotification('card', 299, '₽');
-            setTimeout(() => {
-              setShowPayment(false);
-              setPaymentStatus('idle');
-            }, 2000);
-          } else if (status === 'cancelled') {
-            setPaymentStatus('cancelled');
-            // Send cancellation notification
-            sendCancelledPaymentNotification('card', 299, '₽');
-            setTimeout(() => {
-              setPaymentStatus('idle');
-            }, 2000);
-          } else {
-            setPaymentStatus('error');
-            // Send error notification
-            sendErrorPaymentNotification('card', 299, '₽');
-          }
-        });
-      }
-    } catch (error) {
-      console.error('Ошибка при создании платежа:', error);
-      setPaymentStatus('error');
-      sendErrorPaymentNotification('card', 299, '₽');
-    }
+const [debugLogs, setDebugLogs] = useState([]);
+  
+  const addDebugLog = (message) => {
+    const timestamp = new Date().toLocaleTimeString();
+    setDebugLogs(prev => [...prev, `${timestamp}: ${message}`].slice(-10)); // Последние 10 логов
   };
+
+  // Функция для создания платежа через карту
+const createCardPayment = async () => {
+  console.log('🔍 Начинаем createCardPayment');
+  console.log('👤 telegramUser:', telegramUser);
+  console.log('🌐 window.Telegram:', window.Telegram);
+  
+  if (!window.Telegram?.WebApp) {
+    alert('Эта функция доступна только в Telegram');
+    return;
+  }
+
+  if (!telegramUser?.id) {
+    alert('Пользователь не определен. telegramUser: ' + JSON.stringify(telegramUser));
+    return;
+  }
+
+  setPaymentStatus('processing');
 
   const createStarsPayment = async () => {
     setPaymentStatus('processing');
