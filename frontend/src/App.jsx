@@ -215,39 +215,77 @@ const checkServerStatus = async () => {
   const premiumActivities = getActivities().filter(a => a.premium);
 
   // Payment Modal
-  const PaymentModal = () => {
-    if (!showPayment) return null;
 
-    return (
-<div className="space-y-3">
-  <button
-    onClick={createCardPayment}
-    disabled={paymentStatus === 'processing'}
-    className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-  >
-    <span className="mr-2">💳</span>
-    {paymentStatus === 'processing' ? 'Создание инвойса...' : 'Оплатить картой'}
-  </button>
-  
-  <button
-    onClick={createStarsPayment}
-    disabled={paymentStatus === 'processing'}
-    className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-white py-3 rounded-lg font-medium hover:from-yellow-600 hover:to-yellow-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-  >
-    <span className="mr-2">⭐</span>
-    {paymentStatus === 'processing' ? 'Обработка...' : 'Оплатить Stars'}
-  </button>
-  
-  <button
-    onClick={() => setShowPayment(false)}
-    className="w-full bg-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-400 transition-colors"
-  >
-    Отмена
-  </button>
-</div>
-    );
-  };
+const PaymentModal = () => {
+  if (!showPayment) return null;
 
+  return (
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4"
+      style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999 }}
+    >
+      <div 
+        className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto relative"
+        style={{ maxWidth: '400px', margin: 'auto' }}
+      >
+        {/* Кнопка закрытия */}
+        <button
+          onClick={() => setShowPayment(false)}
+          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+        >
+          ✕
+        </button>
+        
+        <div className="text-center">
+          <div className="bg-gradient-to-r from-purple-600 to-pink-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-white text-2xl">👑</span>
+          </div>
+          
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Премиум подписка</h2>
+          <p className="text-gray-600 mb-6">Разблокируйте все возможности приложения</p>
+          
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 mb-6">
+            <div className="flex items-center justify-between">
+              <span className="text-gray-600">Стоимость:</span>
+              <span className="text-2xl font-bold text-purple-600">299₽/мес</span>
+            </div>
+            <p className="text-sm text-gray-500 mt-1">или 100 ⭐ Telegram Stars</p>
+          </div>
+          
+          {/* Остальное содержимое модального окна остается без изменений */}
+          
+          <div className="space-y-3">
+            <button
+              onClick={createCardPayment}
+              disabled={paymentStatus === 'processing'}
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            >
+              <span className="mr-2">💳</span>
+              {paymentStatus === 'processing' ? 'Создание инвойса...' : 'Оплатить картой'}
+            </button>
+            
+            <button
+              onClick={createStarsPayment}
+              disabled={paymentStatus === 'processing'}
+              className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-white py-3 rounded-lg font-medium hover:from-yellow-600 hover:to-yellow-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            >
+              <span className="mr-2">⭐</span>
+              {paymentStatus === 'processing' ? 'Обработка...' : 'Оплатить Stars'}
+            </button>
+            
+            <button
+              onClick={() => setShowPayment(false)}
+              className="w-full bg-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-400 transition-colors"
+            >
+              Отмена
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+  
   // Main Screen
   if (currentScreen === 'main') {
     return (
