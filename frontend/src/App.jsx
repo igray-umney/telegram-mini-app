@@ -44,12 +44,18 @@ const ChildDevelopmentApp = () => {
 const createCardPayment = async () => {
   addLog('🎯 Начинаем оплату картой');
   
-  // Проверяем Telegram WebApp
-  if (!window.Telegram?.WebApp) {
-    addLog('❌ Telegram WebApp недоступен');
-    setPaymentStatus('error');
-    return;
-  }
+ // Показываем уведомление пользователю
+if (window.Telegram?.WebApp) {
+  window.Telegram.WebApp.showPopup({
+    title: '💳 Счет для оплаты отправлен!',
+    message: '📱 Сверните приложение и найдите сообщение с кнопкой "Заплатить 299,00 RUB"\n\n✅ После оплаты вернитесь в приложение - премиум активируется автоматически',
+    buttons: [
+      { id: 'ok', type: 'default', text: 'Понятно' }
+    ]
+  }, (buttonId) => {
+    addLog('✅ Пользователь закрыл уведомление');
+  });
+}
 
   const tg = window.Telegram.WebApp;
   addLog(`📱 WebApp версия: ${tg.version}`);
