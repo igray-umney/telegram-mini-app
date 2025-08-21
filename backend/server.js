@@ -15,14 +15,16 @@ app.use(cors({
   origin: [
     'https://telegram-mini-app-gules-nine.vercel.app',
     'https://web.telegram.org',
-    'https://k.web.telegram.org'
+    'https://k.web.telegram.org',
+    'http://localhost:3000',
+    'http://localhost:5173'
   ],
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
 app.use(express.json());
-
+app.options('*', cors()); // Разрешаем preflight запросы
 // Инициализация бота
 let bot;
 try {
