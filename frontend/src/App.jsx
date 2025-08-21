@@ -104,11 +104,21 @@ const createCardPayment = async () => {
       setPaymentStatus('error');
     }
     
-  } catch (error) {
-    addLog(`💥 Критическая ошибка: ${error.name}: ${error.message}`);
-    addLog(`🔍 Stack: ${error.stack}`);
-    setPaymentStatus('error');
+} catch (error) {
+  addLog(`💥 Критическая ошибка: ${error.name}: ${error.message}`);
+  
+  if (error.message.includes('Failed to fetch')) {
+    addLog('🚫 CORS ошибка - сервер не доступен');
+    addLog('🔄 Проверьте настройки CORS на сервере');
+    
+    // Показываем пользователю понятное сообщение
+    if (window.Telegram?.WebApp) {
+      window.Telegram.WebApp.showAlert('Ошибка подключения к серверу. Попробуйте позже.');
+    }
   }
+  
+  setPaymentStatus('error');
+}
 };
 
   const createStarsPayment = async () => {
