@@ -123,11 +123,6 @@ if (response.ok) {
   setPaymentStatus('error');
 }
     
-    else {
-      addLog(`❌ Ошибка сервера: ${response.status} - ${responseText}`);
-      setPaymentStatus('error');
-    }
-    
 } catch (error) {
   addLog(`💥 Критическая ошибка: ${error.name}: ${error.message}`);
   
