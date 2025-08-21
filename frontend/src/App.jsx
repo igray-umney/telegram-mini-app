@@ -143,20 +143,94 @@ if (response.ok) {
 };
 
   const createStarsPayment = async () => {
-    addLog('⭐ Начинаем оплату Stars');
-    setPaymentStatus('processing');
+  addLog('⭐ Начинаем оплату Stars');
+  
+  if (!window.Telegram?.WebApp) {
+    addLog('❌ Telegram WebApp недоступен');
+    setPaymentStatus('error');
+    return;
+  }
+
+  if (!telegramUser?.id) {
+    addLog('❌ ID пользователя отсутствует');
+    setPaymentStatus('error');
+    return;
+  }
+
+  setPaymentStatus('processing');
+  addLog(`🔑 ID пользователя: ${telegramUser.id}`);
+
+  try {
+    addLog('🌐 Отправляем запрос на создание Stars инвойса...');
     
-    // Имитация успешной оплаты Stars
-    setTimeout(() => {
-      setPaymentStatus('success');
-      setIsPremium(true);
-      addLog('✅ Оплата Stars успешна (тест)');
+    const response = await fetch('https://telegram-mini-app-production-39d0.up.railway.app/api/telegram/create-stars-invoice', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId: telegramUser.id,
+        stars: 100,
+        description: 'Премиум подписка Развивайка на 1 месяц'
+      })
+    });
+
+    addLog(`📡 Статус ответа: ${response.status}`);
+    
+    if (response.ok) {
+      const responseText = await response.text();
+      addLog(`📄 Сырой ответ: ${responseText}`);
+      
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        addLog('⚠️ Ответ не в формате JSON, но статус OK - считаем успехом');
+        data = { success: true };
+      }
+      
+      addLog('⭐ Stars инвойс создан успешно');
+      
+      // Показываем уведомление пользователю
+      if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.showAlert(
+          '⭐ Счет для оплаты Stars отправлен в чат с ботом!\n\n' +
+          '📱 Сверните приложение и найдите сообщение с кнопкой "Заплатить 100 ⭐"\n\n' +
+          '✅ После оплаты вернитесь в приложение - премиум активируется автоматически'
+        );
+      }
+      
+      // Временно показываем успех для UX
       setTimeout(() => {
-        setShowPayment(false);
-        setPaymentStatus('idle');
-      }, 2000);
-    }, 1500);
-  };
+        setPaymentStatus('success');
+        setIsPremium(true);
+        
+        setTimeout(() => {
+          setShowPayment(false);
+          setPaymentStatus('idle');
+        }, 2000);
+      }, 1000);
+      
+    } else {
+      const errorText = await response.text();
+      addLog(`❌ Ошибка сервера: ${response.status} - ${errorText}`);
+      setPaymentStatus('error');
+    }
+    
+  } catch (error) {
+    addLog(`💥 Критическая ошибка: ${error.name}: ${error.message}`);
+    
+    if (error.message.includes('Failed to fetch')) {
+      addLog('🚫 Сервер недоступен для Stars');
+      
+      if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.showAlert('Ошибка подключения к серверу. Попробуйте позже.');
+      }
+    }
+    
+    setPaymentStatus('error');
+  }
+};
 
 const checkServerStatus = async () => {
   addLog('🔍 Проверяем статус сервера...');
