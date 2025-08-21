@@ -141,7 +141,7 @@ const checkServerStatus = async () => {
   addLog('🔍 Проверяем статус сервера...');
   
   try {
-    const response = await fetch('https://telegram-bot-server-production-8dfb.up.railway.app/', {
+    const response = await fetch('https://telegram-mini-app-production-3940.up.railway.app/', {
       method: 'GET'
     });
     
