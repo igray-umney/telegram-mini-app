@@ -268,7 +268,12 @@ const checkServerStatus = async () => {
               >
                 🔍 Проверить данные
               </button>
-              
+              <button
+  onClick={checkServerStatus}
+  className="w-full bg-orange-500 text-white py-2 rounded-lg font-medium"
+>
+  🔍 Проверить сервер
+</button>
               <button
                 onClick={createCardPayment}
                 disabled={paymentStatus === 'processing'}
