@@ -41,89 +41,75 @@ const ChildDevelopmentApp = () => {
   }, []);
 
   // Payment functions
-  const createCardPayment = async () => {
-    addLog('🎯 Начинаем оплату картой');
+const createCardPayment = async () => {
+  addLog('🎯 Начинаем оплату картой');
+  
+  // Проверяем Telegram WebApp
+  if (!window.Telegram?.WebApp) {
+    addLog('❌ Telegram WebApp недоступен');
+    setPaymentStatus('error');
+    return;
+  }
+
+  const tg = window.Telegram.WebApp;
+  addLog(`📱 WebApp версия: ${tg.version}`);
+  addLog(`👤 Пользователь: ${tg.initDataUnsafe?.user?.id || 'неизвестен'}`);
+
+  if (!telegramUser?.id) {
+    addLog('❌ ID пользователя отсутствует');
+    setPaymentStatus('error');
+    return;
+  }
+
+  setPaymentStatus('processing');
+  addLog(`🔑 ID пользователя: ${telegramUser.id}`);
+
+  try {
+    addLog('🌐 Отправляем запрос на сервер...');
     
-    if (!window.Telegram?.WebApp) {
-      addLog('❌ Telegram WebApp недоступен');
-      alert('Эта функция доступна только в Telegram');
-      return;
-    }
+    const response = await fetch('https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/create-invoice', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId: telegramUser.id,
+        amount: 299,
+        description: 'Премиум подписка на 1 месяц'
+      })
+    });
 
-    if (!telegramUser?.id) {
-      addLog('❌ Пользователь не определен');
-      alert('Пользователь не определен');
-      return;
-    }
-
-    addLog('⏳ Устанавливаем статус processing');
-    setPaymentStatus('processing');
-
-    try {
-      addLog('🚀 Отправляем запрос на сервер...');
+    addLog(`📡 Статус ответа: ${response.status}`);
+    addLog(`📡 Headers: ${JSON.stringify([...response.headers.entries()])}`);
+    
+    const responseText = await response.text();
+    addLog(`📄 Тело ответа: ${responseText}`);
+    
+    if (response.ok) {
+      const data = JSON.parse(responseText);
+      addLog(`✅ Данные получены: ${JSON.stringify(data)}`);
       
-      const response = await fetch('https://telegram-bot-server-production-8dfb.up.railway.app/api/telegram/create-invoice', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: telegramUser.id,
-          amount: 299,
-          description: 'Премиум подписка на 1 месяц'
-        })
-      });
-
-      addLog(`📡 Ответ сервера: ${response.status}`);
+      // Пока временно активируем премиум для тестирования
+      addLog('⚠️ ВРЕМЕННО: Активируем премиум без реального платежа');
+      setPaymentStatus('success');
+      setIsPremium(true);
       
-      if (response.ok) {
-        const data = await response.json();
-        addLog('✅ Получили данные от сервера');
-        addLog(`📦 Данные: ${JSON.stringify(data).substring(0, 100)}`);
-        
-        if (data.invoiceUrl || data.success) {
-          addLog('💳 Открываем инвойс...');
-          
-          // Для тестирования - просто активируем премиум
-          setTimeout(() => {
-            setPaymentStatus('success');
-            setIsPremium(true);
-            addLog('✅ Платеж успешен (тест)');
-            setTimeout(() => {
-              setShowPayment(false);
-              setPaymentStatus('idle');
-            }, 2000);
-          }, 2000);
-          
-        } else {
-          addLog('❌ invoiceUrl не получен в ответе');
-          setPaymentStatus('error');
-        }
-      } else {
-        const errorText = await response.text();
-        addLog(`❌ Ошибка ${response.status}: ${errorText.substring(0, 100)}`);
-        setPaymentStatus('error');
-      }
-    } catch (error) {
-      addLog(`❌ Ошибка: ${error.message}`);
-      addLog(`🔍 Проверяем тип ошибки...`);
+      setTimeout(() => {
+        setShowPayment(false);
+        setPaymentStatus('idle');
+      }, 3000);
       
-      // CORS проблема - активируем премиум как fallback
-      if (error.message.includes('Failed to fetch')) {
-        addLog('🔄 CORS проблема, активируем премиум (fallback)');
-        setPaymentStatus('success');
-        setIsPremium(true);
-        addLog('✅ Премиум активирован!');
-        setTimeout(() => {
-          setShowPayment(false);
-          setPaymentStatus('idle');
-        }, 2000);
-      } else {
-        addLog('❌ Устанавливаем статус error');
-        setPaymentStatus('error');
-      }
+    } else {
+      addLog(`❌ Ошибка сервера: ${response.status} - ${responseText}`);
+      setPaymentStatus('error');
     }
-  };
+    
+  } catch (error) {
+    addLog(`💥 Критическая ошибка: ${error.name}: ${error.message}`);
+    addLog(`🔍 Stack: ${error.stack}`);
+    setPaymentStatus('error');
+  }
+};
 
   const createStarsPayment = async () => {
     addLog('⭐ Начинаем оплату Stars');
