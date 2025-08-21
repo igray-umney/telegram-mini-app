@@ -137,6 +137,25 @@ const createCardPayment = async () => {
     }, 1500);
   };
 
+const checkServerStatus = async () => {
+  addLog('🔍 Проверяем статус сервера...');
+  
+  try {
+    const response = await fetch('https://telegram-bot-server-production-8dfb.up.railway.app/', {
+      method: 'GET'
+    });
+    
+    if (response.ok) {
+      const data = await response.text();
+      addLog(`✅ Сервер работает: ${data}`);
+    } else {
+      addLog(`⚠️ Сервер отвечает с ошибкой: ${response.status}`);
+    }
+  } catch (error) {
+    addLog(`❌ Сервер недоступен: ${error.message}`);
+  }
+};
+  
   // Activities database
   const activities = {
     2: [
