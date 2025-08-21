@@ -219,110 +219,32 @@ const checkServerStatus = async () => {
     if (!showPayment) return null;
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-          <div className="text-center">
-            <div className="bg-gradient-to-r from-purple-600 to-pink-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-white text-2xl">👑</span>
-            </div>
-            
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Премиум подписка</h2>
-            <p className="text-gray-600 mb-6">Разблокируйте все возможности приложения</p>
-            
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 mb-6">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Стоимость:</span>
-                <span className="text-2xl font-bold text-purple-600">299₽/мес</span>
-              </div>
-              <p className="text-sm text-gray-500 mt-1">или 100 ⭐ Telegram Stars</p>
-            </div>
-            
-            {paymentStatus === 'processing' && (
-              <div className="mb-4">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
-                <p className="text-sm text-gray-600 mt-2">Обработка платежа...</p>
-              </div>
-            )}
-            
-            {paymentStatus === 'success' && (
-              <div className="mb-4 p-4 bg-green-50 rounded-lg">
-                <div className="text-green-500 text-2xl mb-2">✅</div>
-                <p className="text-green-800 font-semibold">Платеж успешно завершен!</p>
-                <p className="text-sm text-green-600">Премиум активирован</p>
-              </div>
-            )}
-            
-            {paymentStatus === 'error' && (
-              <div className="mb-4 p-4 bg-red-50 rounded-lg">
-                <div className="text-red-500 text-2xl mb-2">❌</div>
-                <p className="text-red-800 font-semibold">Ошибка платежа</p>
-                <p className="text-sm text-red-600">Попробуйте еще раз</p>
-              </div>
-            )}
-
-            {/* Debug Logs */}
-            {debugLogs.length > 0 && (
-              <div className="mb-4 p-3 bg-gray-100 rounded-lg text-left">
-                <h4 className="text-sm font-bold text-gray-700 mb-2">🔍 Логи отладки:</h4>
-                <div className="text-xs text-gray-600 space-y-1 max-h-32 overflow-y-auto">
-                  {debugLogs.map((log, index) => (
-                    <div key={index}>{log}</div>
-                  ))}
-                </div>
-                <button 
-                  onClick={() => setDebugLogs([])}
-                  className="text-xs text-red-500 mt-2"
-                >
-                  Очистить логи
-                </button>
-              </div>
-            )}
-            
-            <div className="space-y-3">
-              <button
-                onClick={() => {
-                  addLog(`👤 telegramUser: ${JSON.stringify(telegramUser)}`);
-                  addLog(`🌐 window.Telegram: ${!!window.Telegram}`);
-                  addLog(`📱 WebApp: ${!!window.Telegram?.WebApp}`);
-                }}
-                className="w-full bg-gray-500 text-white py-2 rounded-lg font-medium"
-              >
-                🔍 Проверить данные
-              </button>
-              <button
-  onClick={checkServerStatus}
-  className="w-full bg-orange-500 text-white py-2 rounded-lg font-medium"
->
-  🔍 Проверить сервер
-</button>
-              <button
-                onClick={createCardPayment}
-                disabled={paymentStatus === 'processing'}
-                className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-              >
-                <span className="mr-2">💳</span>
-                {paymentStatus === 'processing' ? 'Обработка...' : 'Оплатить картой'}
-              </button>
-              
-              <button
-                onClick={createStarsPayment}
-                disabled={paymentStatus === 'processing'}
-                className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-white py-3 rounded-lg font-medium hover:from-yellow-600 hover:to-yellow-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-              >
-                <span className="mr-2">⭐</span>
-                {paymentStatus === 'processing' ? 'Обработка...' : 'Оплатить Stars'}
-              </button>
-              
-              <button
-                onClick={() => setShowPayment(false)}
-                className="w-full bg-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-400 transition-colors"
-              >
-                Отмена
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+<div className="space-y-3">
+  <button
+    onClick={createCardPayment}
+    disabled={paymentStatus === 'processing'}
+    className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+  >
+    <span className="mr-2">💳</span>
+    {paymentStatus === 'processing' ? 'Создание инвойса...' : 'Оплатить картой'}
+  </button>
+  
+  <button
+    onClick={createStarsPayment}
+    disabled={paymentStatus === 'processing'}
+    className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-white py-3 rounded-lg font-medium hover:from-yellow-600 hover:to-yellow-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+  >
+    <span className="mr-2">⭐</span>
+    {paymentStatus === 'processing' ? 'Обработка...' : 'Оплатить Stars'}
+  </button>
+  
+  <button
+    onClick={() => setShowPayment(false)}
+    className="w-full bg-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-400 transition-colors"
+  >
+    Отмена
+  </button>
+</div>
     );
   };
 
