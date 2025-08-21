@@ -67,7 +67,7 @@ const createCardPayment = async () => {
   try {
     addLog('🌐 Отправляем запрос на сервер...');
     
-    const response = await fetch('https://telegram-mini-app-production-3940.up.railway.app/api/telegram/create-invoice', {
+    const response = await fetch('https://telegram-mini-app-production-39d0.up.railway.app/api/telegram/create-invoice', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
