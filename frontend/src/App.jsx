@@ -48,7 +48,7 @@ const createCardPayment = async () => {
 if (window.Telegram?.WebApp) {
   window.Telegram.WebApp.showPopup({
     title: '💳 Счет для оплаты отправлен!',
-    message: '📱 Сверните приложение и найдите сообщение с кнопкой "Заплатить 299,00 RUB"\n\n✅ После оплаты вернитесь в приложение - премиум активируется автоматически',
+    message: '📱 Сверните приложение и найдите сообщение с кнопкой "Заплатить 10,00 RUB"\n\n✅ После оплаты вернитесь в приложение - премиум активируется автоматически',
     buttons: [
       { id: 'ok', type: 'default', text: 'Понятно' }
     ]
@@ -80,7 +80,7 @@ if (window.Telegram?.WebApp) {
       },
       body: JSON.stringify({
         userId: telegramUser.id,
-        amount: 299,
+        amount: 10,
         description: 'Премиум подписка на 1 месяц'
       })
     });
@@ -109,7 +109,7 @@ if (response.ok) {
   if (window.Telegram?.WebApp) {
     window.Telegram.WebApp.showAlert(
       '💳 Счет для оплаты отправлен в чат с ботом!\n\n' +
-      '📱 Свернуте приложение и найдите сообщение с кнопкой "Заплатить 299,00 RUB"\n\n' +
+      '📱 Свернуте приложение и найдите сообщение с кнопкой "Заплатить 10,00 RUB"\n\n' +
       '✅ После оплаты вернитесь в приложение - премиум активируется автоматически'
     );
   }
@@ -335,7 +335,7 @@ const PaymentModal = () => {
           <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 mb-6">
             <div className="flex items-center justify-between">
               <span className="text-gray-600">Стоимость:</span>
-              <span className="text-2xl font-bold text-purple-600">299₽/мес</span>
+              <span className="text-2xl font-bold text-purple-600">10₽/мес</span>
             </div>
             <p className="text-sm text-gray-500 mt-1">или 100 ⭐ Telegram Stars</p>
           </div>
@@ -577,7 +577,7 @@ const PaymentModal = () => {
                 onClick={() => setShowPayment(true)}
                 className="bg-white text-purple-600 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors"
               >
-                Подключить премиум - 299₽/мес
+                Подключить премиум - 10₽/мес
               </button>
             </div>
           )}
