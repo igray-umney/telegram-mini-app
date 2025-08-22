@@ -40,6 +40,32 @@ const ChildDevelopmentApp = () => {
     }
   }, []);
 
+  // Добавить в useEffect после инициализации Telegram
+useEffect(() => {
+  if (telegramUser?.id) {
+    // Проверяем статус премиума каждые 3 секунды после оплаты
+    const checkPremium = setInterval(async () => {
+      try {
+        const response = await fetch(`https://telegram-mini-app-production-39d0.up.railway.app/api/telegram/check-premium/${telegramUser.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.isPremium && !isPremium) {
+            setIsPremium(true);
+            clearInterval(checkPremium);
+            if (window.Telegram?.WebApp) {
+              window.Telegram.WebApp.showAlert('🎉 Премиум активирован!');
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка проверки премиума:', error);
+      }
+    }, 3000);
+
+    return () => clearInterval(checkPremium);
+  }
+}, [telegramUser, isPremium]);
+
   // Payment functions
 const createCardPayment = async () => {
   addLog('🎯 Начинаем оплату картой');
