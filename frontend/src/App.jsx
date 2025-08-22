@@ -210,16 +210,22 @@ if (window.Telegram?.WebApp) {
   });
 }
       
-      // Временно показываем успех для UX
-      setTimeout(() => {
-        setPaymentStatus('success');
-        setIsPremium(true);
-        
-        setTimeout(() => {
-          setShowPayment(false);
-          setPaymentStatus('idle');
-        }, 2000);
-      }, 1000);
+// Временно показываем успех для UX (увеличиваем задержку)
+setTimeout(() => {
+  setPaymentStatus('success');
+  addLog('✅ Статус изменен на success');
+  
+  // Активируем премиум через дополнительную задержку
+  setTimeout(() => {
+    setIsPremium(true);
+    addLog('✅ Премиум активирован');
+    
+    setTimeout(() => {
+      setShowPayment(false);
+      setPaymentStatus('idle');
+    }, 2000);
+  }, 500);
+}, 1500); // Увеличили задержку до показа success
       
     } else {
       const errorText = await response.text();
