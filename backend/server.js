@@ -120,7 +120,7 @@ bot.on('successful_payment', (msg) => {
       parse_mode: 'Markdown',
       reply_markup: {
         inline_keyboard: [
-          [{ text: '🚀 Открыть приложение', web_app: { url: process.env.APP_URL || 'https://telegram-mini-app-gules-nine.vercel.app/' } }]
+          [{ text: '🚀 Открыть приложение', web_app: { url: APP_URL } }]
         ]
       }
     }
