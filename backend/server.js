@@ -8,7 +8,7 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 8001;
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN || process.env.BOT_TOKEN;
-const APP_URL = 'https://telegram-mini-app-gules-nine.vercel.app/';
+const APP_URL = process.env.APP_URL || 'https://telegram-mini-app-gules-nine.vercel.app/';
 
 // Middleware
 app.use(cors({
