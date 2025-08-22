@@ -167,6 +167,17 @@ app.post('/api/telegram/create-stars-invoice', async (req, res) => {
   }
 });
 
+  // Добавить после существующих эндпоинтов
+app.get('/api/telegram/check-premium/:userId', (req, res) => {
+  const data = loadData();
+  const user = data.users.find(u => u.userId === req.params.userId);
+  
+  res.json({
+    isPremium: user?.isPremium || false,
+    activatedAt: user?.premiumActivatedAt
+  });
+});
+
 // Команды бота
 if (bot) {
   bot.onText(/\/start/, async (msg) => {
