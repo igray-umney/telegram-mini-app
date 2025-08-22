@@ -90,6 +90,43 @@ try {
     start_parameter: 'premium_payment'
   });
 
+  // Обработчик успешного платежа
+bot.on('pre_checkout_query', (query) => {
+  console.log('💰 Pre-checkout query получен:', query.id);
+  // Отвечаем что всё ок для завершения платежа
+  bot.answerPreCheckoutQuery(query.id, true);
+});
+
+// Обработчик завершенного платежа
+bot.on('successful_payment', (msg) => {
+  console.log('✅ Платеж успешно завершен!');
+  console.log('Пользователь:', msg.from.id);
+  console.log('Сумма:', msg.successful_payment.total_amount);
+  console.log('Payload:', msg.successful_payment.invoice_payload);
+  
+  const userId = msg.from.id;
+  
+  // Отправляем сообщение об успешной активации
+  bot.sendMessage(userId, 
+    '🎉 *Поздравляем!*\n\n' +
+    '✅ Премиум подписка успешно активирована!\n\n' +
+    '💎 Теперь вам доступны:\n' +
+    '• Все активности без ограничений\n' +
+    '• Персональные программы развития\n' +
+    '• Подробная аналитика прогресса\n' +
+    '• Эксклюзивные материалы\n\n' +
+    '🚀 Откройте приложение чтобы воспользоваться всеми возможностями!',
+    { 
+      parse_mode: 'Markdown',
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: '🚀 Открыть приложение', web_app: { url: process.env.APP_URL || 'https://telegram-mini-app-gules-nine.vercel.app/' } }]
+        ]
+      }
+    }
+  );
+});
+
 app.post('/api/telegram/create-stars-invoice', async (req, res) => {
   console.log('⭐ Создание Stars инвойса для:', req.body.userId);
   
