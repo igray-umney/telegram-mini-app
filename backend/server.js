@@ -195,13 +195,13 @@ if (bot) {
     
 Нажмите кнопку ниже чтобы открыть приложение:`;
 
-    const keyboard = {
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: '🚀 Открыть приложение', web_app: { url: APP_URL } }]
-        ]
-      }
-    };
+const keyboard = {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: '🚀 Открыть приложение', web_app: { url: APP_URL } }]
+      ]
+    }
+  };
 
     bot.sendMessage(msg.chat.id, message, keyboard);
   });
