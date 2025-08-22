@@ -75,49 +75,20 @@ app.get('/api/telegram/status/:userId', (req, res) => {
   });
 });
 
-app.post('/api/telegram/create-invoice', async (req, res) => {
-  console.log('💳 Создание инвойса для:', req.body.userId);
-  
-  // Получаем данные из запроса
-  const { userId, amount, description } = req.body;
-  
-  // Используем тестовую цену 10 рублей вместо переданной суммы
-  const testAmount = 10; // Изменили здесь
-  
-  if (!userId) {
-    return res.status(400).json({ 
-      success: false, 
-      message: 'Отсутствует ID пользователя' 
-    });
-  }
+// Используем минимальную допустимую сумму
+const testAmount = 60; // Минимум ~60 рублей для Telegram Payments
 
-  try {
-    // Отправляем инвойс через бота
-    const response = await bot.sendInvoice(userId, {
-      title: 'Премиум подписка Развивайка',
-      description: description || 'Премиум подписка на 1 месяц (тест)',
-      payload: `premium_${userId}_${Date.now()}`,
-      provider_token: process.env.PAYMENT_TOKEN,
-      currency: 'RUB',
-      prices: [{ label: 'Премиум подписка', amount: testAmount * 100 }], // *100 для копеек
-      start_parameter: 'premium_payment'
-    });
-
-    console.log('✅ Инвойс создан успешно');
-    res.json({ 
-      success: true, 
-      message: 'Инвойс отправлен в Telegram',
-      invoiceId: response.message_id
-    });
-
-  } catch (error) {
-    console.error('❌ Ошибка создания инвойса:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Ошибка создания платежа: ' + error.message 
-    });
-  }
-});
+try {
+  // Отправляем инвойс через бота
+  const response = await bot.sendInvoice(userId, {
+    title: 'Премиум подписка Развивайка',
+    description: description || 'Премиум подписка на 1 месяц (тест)',
+    payload: `premium_${userId}_${Date.now()}`,
+    provider_token: process.env.PAYMENT_TOKEN,
+    currency: 'RUB',
+    prices: [{ label: 'Премиум подписка', amount: testAmount * 100 }], // 60 рублей в копейках
+    start_parameter: 'premium_payment'
+  });
 
 app.post('/api/telegram/create-stars-invoice', async (req, res) => {
   console.log('⭐ Создание Stars инвойса для:', req.body.userId);
