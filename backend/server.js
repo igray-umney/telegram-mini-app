@@ -84,67 +84,54 @@ app.get('/api/telegram/status/:userId', (req, res) => {
 // Используем минимальную допустимую сумму
 const testAmount = 60; // Минимум ~60 рублей для Telegram Payments
 
-try {
-  // Отправляем инвойс через бота
-  const response = await bot.sendInvoice(userId, {
-    title: 'Премиум подписка Развивайка',
-    description: description || 'Премиум подписка на 1 месяц (тест)',
-    payload: `premium_${userId}_${Date.now()}`,
-    provider_token: process.env.PAYMENT_TOKEN,
-    currency: 'RUB',
-    prices: [{ label: 'Премиум подписка', amount: testAmount * 100 }], // 60 рублей в копейках
-    start_parameter: 'premium_payment'
+  // Обработчики платежей
+if (bot) {
+  bot.on('pre_checkout_query', (query) => {
+    console.log('💰 Pre-checkout query получен:', query.id);
+    bot.answerPreCheckoutQuery(query.id, true);
   });
 
-  // Обработчик успешного платежа
-bot.on('successful_payment', (msg) => {
-  console.log('✅ Платеж успешно завершен!');
-  
-  const userId = msg.from.id.toString();
-  
-  // Сохраняем статус премиума в базу данных
-  const data = loadData();
-  let user = data.users.find(u => u.userId === userId);
-  
-  if (!user) {
-    user = {
-      userId,
-      username: msg.from.username,
-      firstName: msg.from.first_name,
-      hasStarted: true,
-      enabled: false,
-      createdAt: new Date().toISOString()
-    };
-    data.users.push(user);
-  }
-  
-  // Активируем премиум
-  user.isPremium = true;
-  user.premiumActivatedAt = new Date().toISOString();
-  
-  saveData(data);
-  console.log(`✅ Премиум активирован для пользователя: ${userId}`);
-  
-  // Отправляем сообщение об успешной активации
-  bot.sendMessage(userId, 
-    '🎉 *Поздравляем!*\n\n' +
-    '✅ Премиум подписка успешно активирована!\n\n' +
-    '💎 Теперь вам доступны:\n' +
-    '• Все активности без ограничений\n' +
-    '• Персональные программы развития\n' +
-    '• Подробная аналитика прогресса\n' +
-    '• Эксклюзивные материалы\n\n' +
-    '🚀 Откройте приложение чтобы воспользоваться всеми возможностями!',
-    { 
-      parse_mode: 'Markdown',
-reply_markup: {
-  inline_keyboard: [
-    [{ text: '🚀 Открыть приложение', url: 'https://telegram-mini-app-gules-nine.vercel.app/' }]
-  ]
-}
+  bot.on('successful_payment', (msg) => {
+    console.log('✅ Платеж успешно завершен!');
+    
+    const userId = msg.from.id.toString();
+    
+    // Сохраняем статус премиума в базу данных
+    const data = loadData();
+    let user = data.users.find(u => u.userId === userId);
+    
+    if (!user) {
+      user = {
+        userId,
+        username: msg.from.username,
+        firstName: msg.from.first_name,
+        hasStarted: true,
+        enabled: false,
+        createdAt: new Date().toISOString()
+      };
+      data.users.push(user);
     }
-  );
-});
+    
+    // Активируем премиум
+    user.isPremium = true;
+    user.premiumActivatedAt = new Date().toISOString();
+    
+    saveData(data);
+    console.log(`✅ Премиум активирован для пользователя: ${userId}`);
+    
+    // Отправляем сообщение об успешной активации
+    bot.sendMessage(userId, 
+      '🎉 Поздравляем! Премиум подписка активирована!',
+      { 
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '🚀 Открыть приложение', url: 'https://telegram-mini-app-gules-nine.vercel.app/' }]
+          ]
+        }
+      }
+    );
+  });
+}
 
 app.post('/api/telegram/create-invoice', async (req, res) => {
   console.log('💳 Создание инвойса для:', req.body.userId);
