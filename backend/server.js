@@ -131,11 +131,11 @@ bot.on('successful_payment', (msg) => {
     '🚀 Откройте приложение чтобы воспользоваться всеми возможностями!',
     { 
       parse_mode: 'Markdown',
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: '🚀 Открыть приложение', web_app: { url: 'https://telegram-mini-app-gules-nine.vercel.app/' } }]
-        ]
-      }
+reply_markup: {
+  inline_keyboard: [
+    [{ text: '🚀 Открыть приложение', url: 'https://telegram-mini-app-gules-nine.vercel.app/' }]
+  ]
+}
     }
   );
 });
@@ -259,11 +259,11 @@ if (bot) {
 Нажмите кнопку ниже чтобы открыть приложение:`;
 
 const keyboard = {
-    reply_markup: {
-      inline_keyboard: [
-        [{ text: '🚀 Открыть приложение', web_app: { url: 'https://telegram-mini-app-gules-nine.vercel.app/' } }]
-      ]
-    }
+reply_markup: {
+  inline_keyboard: [
+    [{ text: '🚀 Открыть приложение', url: 'https://telegram-mini-app-gules-nine.vercel.app/' }]
+  ]
+}
   };
 
     bot.sendMessage(msg.chat.id, message, keyboard);
