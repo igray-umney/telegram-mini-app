@@ -106,6 +106,29 @@ bot.on('successful_payment', (msg) => {
   
   const userId = msg.from.id;
   
+   const data = loadData();
+  let user = data.users.find(u => u.userId === userId);
+  
+  if (!user) {
+    user = {
+      userId,
+      username: msg.from.username,
+      firstName: msg.from.first_name,
+      hasStarted: true,
+      enabled: false,
+      createdAt: new Date().toISOString()
+    };
+    data.users.push(user);
+  }
+  
+  // Активируем премиум
+  user.isPremium = true;
+  user.premiumActivatedAt = new Date().toISOString();
+  
+  saveData(data);
+  console.log(`✅ Премиум активирован для пользователя: ${userId}`);
+  
+  
   // Отправляем сообщение об успешной активации
   bot.sendMessage(userId, 
     '🎉 *Поздравляем!*\n\n' +
