@@ -236,6 +236,10 @@ app.get('/api/telegram/check-premium/:userId', (req, res) => {
   });
 });
 
+  app.get('/test', (req, res) => {
+  res.json({ message: 'Test endpoint works', timestamp: new Date() });
+});
+
 // Команды бота
 if (bot) {
   bot.onText(/\/start/, async (msg) => {
