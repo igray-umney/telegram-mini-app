@@ -91,22 +91,13 @@ try {
   });
 
   // Обработчик успешного платежа
-bot.on('pre_checkout_query', (query) => {
-  console.log('💰 Pre-checkout query получен:', query.id);
-  // Отвечаем что всё ок для завершения платежа
-  bot.answerPreCheckoutQuery(query.id, true);
-});
-
-// Обработчик завершенного платежа
 bot.on('successful_payment', (msg) => {
   console.log('✅ Платеж успешно завершен!');
-  console.log('Пользователь:', msg.from.id);
-  console.log('Сумма:', msg.successful_payment.total_amount);
-  console.log('Payload:', msg.successful_payment.invoice_payload);
   
-  const userId = msg.from.id;
+  const userId = msg.from.id.toString();
   
-   const data = loadData();
+  // Сохраняем статус премиума в базу данных
+  const data = loadData();
   let user = data.users.find(u => u.userId === userId);
   
   if (!user) {
@@ -127,7 +118,6 @@ bot.on('successful_payment', (msg) => {
   
   saveData(data);
   console.log(`✅ Премиум активирован для пользователя: ${userId}`);
-  
   
   // Отправляем сообщение об успешной активации
   bot.sendMessage(userId, 
