@@ -65,6 +65,12 @@ app.get('/', (req, res) => {
   });
 });
 
+app.get('/api/telegram/user/:userId', (req, res) => {
+  const data = loadData();
+  const user = data.users.find(u => u.userId === req.params.userId);
+  res.json(user || { message: 'User not found' });
+});
+
 app.get('/api/telegram/status/:userId', (req, res) => {
   const data = loadData();
   const user = data.users.find(u => u.userId === req.params.userId);
