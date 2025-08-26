@@ -150,6 +150,45 @@ bot.on('successful_payment', (msg) => {
   );
 });
 
+app.post('/api/telegram/create-invoice', async (req, res) => {
+  console.log('💳 Создание инвойса для:', req.body.userId);
+  
+  const { userId, amount, description } = req.body;
+  
+  if (!userId || !amount) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Отсутствуют обязательные параметры' 
+    });
+  }
+
+  try {
+    const response = await bot.sendInvoice(userId, {
+      title: 'Премиум подписка Развивайка',
+      description: description || 'Премиум подписка на 1 месяц',
+      payload: `premium_${userId}_${Date.now()}`,
+      provider_token: process.env.PAYMENT_TOKEN,
+      currency: 'RUB',
+      prices: [{ label: 'Премиум подписка', amount: amount * 100 }],
+      start_parameter: 'premium_payment'
+    });
+
+    console.log('💳 Инвойс создан успешно');
+    res.json({ 
+      success: true, 
+      message: 'Инвойс отправлен в Telegram'
+    });
+
+  } catch (error) {
+    console.error('❌ Ошибка создания инвойса:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Ошибка создания платежа: ' + error.message 
+    });
+  }
+});
+
+  
 app.post('/api/telegram/create-stars-invoice', async (req, res) => {
   console.log('⭐ Создание Stars инвойса для:', req.body.userId);
   
