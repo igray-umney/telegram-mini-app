@@ -138,14 +138,11 @@ app.post('/api/telegram/create-invoice', async (req, res) => {
  *    возвращаем link на фронт и открываем его через WebApp.openInvoice(link).
  */
 app.post('/api/telegram/create-stars-invoice', async (req, res) => {
-  const g = getChatIdFromInitData(req);
-  if (!g.ok) return res.status(g.code).json({ ok: false, reason: g.msg });
-
   const { plan = 'basic_month', amountStars = 499, description = 'Премиум 30 дней' } = req.body || {};
 
   try {
-    const payload = `stars_sub:${plan}:${g.chatId}`;
-    const resp = await fetch(`https://api.telegram.org/bot${TOKEN}/createInvoiceLink`, {
+    const payload = `stars_sub:${plan}`; // без userId — он не нужен для ссылки
+    const r = await fetch(`https://api.telegram.org/bot${TOKEN}/createInvoiceLink`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -154,25 +151,24 @@ app.post('/api/telegram/create-stars-invoice', async (req, res) => {
         payload,
         currency: 'XTR',
         prices: [{ label: '30 дней', amount: amountStars }],
-        // если нужна подписка (30 дней):
-        // subscription_period: 2592000,
-        // для Stars provider_token не нужен
-        provider_token: ''
+        // subscription_period: 2592000, // можно включить позже для подписки
+        // provider_token не передаём вообще для Stars
       })
     });
 
-    const json = await resp.json();
-    if (!json.ok) {
-      console.error('createInvoiceLink error:', json);
-      return res.status(500).json({ ok: false, error: 'createInvoiceLink_failed' });
-    }
+    const j = await r.json();
+    console.log('createInvoiceLink resp:', j); // подробный лог на Railway
 
-    return res.json({ ok: true, invoiceLink: json.result });
+    if (!j.ok) {
+      return res.status(500).json({ ok: false, error: 'createInvoiceLink_failed', telegram: j });
+    }
+    return res.json({ ok: true, invoiceLink: j.result });
   } catch (e) {
     console.error('create-stars-invoice error:', e);
-    return res.status(500).json({ ok: false, error: 'stars_failed' });
+    return res.status(500).json({ ok: false, error: 'stars_failed', message: e?.message });
   }
 });
+
 
 /**
  * 2-бис) Stars (XTR). Вариант Б: сразу отправляем инвойс в чат (sendInvoice) — chat_id обязателен.
