@@ -86,10 +86,10 @@ const testAmount = 60; // Минимум ~60 рублей для Telegram Paymen
 
   // Обработчики платежей
 if (bot) {
-  bot.on('pre_checkout_query', (query) => {
-    console.log('💰 Pre-checkout query получен:', query.id);
-    bot.answerPreCheckoutQuery(query.id, true);
-  });
+bot.on('pre_checkout_query', async (query) => {
+  try { await bot.answerPreCheckoutQuery(query.id, true); }
+  catch (e) { console.error('pre_checkout_query error', e); }
+});
 
   bot.on('successful_payment', (msg) => {
     console.log('✅ Платеж успешно завершен!');
