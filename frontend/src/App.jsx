@@ -134,46 +134,37 @@ const createStarsPayment = async () => {
     setPaymentStatus("processing");
 
     // вариант 1: сервер сам отправляет invoice пользователю в чат
-    const resp = await fetch("https://telegram-mini-app-production-39d0.up.railway.app/api/telegram/create-stars-invoice", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Init-Data": tg.initData,
-      },
-      body: JSON.stringify({
-        plan: "basic_month",     // твой код тарифа
-        amountStars: 499,        // цена в XTR, если нужно
-      })
-    });
+const resp = await fetch("https://.../api/telegram/create-stars-invoice", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "X-Init-Data": tg.initData,
+  },
+  body: JSON.stringify({ plan: "basic_month", amountStars: 499 })
+});
 
-    if (!resp.ok) {
-      const txt = await resp.text().catch(() => "");
-      throw new Error(`create-stars-invoice HTTP ${resp.status} ${txt}`);
-    }
+if (!resp.ok) throw new Error(...);
 
-    // вариант 2 (если сервер возвращает invoiceLink):
-    // const { invoiceLink } = await resp.json();
-    // if (invoiceLink) {
-    //   tg.openInvoice(invoiceLink, (status) => {
-    //     // статус только информативный; доступ включаем всё равно по /me/access
-    //     console.log("openInvoice status:", status);
-    //   });
-    // }
+const { invoiceLink } = await resp.json();
+if (invoiceLink) {
+  tg.openInvoice(invoiceLink, (status) => {
+    console.log("openInvoice status:", status);
+    // доступ включаем всё равно по /me/access после successful_payment
+  });
+}
 
-    setShowPayment(false);
-    setPaymentStatus("idle");
+setShowPayment(false);
+setPaymentStatus("idle");
+waitPremiumAfterPay(60000).then(ok => {
+  if (!ok) tg.showAlert("Оплата не подтвердилась. Откройте приложение из сообщения бота и попробуйте снова.");
+});
 
-    const ok = await waitPremiumAfterPay(60000);
-    if (!ok) {
-      tg?.showAlert("Оплата не подтвердилась. Откройте приложение из сообщения бота и попробуйте снова.");
-    }
   } catch (err) {
     console.error("Ошибка оплаты в Stars:", err);
     getTg()?.showAlert("Не удалось создать звёздный счёт. Попробуйте ещё раз.");
     setPaymentStatus("idle");
   }
 };
-
 
 const checkServerStatus = async () => {
   addLog('🔍 Проверяем статус сервера...');
