@@ -6,6 +6,7 @@ const express = require('express');
 const cors = require('cors');
 const TelegramBot = require('node-telegram-bot-api');
 const crypto = require('crypto');
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const APP_URL = process.env.APP_URL;
