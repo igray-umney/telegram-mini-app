@@ -249,6 +249,32 @@ reply_markup: {
   });
 }
 
+const crypto = require('crypto');
+
+function verifyInitData(initData, botToken) {
+  const secret = crypto.createHmac('sha256', 'WebAppData').update(botToken).digest();
+  const urlSearch = new URLSearchParams(initData);
+  const hash = urlSearch.get('hash');
+  urlSearch.delete('hash');
+  const dataCheckString = [...urlSearch.entries()]
+    .map(([k,v]) => `${k}=${v}`).sort().join('\n');
+  const hmac = crypto.createHmac('sha256', secret).update(dataCheckString).digest('hex');
+  return hmac === hash ? Object.fromEntries(new URLSearchParams(initData)) : null;
+}
+
+app.get('/me/access', (req, res) => {
+  const initData = req.header('X-Init-Data');
+  const parsed = verifyInitData(initData, TOKEN);
+  if (!parsed) return res.status(401).json({ ok:false });
+
+  const user = JSON.parse(parsed.user); // { id, ... }
+  const db = loadData();
+  const u = db.users.find(x => x.userId === String(user.id));
+  const premium = !!u?.isPremium && (!u.premiumUntil || new Date(u.premiumUntil) > new Date());
+
+  res.json({ premium, premium_until: u?.premiumUntil || null });
+});
+
 // Запуск сервера
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Сервер запущен на порту ${PORT}`);
