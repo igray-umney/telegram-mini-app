@@ -78,211 +78,107 @@ async function waitPremiumAfterPay(timeoutMs = 60000) {
 }
 
 
-  // Payment functions
+  // вспомогалка (если её ещё нет рядом)
+const getTg = () =>
+  (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+
+/** Оплата картой через твой сервер (инвойс провайдера) */
 const createCardPayment = async () => {
-  addLog('🎯 Начинаем оплату картой');
-  
- // Показываем уведомление пользователю
-if (window.Telegram?.WebApp) {
-  window.Telegram.WebApp.showPopup({
-    title: '💳 Счет для оплаты отправлен!',
-    message: '📱 Сверните приложение и найдите сообщение с кнопкой "Заплатить 60,00 RUB"\n\n✅ После оплаты вернитесь в приложение - премиум активируется автоматически',
-    buttons: [
-      { id: 'ok', type: 'default', text: 'Понятно' }
-    ]
-  }, (buttonId) => {
-    addLog('✅ Пользователь закрыл уведомление');
-  });
-}
-
-  const tg = window.Telegram.WebApp;
-  addLog(`📱 WebApp версия: ${tg.version}`);
-  addLog(`👤 Пользователь: ${tg.initDataUnsafe?.user?.id || 'неизвестен'}`);
-
-  if (!telegramUser?.id) {
-    addLog('❌ ID пользователя отсутствует');
-    setPaymentStatus('error');
-    return;
-  }
-
-  setPaymentStatus('processing');
-  addLog(`🔑 ID пользователя: ${telegramUser.id}`);
-
   try {
-    addLog('🌐 Отправляем запрос на сервер...');
-    
-    const response = await fetch('https://telegram-mini-app-production-39d0.up.railway.app/api/telegram/create-invoice', {
-      method: 'POST',
+    const tg = getTg();
+    if (!tg?.initData) {
+      tg?.showAlert("Не удалось получить контекст Telegram. Откройте приложение из сообщения бота.");
+      return;
+    }
+
+    setPaymentStatus("processing");
+
+    // сервер создаёт/отправляет инвойс пользователю в чат
+    const resp = await fetch("https://telegram-mini-app-production-39d0.up.railway.app/api/telegram/create-invoice", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
+        "X-Init-Data": tg.initData, // важно для привязки к пользователю
       },
       body: JSON.stringify({
-        userId: telegramUser.id,
-        amount: 60,
-        description: 'Премиум подписка на 1 месяц'
+        amountRub: 60, // твоя цена; можно передавать план/payload
+        description: "Премиум подписка на 1 месяц"
       })
     });
 
-    addLog(`📡 Статус ответа: ${response.status}`);
-    addLog(`📡 Headers: ${JSON.stringify([...response.headers.entries()])}`);
-    
-    const responseText = await response.text();
-    addLog(`📄 Тело ответа: ${responseText}`);
-    
-if (response.ok) {
-  const responseText = await response.text();
-  addLog(`📄 Сырой ответ: ${responseText}`);
-  
-  let data;
-  try {
-    data = JSON.parse(responseText);
-  } catch (parseError) {
-    addLog('⚠️ Ответ не в формате JSON, но статус OK - считаем успехом');
-    data = { success: true };
-  }
-  
-  addLog('💳 Инвойс создан успешно');
-  
-  // Показываем уведомление пользователю
-  if (window.Telegram?.WebApp) {
-    window.Telegram.WebApp.showAlert(
-      '💳 Счет для оплаты отправлен в чат с ботом!\n\n' +
-      '📱 Свернуте приложение и найдите сообщение с кнопкой "Заплатить 60,00 RUB"\n\n' +
-      '✅ После оплаты вернитесь в приложение - премиум активируется автоматически'
-    );
-  }
-  
- // НЕ активируем премиум автоматически - только после реальной оплаты
-setTimeout(() => {
-  setPaymentStatus('success');
-  addLog('✅ Уведомление показано, ожидаем реальную оплату');
-  
-  // Закрываем модальное окно без активации премиума
-  setTimeout(() => {
-    setShowPayment(false);
-    setPaymentStatus('idle');
-    addLog('💡 Модальное окно закрыто, премиум НЕ активирован автоматически');
-  }, 2000);
-}, 1000);
-  
-} else {
-  const errorText = await response.text();
-  addLog(`❌ Ошибка сервера: ${response.status} - ${errorText}`);
-  setPaymentStatus('error');
-}
-    
-} catch (error) {
-  addLog(`💥 Критическая ошибка: ${error.name}: ${error.message}`);
-  
-  if (error.message.includes('Failed to fetch')) {
-    addLog('🚫 CORS ошибка - сервер не доступен');
-    addLog('🔄 Проверьте настройки CORS на сервере');
-    
-    // Показываем пользователю понятное сообщение
-    if (window.Telegram?.WebApp) {
-      window.Telegram.WebApp.showAlert('Ошибка подключения к серверу. Попробуйте позже.');
+    if (!resp.ok) {
+      const txt = await resp.text().catch(() => "");
+      throw new Error(`create-invoice HTTP ${resp.status} ${txt}`);
     }
+
+    // дальше ничего локально не включаем — ждём server→successful_payment→/me/access
+    setShowPayment(false);
+    setPaymentStatus("idle");
+
+    const ok = await waitPremiumAfterPay(60000);
+    if (!ok) {
+      tg?.showAlert("Оплата не подтвердилась. Откройте приложение из сообщения бота и попробуйте снова.");
+    }
+  } catch (err) {
+    console.error("Ошибка оплаты картой:", err);
+    getTg()?.showAlert("Не удалось создать счёт. Попробуйте ещё раз.");
+    setPaymentStatus("idle");
   }
-  
-  setPaymentStatus('error');
-}
 };
 
-  const createStarsPayment = async () => {
-  addLog('⭐ Начинаем оплату Stars');
-  
-  if (!window.Telegram?.WebApp) {
-    addLog('❌ Telegram WebApp недоступен');
-    setPaymentStatus('error');
-    return;
-  }
 
-  if (!telegramUser?.id) {
-    addLog('❌ ID пользователя отсутствует');
-    setPaymentStatus('error');
-    return;
-  }
-
-  setPaymentStatus('processing');
-  addLog(`🔑 ID пользователя: ${telegramUser.id}`);
-
+  /** Оплата через Stars (XTR). Сервер создаёт ссылку или шлёт инвойс */
+const createStarsPayment = async () => {
   try {
-    addLog('🌐 Отправляем запрос на создание Stars инвойса...');
-    
-    const response = await fetch('https://telegram-mini-app-production-39d0.up.railway.app/api/telegram/create-stars-invoice', {
-      method: 'POST',
+    const tg = getTg();
+    if (!tg?.initData) {
+      tg?.showAlert("Не удалось получить контекст Telegram. Откройте приложение из сообщения бота.");
+      return;
+    }
+
+    setPaymentStatus("processing");
+
+    // вариант 1: сервер сам отправляет invoice пользователю в чат
+    const resp = await fetch("https://telegram-mini-app-production-39d0.up.railway.app/api/telegram/create-stars-invoice", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
+        "X-Init-Data": tg.initData,
       },
       body: JSON.stringify({
-        userId: telegramUser.id,
-        stars: 100,
-        description: 'Премиум подписка Развивайка на 1 месяц'
+        plan: "basic_month",     // твой код тарифа
+        amountStars: 499,        // цена в XTR, если нужно
       })
     });
 
-    addLog(`📡 Статус ответа: ${response.status}`);
-    
-    if (response.ok) {
-      const responseText = await response.text();
-      addLog(`📄 Сырой ответ: ${responseText}`);
-      
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (parseError) {
-        addLog('⚠️ Ответ не в формате JSON, но статус OK - считаем успехом');
-        data = { success: true };
-      }
-      
-      addLog('⭐ Stars инвойс создан успешно');
-      
-     // Показываем уведомление пользователю
-if (window.Telegram?.WebApp) {
-  window.Telegram.WebApp.showPopup({
-    title: '⭐ Счет для оплаты Stars отправлен!',
-    message: '📱 Сверните приложение и найдите сообщение с кнопкой "Заплатить 100 ⭐"\n\n✅ После оплаты вернитесь в приложение - премиум активируется автоматически',
-    buttons: [
-      { id: 'ok', type: 'default', text: 'Понятно' }
-    ]
-  }, (buttonId) => {
-    addLog('✅ Пользователь закрыл уведомление Stars');
-  });
-}
-      
-// НЕ активируем премиум автоматически - только после реальной оплаты
-setTimeout(() => {
-  setPaymentStatus('success');
-  addLog('✅ Уведомление показано, ожидаем реальную оплату');
-  
-  // Закрываем модальное окно без активации премиума
-  setTimeout(() => {
+    if (!resp.ok) {
+      const txt = await resp.text().catch(() => "");
+      throw new Error(`create-stars-invoice HTTP ${resp.status} ${txt}`);
+    }
+
+    // вариант 2 (если сервер возвращает invoiceLink):
+    // const { invoiceLink } = await resp.json();
+    // if (invoiceLink) {
+    //   tg.openInvoice(invoiceLink, (status) => {
+    //     // статус только информативный; доступ включаем всё равно по /me/access
+    //     console.log("openInvoice status:", status);
+    //   });
+    // }
+
     setShowPayment(false);
-    setPaymentStatus('idle');
-    addLog('💡 Модальное окно закрыто, премиум НЕ активирован автоматически');
-  }, 2000);
-}, 1000);
-      
-    } else {
-      const errorText = await response.text();
-      addLog(`❌ Ошибка сервера: ${response.status} - ${errorText}`);
-      setPaymentStatus('error');
+    setPaymentStatus("idle");
+
+    const ok = await waitPremiumAfterPay(60000);
+    if (!ok) {
+      tg?.showAlert("Оплата не подтвердилась. Откройте приложение из сообщения бота и попробуйте снова.");
     }
-    
-  } catch (error) {
-    addLog(`💥 Критическая ошибка: ${error.name}: ${error.message}`);
-    
-    if (error.message.includes('Failed to fetch')) {
-      addLog('🚫 Сервер недоступен для Stars');
-      
-      if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.showAlert('Ошибка подключения к серверу. Попробуйте позже.');
-      }
-    }
-    
-    setPaymentStatus('error');
+  } catch (err) {
+    console.error("Ошибка оплаты в Stars:", err);
+    getTg()?.showAlert("Не удалось создать звёздный счёт. Попробуйте ещё раз.");
+    setPaymentStatus("idle");
   }
 };
+
 
 const checkServerStatus = async () => {
   addLog('🔍 Проверяем статус сервера...');
