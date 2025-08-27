@@ -109,9 +109,9 @@ bot.on('message', async (msg) => {
   await bot.sendMessage(tgUserId,
     '🎉 Премиум активирован! Нажмите, чтобы открыть приложение:',
     {
-      reply_markup: {
-        inline_keyboard: [[{ text: '🚀 Открыть приложение', web_app: { url: APP_URL } }]]
-      }
+reply_markup: {
+  inline_keyboard: [[{ text: '🚀 Открыть приложение', web_app: { url: APP_URL } }]]
+}
     }
   );
 });
@@ -241,9 +241,7 @@ if (bot) {
 
 const keyboard = {
 reply_markup: {
-  inline_keyboard: [
-    [{ text: '🚀 Открыть приложение', url: 'https://telegram-mini-app-gules-nine.vercel.app/' }]
-  ]
+  inline_keyboard: [[{ text: '🚀 Открыть приложение', web_app: { url: APP_URL } }]]
 }
   };
 
