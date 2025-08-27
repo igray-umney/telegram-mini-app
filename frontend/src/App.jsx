@@ -77,11 +77,6 @@ async function waitPremiumAfterPay(timeoutMs = 60000) {
   return false;
 }
 
-
-  // вспомогалка (если её ещё нет рядом)
-const getTg = () =>
-  (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
-
 /** Оплата картой через твой сервер (инвойс провайдера) */
 const createCardPayment = async () => {
   try {
