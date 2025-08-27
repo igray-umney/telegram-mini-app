@@ -91,46 +91,30 @@ bot.on('pre_checkout_query', async (query) => {
   catch (e) { console.error('pre_checkout_query error', e); }
 });
 
-  bot.on('successful_payment', (msg) => {
-    console.log('✅ Платеж успешно завершен!');
-    
-    const userId = msg.from.id.toString();
-    
-    // Сохраняем статус премиума в базу данных
-    const data = loadData();
-    let user = data.users.find(u => u.userId === userId);
-    
-    if (!user) {
-      user = {
-        userId,
-        username: msg.from.username,
-        firstName: msg.from.first_name,
-        hasStarted: true,
-        enabled: false,
-        createdAt: new Date().toISOString()
-      };
-      data.users.push(user);
-    }
-    
-    // Активируем премиум
-    user.isPremium = true;
-    user.premiumActivatedAt = new Date().toISOString();
-    
-    saveData(data);
-    console.log(`✅ Премиум активирован для пользователя: ${userId}`);
-    
-    // Отправляем сообщение об успешной активации
-    bot.sendMessage(userId, 
-      '🎉 Поздравляем! Премиум подписка активирована!',
-      { 
-        reply_markup: {
-          inline_keyboard: [
-            [{ text: '🚀 Открыть приложение', url: 'https://telegram-mini-app-gules-nine.vercel.app/' }]
-          ]
-        }
+bot.on('message', async (msg) => {
+  const sp = msg.successful_payment;
+  if (!sp) return;
+
+  const tgUserId = String(msg.from.id);
+  const data = loadData();
+  let user = data.users.find(u => u.userId === tgUserId);
+  if (!user) { user = { userId: tgUserId, createdAt: new Date().toISOString() }; data.users.push(user); }
+
+  user.isPremium = true;
+  user.premiumActivatedAt = new Date().toISOString();
+  user.premiumUntil = new Date(Date.now() + 30*24*3600*1000).toISOString(); // месяц
+  saveData(data);
+
+  // ВАЖНО: отправляем СВОЮ кнопку c web_app, а не url
+  await bot.sendMessage(tgUserId,
+    '🎉 Премиум активирован! Нажмите, чтобы открыть приложение:',
+    {
+      reply_markup: {
+        inline_keyboard: [[{ text: '🚀 Открыть приложение', web_app: { url: APP_URL } }]]
       }
-    );
-  });
+    }
+  );
+});
 }
 
 app.post('/api/telegram/create-invoice', async (req, res) => {
