@@ -137,11 +137,11 @@ app.post('/api/telegram/create-invoice', async (req, res) => {
  * 2) Stars (XTR). Вариант А: создаём ссылку через createInvoiceLink — chat_id не нужен,
  *    возвращаем link на фронт и открываем его через WebApp.openInvoice(link).
  */
+
 app.post('/api/telegram/create-stars-invoice', async (req, res) => {
   const { plan = 'basic_month', amountStars = 499, description = 'Премиум 30 дней' } = req.body || {};
-
   try {
-    const payload = `stars_sub:${plan}`; // без userId — он не нужен для ссылки
+    const payload = `stars_sub:${plan}`; // chat_id не нужен для ссылки
     const r = await fetch(`https://api.telegram.org/bot${TOKEN}/createInvoiceLink`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -151,23 +151,20 @@ app.post('/api/telegram/create-stars-invoice', async (req, res) => {
         payload,
         currency: 'XTR',
         prices: [{ label: '30 дней', amount: amountStars }],
-        // subscription_period: 2592000, // можно включить позже для подписки
-        // provider_token не передаём вообще для Stars
+        // subscription_period: 2592000, // включишь, если нужна подписка
+        provider_token: '' // для Stars не нужен, можно не указывать
       })
     });
-
     const j = await r.json();
-    console.log('createInvoiceLink resp:', j); // подробный лог на Railway
-
-    if (!j.ok) {
-      return res.status(500).json({ ok: false, error: 'createInvoiceLink_failed', telegram: j });
-    }
+    console.log('createInvoiceLink resp:', j);
+    if (!j.ok) return res.status(500).json({ ok: false, error: 'createInvoiceLink_failed', telegram: j });
     return res.json({ ok: true, invoiceLink: j.result });
   } catch (e) {
     console.error('create-stars-invoice error:', e);
     return res.status(500).json({ ok: false, error: 'stars_failed', message: e?.message });
   }
 });
+
 
 
 /**
