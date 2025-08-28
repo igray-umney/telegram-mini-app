@@ -1,3 +1,8 @@
+import os, sys
+sys.path.append(os.path.dirname(__file__))  # чтобы видеть database.py рядом
+from database import Database
+
+
 import logging
 import os
 from datetime import datetime
