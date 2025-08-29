@@ -296,11 +296,31 @@ async function savePaymentInfo(telegramId, paymentData, plan, amount, method) {
     
     const userId = userResult.rows[0].id;
     
-    // Сохраняем информацию о платеже
+    // Вычисляем дату окончания подписки
+    let expiresAt;
+    const now = new Date();
+    switch (plan) {
+      case 'month':
+        expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // +30 дней
+        break;
+      case 'quarter':
+        expiresAt = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000); // +90 дней
+        break;
+      case 'half':
+        expiresAt = new Date(now.getTime() + 180 * 24 * 60 * 60 * 1000); // +180 дней
+        break;
+      case 'year':
+        expiresAt = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000); // +365 дней
+        break;
+      default:
+        expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // по умолчанию месяц
+    }
+    
+    // Сохраняем информацию о платеже С expires_at
     await pool.query(
-      `INSERT INTO subscriptions (user_id, plan_type, status, payment_method, payment_id, amount_paid)
-       VALUES ($1, $2, 'pending', $3, $4, $5)`,
-      [userId, plan, method, paymentData.id, amount]
+      `INSERT INTO subscriptions (user_id, plan_type, status, payment_method, payment_id, amount_paid, expires_at)
+       VALUES ($1, $2, 'pending', $3, $4, $5, $6)`,
+      [userId, plan, method, paymentData.id, amount, expiresAt]
     );
     
     return true;
