@@ -19,12 +19,6 @@ const pool = new Pool({
 // СНАЧАЛА создаем бота
 const bot = new Bot(process.env.BOT_TOKEN);
 
-// ПОТОМ добавляем webhook обработчик
-app.post('/webhook/telegram', (req, res) => {
-  bot.handleUpdate(req.body);
-  res.sendStatus(200);
-});
-
 // Тарифные планы
 const PLANS = {
   month: { price: 19900, title: "1 месяц", stars: 199 }, // цены в копейках для ЮКасса, в Stars для Telegram
@@ -51,6 +45,12 @@ bot.command('start', async (ctx) => {
 Нажмите "Открыть приложение" чтобы начать!`,
     { reply_markup: keyboard }
   );
+});
+
+// ПОТОМ добавляем webhook обработчик
+app.post('/webhook/telegram', (req, res) => {
+  bot.handleUpdate(req.body);
+  res.sendStatus(200);
 });
 
 // Обработка callback'ов
