@@ -6,7 +6,7 @@ const { Pool } = require('pg');
 const express = require('express');
 require('dotenv').config();
 
-// Express сервер для webhook'ов
+// Express сервер
 const app = express();
 app.use(express.json());
 
@@ -16,13 +16,14 @@ const pool = new Pool({
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
-// Telegram webhook обработчик
+// СНАЧАЛА создаем бота
+const bot = new Bot(process.env.BOT_TOKEN);
+
+// ПОТОМ добавляем webhook обработчик
 app.post('/webhook/telegram', (req, res) => {
   bot.handleUpdate(req.body);
   res.sendStatus(200);
 });
-
-const bot = new Bot(process.env.BOT_TOKEN);
 
 // Тарифные планы
 const PLANS = {
