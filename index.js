@@ -59,7 +59,9 @@ bot.callbackQuery('open_app', async (ctx) => {
   const webAppUrl = `${process.env.WEBAPP_URL}?user_id=${userId}`;
   
   const keyboard = new InlineKeyboard()
-    .webApp('🎮 Открыть приложение', webAppUrl);
+    .webApp('🎮 Открыть приложение', webAppUrl)
+    .row()
+    .text('◀️ Назад', 'back_main');
     
   await ctx.editMessageText(
     `🎮 Нажмите кнопку ниже чтобы открыть приложение:`,
