@@ -1,23 +1,3 @@
-// package.json
-{
-  "name": "kids-dev-bot",
-  "version": "1.0.0",
-  "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js"
-  },
-  "dependencies": {
-    "grammy": "^1.21.1",
-    "node-cron": "^3.0.3",
-    "axios": "^1.6.0",
-    "dotenv": "^16.3.1",
-    "pg": "^8.11.3",
-    "express": "^4.18.2",
-    "uuid": "^9.0.1"
-  }
-}
-
-// index.js
 const { Bot, Keyboard, InlineKeyboard } = require('grammy');
 const cron = require('node-cron');
 const axios = require('axios');
