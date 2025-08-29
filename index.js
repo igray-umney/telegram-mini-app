@@ -471,6 +471,10 @@ async function initDatabase() {
 async function startApp() {
   // Инициализация базы данных при запуске
   await initDatabase();
+
+  await bot.init();
+  console.log('Bot initialized successfully');
+  
   // Webhook для ЮКассы
   app.post('/webhook/yookassa', async (req, res) => {
     try {
