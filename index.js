@@ -16,6 +16,12 @@ const pool = new Pool({
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
+// Telegram webhook обработчик
+app.post('/webhook/telegram', (req, res) => {
+  bot.handleUpdate(req.body);
+  res.sendStatus(200);
+});
+
 const bot = new Bot(process.env.BOT_TOKEN);
 
 // Тарифные планы
