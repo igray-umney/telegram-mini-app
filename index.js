@@ -530,8 +530,7 @@ async function startApp() {
   });
 
   // Запускаем Telegram бота
-  bot.start();
-  console.log('Bot started successfully');
+console.log('Bot configured for webhook mode');
 }
 
 startApp().catch(console.error);
