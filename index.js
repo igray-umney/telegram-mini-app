@@ -1,3 +1,23 @@
+// package.json
+{
+  "name": "kids-dev-bot",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "grammy": "^1.21.1",
+    "node-cron": "^3.0.3",
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1",
+    "pg": "^8.11.3",
+    "express": "^4.18.2",
+    "uuid": "^9.0.1"
+  }
+}
+
+// index.js
 const { Bot, Keyboard, InlineKeyboard } = require('grammy');
 const cron = require('node-cron');
 const axios = require('axios');
@@ -365,8 +385,105 @@ cron.schedule('0 10 * * *', () => {
   console.log('Sending morning reminders...');
 });
 
+// Функция инициализации базы данных
+async function initDatabase() {
+  try {
+    console.log('🔧 Инициализация базы данных...');
+    
+    // Создание таблицы users
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        telegram_id BIGINT UNIQUE NOT NULL,
+        username VARCHAR(255),
+        first_name VARCHAR(255),
+        child_name VARCHAR(255),
+        child_age_months INTEGER DEFAULT 12,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    
+    // Создание таблицы subscriptions
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS subscriptions (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        plan_type VARCHAR(50) NOT NULL,
+        status VARCHAR(50) DEFAULT 'active',
+        starts_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        expires_at TIMESTAMP NOT NULL,
+        payment_method VARCHAR(50),
+        payment_id VARCHAR(255),
+        amount_paid INTEGER,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    
+    // Создание таблицы activities
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS activities (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        age_min_months INTEGER NOT NULL,
+        age_max_months INTEGER NOT NULL,
+        category VARCHAR(100),
+        requires_device BOOLEAN DEFAULT FALSE,
+        requires_props BOOLEAN DEFAULT FALSE,
+        is_premium BOOLEAN DEFAULT TRUE,
+        content_type VARCHAR(50),
+        content_data JSONB,
+        duration_minutes INTEGER,
+        difficulty_level INTEGER DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    
+    // Создание таблицы user_progress
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS user_progress (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        activity_id INTEGER REFERENCES activities(id) ON DELETE CASCADE,
+        completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        rating INTEGER,
+        notes TEXT,
+        completion_time_minutes INTEGER
+      )
+    `);
+    
+    // Создание индексов
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_users_telegram_id ON users(telegram_id);
+      CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id);
+      CREATE INDEX IF NOT EXISTS idx_activities_premium ON activities(is_premium);
+      CREATE INDEX IF NOT EXISTS idx_user_progress_user_id ON user_progress(user_id);
+    `);
+    
+    // Добавление тестовых активностей (только если их нет)
+    const activitiesCount = await pool.query('SELECT COUNT(*) FROM activities');
+    if (parseInt(activitiesCount.rows[0].count) === 0) {
+      await pool.query(`
+        INSERT INTO activities (title, description, age_min_months, age_max_months, category, requires_device, requires_props, is_premium, content_type, duration_minutes) VALUES 
+        ('Пальчиковая гимнастика «Сорока»', 'Классическая игра для развития мелкой моторики', 12, 24, 'physical', false, false, false, 'text', 5),
+        ('Игра с мячиком', 'Катание мяча друг другу для координации', 15, 24, 'physical', false, true, false, 'text', 10),
+        ('Изучаем животных', 'Показываем картинки и звуки животных', 12, 24, 'cognitive', true, false, false, 'interactive', 8)
+      `);
+      console.log('✅ Тестовые активности добавлены');
+    }
+    
+    console.log('✅ База данных инициализирована успешно');
+  } catch (error) {
+    console.error('❌ Ошибка инициализации базы данных:', error);
+  }
+}
+
 // Запуск бота и сервера
 async function startApp() {
+  // Инициализация базы данных при запуске
+  await initDatabase();
   // Webhook для ЮКассы
   app.post('/webhook/yookassa', async (req, res) => {
     try {
