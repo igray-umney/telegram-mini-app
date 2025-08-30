@@ -334,6 +334,8 @@ async function savePaymentInfo(telegramId, paymentData, plan, amount, method) {
 
 async function activateSubscription(paymentId) {
   try {
+    console.log('Ищем платеж с ID:', paymentId);
+    
     // Находим платеж и активируем подписку
     const result = await pool.query(
       `UPDATE subscriptions 
@@ -350,15 +352,23 @@ async function activateSubscription(paymentId) {
       [paymentId]
     );
     
+    console.log('Результат обновления подписки:', result.rows);
+    
     if (result.rows.length > 0) {
       const { user_id, plan_type } = result.rows[0];
+      console.log('Найден user_id:', user_id, 'plan:', plan_type);
       
       // Получаем telegram_id пользователя
       const userResult = await pool.query('SELECT telegram_id FROM users WHERE id = $1', [user_id]);
+      console.log('Результат поиска telegram_id:', userResult.rows);
       
       if (userResult.rows.length > 0) {
-        return userResult.rows[0].telegram_id;
+        const telegramId = userResult.rows[0].telegram_id;
+        console.log('Возвращаем telegram_id:', telegramId);
+        return telegramId;
       }
+    } else {
+      console.log('ПРОБЛЕМА: Не найден платеж для активации');
     }
     
     return null;
