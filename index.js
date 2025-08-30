@@ -498,43 +498,56 @@ async function startApp() {
   console.log('Bot initialized successfully');
   
   // Webhook для ЮКассы
-  app.post('/webhook/yookassa', async (req, res) => {
-    try {
-      const { type, object } = req.body;
+app.post('/webhook/yookassa', async (req, res) => {
+  try {
+    console.log('=== ЮКасса webhook получен ===');
+    console.log('Headers:', JSON.stringify(req.headers, null, 2));
+    console.log('Body:', JSON.stringify(req.body, null, 2));
+    
+    const { type, object } = req.body;
+    
+    if (type === 'payment.succeeded') {
+      console.log('Обрабатываем успешный платеж:', object.id);
+      const paymentId = object.id;
+      const userId = object.metadata.user_id;
       
-      if (type === 'payment.succeeded') {
-        const paymentId = object.id;
-        const userId = object.metadata.user_id;
+      console.log('Payment ID:', paymentId);
+      console.log('User ID:', userId);
+      
+      // Активируем подписку
+      const telegramId = await activateSubscription(paymentId);
+      console.log('Telegram ID после активации:', telegramId);
+      
+      if (telegramId) {
+        // Отправляем уведомление пользователю
+        const premiumUrl = `${process.env.WEBAPP_URL}/premium.html?user_id=${telegramId}&token=${generatePremiumToken(telegramId)}`;
         
-        // Активируем подписку
-        const telegramId = await activateSubscription(paymentId);
+        const keyboard = new InlineKeyboard()
+          .webApp('🌟 Открыть премиум версию', premiumUrl);
         
-        if (telegramId) {
-          // Отправляем уведомление пользователю
-          const premiumUrl = `${process.env.WEBAPP_URL}/premium?user_id=${telegramId}&token=${generatePremiumToken(telegramId)}`;
+        await bot.api.sendMessage(telegramId, 
+          `🎉 Оплата прошла успешно! Премиум доступ активирован.
           
-          const keyboard = new InlineKeyboard()
-            .webApp('🌟 Открыть премиум версию', premiumUrl);
-          
-          await bot.api.sendMessage(telegramId, 
-            `🎉 Оплата прошла успешно! Премиум доступ активирован.
-            
 Теперь вам доступны все функции:
 ✅ 20+ развивающих активностей
 📊 Трекинг прогресса ребенка
 📚 Материалы для родителей
 ⏰ Персонализированные напоминания`,
-            { reply_markup: keyboard }
-          );
-        }
+          { reply_markup: keyboard }
+        );
+        
+        console.log('Уведомление отправлено пользователю:', telegramId);
       }
-      
-      res.status(200).json({ status: 'ok' });
-    } catch (error) {
-      console.error('Webhook error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+    } else {
+      console.log('Получен webhook типа:', type);
     }
-  });
+    
+    res.status(200).json({ status: 'ok' });
+  } catch (error) {
+    console.error('Webhook error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
   // Health check endpoint
   app.get('/health', (req, res) => {
