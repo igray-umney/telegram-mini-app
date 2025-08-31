@@ -511,63 +511,26 @@ async function startApp() {
 app.post('/webhook/yookassa', async (req, res) => {
   try {
     console.log('=== ЮКасса webhook получен ===');
-    const { type, object } = req.body;
+    console.log('Тип события:', req.body.type);
     
-    if (type === 'payment.succeeded') {
-      const paymentId = object.id;
-      const userId = object.metadata.user_id;
+    if (req.body.type === 'payment.succeeded') {
+      const userId = req.body.object.metadata.user_id;
+      console.log('Получен успешный платеж от пользователя:', userId);
       
-      console.log('Payment ID:', paymentId);
-      console.log('User ID from metadata:', userId);
-      
-      // ПРОВЕРЯЕМ ЧТО ЕСТЬ В БАЗЕ ДАННЫХ
-      const checkPayment = await pool.query(
-        'SELECT * FROM subscriptions WHERE payment_id = $1',
-        [paymentId]
+      // Простая отправка сообщения без сложной логики БД
+      await bot.api.sendMessage(userId, 
+        '🎉 Платеж получен! Активирую подписку...'
       );
-      console.log('Платеж в БД:', checkPayment.rows);
       
-      const checkUser = await pool.query(
-        'SELECT * FROM users WHERE telegram_id = $1',
-        [userId]
-      );
-      console.log('Пользователь в БД:', checkUser.rows);
-      
-      // Если платеж не найден, создаем запись вручную
-      if (checkPayment.rows.length === 0) {
-        console.log('Платеж не найден в БД, создаем вручную');
-        
-        // Создаем пользователя если нет
-        await pool.query(
-          'INSERT INTO users (telegram_id) VALUES ($1) ON CONFLICT (telegram_id) DO NOTHING',
-          [userId]
-        );
-        
-        // Получаем ID пользователя
-        const userResult = await pool.query('SELECT id FROM users WHERE telegram_id = $1', [userId]);
-        const dbUserId = userResult.rows[0].id;
-        
-        // Создаем активную подписку
-        await pool.query(
-          `INSERT INTO subscriptions (user_id, plan_type, status, payment_id, expires_at, amount_paid)
-           VALUES ($1, 'month', 'active', $2, CURRENT_TIMESTAMP + INTERVAL '1 month', $3)`,
-          [dbUserId, paymentId, 19900]
-        );
-        
-        console.log('Подписка создана и активирована');
-        
-        // Отправляем уведомление
-        const premiumUrl = `${process.env.WEBAPP_URL}/premium.html?user_id=${userId}`;
-        await bot.api.sendMessage(userId, 
-          `🎉 Оплата прошла успешно! Премиум доступ активирован.`
-        );
-      }
+      console.log('Сообщение отправлено');
     }
     
     res.status(200).json({ status: 'ok' });
+    console.log('Webhook обработан успешно');
+    
   } catch (error) {
-    console.error('Webhook error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Ошибка webhook:', error.message);
+    res.status(500).json({ error: error.message });
   }
 });
 
