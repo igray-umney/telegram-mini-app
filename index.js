@@ -512,30 +512,59 @@ app.post('/webhook/yookassa', async (req, res) => {
   try {
     console.log('=== ЮКасса webhook получен ===');
     console.log('Тип события:', req.body.type);
-    console.log('Объект:', req.body.object);
     
-    // Проверяем разные типы событий
-    if (req.body.type === 'payment.succeeded' || 
-        (req.body.type === 'notification' && req.body.object && req.body.object.status === 'succeeded')) {
-      
+    if (req.body.type === 'notification' && req.body.object && req.body.object.status === 'succeeded') {
       const userId = req.body.object.metadata.user_id;
-      console.log('Получен успешный платеж от пользователя:', userId);
+      const plan = req.body.object.metadata.plan;
+      const paymentId = req.body.object.id;
       
-      // Отправляем уведомление
-      await bot.api.sendMessage(userId, 
-        '🎉 Платеж получен! Активирую подписку...'
+      console.log('Получен успешный платеж:');
+      console.log('- User ID:', userId);
+      console.log('- Plan:', plan);
+      console.log('- Payment ID:', paymentId);
+      
+      // Создаем или обновляем пользователя
+      await pool.query(
+        'INSERT INTO users (telegram_id) VALUES ($1) ON CONFLICT (telegram_id) DO NOTHING',
+        [userId]
       );
       
-      console.log('Сообщение отправлено');
-    } else {
-      console.log('Событие не является успешным платежом');
+      // Получаем ID пользователя
+      const userResult = await pool.query('SELECT id FROM users WHERE telegram_id = $1', [userId]);
+      const dbUserId = userResult.rows[0].id;
+      
+      // Создаем активную подписку
+      await pool.query(
+        `INSERT INTO subscriptions (user_id, plan_type, status, payment_id, expires_at, amount_paid)
+         VALUES ($1, $2, 'active', $3, CURRENT_TIMESTAMP + INTERVAL '1 month', 19900)`,
+        [dbUserId, plan, paymentId]
+      );
+      
+      console.log('Подписка активирована для пользователя:', userId);
+      
+      // Отправляем уведомление с премиум ссылкой
+      const premiumUrl = `${process.env.WEBAPP_URL}/premium.html?user_id=${userId}`;
+      
+      const keyboard = new InlineKeyboard()
+        .webApp('🌟 Открыть премиум версию', premiumUrl);
+      
+      await bot.api.sendMessage(userId, 
+        `🎉 Оплата прошла успешно! Премиум доступ активирован.
+
+Теперь вам доступны все функции:
+✅ 20+ развивающих активностей
+📊 Трекинг прогресса ребенка
+📚 Материалы для родителей`,
+        { reply_markup: keyboard }
+      );
+      
+      console.log('Премиум доступ отправлен пользователю');
     }
     
     res.status(200).json({ status: 'ok' });
-    console.log('Webhook обработан успешно');
     
   } catch (error) {
-    console.error('Ошибка webhook:', error.message);
+    console.error('Ошибка webhook:', error);
     res.status(500).json({ error: error.message });
   }
 });
