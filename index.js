@@ -512,17 +512,23 @@ app.post('/webhook/yookassa', async (req, res) => {
   try {
     console.log('=== ЮКасса webhook получен ===');
     console.log('Тип события:', req.body.type);
+    console.log('Объект:', req.body.object);
     
-    if (req.body.type === 'payment.succeeded') {
+    // Проверяем разные типы событий
+    if (req.body.type === 'payment.succeeded' || 
+        (req.body.type === 'notification' && req.body.object && req.body.object.status === 'succeeded')) {
+      
       const userId = req.body.object.metadata.user_id;
       console.log('Получен успешный платеж от пользователя:', userId);
       
-      // Простая отправка сообщения без сложной логики БД
+      // Отправляем уведомление
       await bot.api.sendMessage(userId, 
         '🎉 Платеж получен! Активирую подписку...'
       );
       
       console.log('Сообщение отправлено');
+    } else {
+      console.log('Событие не является успешным платежом');
     }
     
     res.status(200).json({ status: 'ok' });
