@@ -511,45 +511,57 @@ async function startApp() {
 app.post('/webhook/yookassa', async (req, res) => {
   try {
     console.log('=== ЮКасса webhook получен ===');
-    console.log('Headers:', JSON.stringify(req.headers, null, 2));
-    console.log('Body:', JSON.stringify(req.body, null, 2));
-    
     const { type, object } = req.body;
     
     if (type === 'payment.succeeded') {
-      console.log('Обрабатываем успешный платеж:', object.id);
       const paymentId = object.id;
       const userId = object.metadata.user_id;
       
       console.log('Payment ID:', paymentId);
-      console.log('User ID:', userId);
+      console.log('User ID from metadata:', userId);
       
-      // Активируем подписку
-      const telegramId = await activateSubscription(paymentId);
-      console.log('Telegram ID после активации:', telegramId);
+      // ПРОВЕРЯЕМ ЧТО ЕСТЬ В БАЗЕ ДАННЫХ
+      const checkPayment = await pool.query(
+        'SELECT * FROM subscriptions WHERE payment_id = $1',
+        [paymentId]
+      );
+      console.log('Платеж в БД:', checkPayment.rows);
       
-      if (telegramId) {
-        // Отправляем уведомление пользователю
-        const premiumUrl = `${process.env.WEBAPP_URL}/premium.html?user_id=${telegramId}&token=${generatePremiumToken(telegramId)}`;
+      const checkUser = await pool.query(
+        'SELECT * FROM users WHERE telegram_id = $1',
+        [userId]
+      );
+      console.log('Пользователь в БД:', checkUser.rows);
+      
+      // Если платеж не найден, создаем запись вручную
+      if (checkPayment.rows.length === 0) {
+        console.log('Платеж не найден в БД, создаем вручную');
         
-        const keyboard = new InlineKeyboard()
-          .webApp('🌟 Открыть премиум версию', premiumUrl);
-        
-        await bot.api.sendMessage(telegramId, 
-          `🎉 Оплата прошла успешно! Премиум доступ активирован.
-          
-Теперь вам доступны все функции:
-✅ 20+ развивающих активностей
-📊 Трекинг прогресса ребенка
-📚 Материалы для родителей
-⏰ Персонализированные напоминания`,
-          { reply_markup: keyboard }
+        // Создаем пользователя если нет
+        await pool.query(
+          'INSERT INTO users (telegram_id) VALUES ($1) ON CONFLICT (telegram_id) DO NOTHING',
+          [userId]
         );
         
-        console.log('Уведомление отправлено пользователю:', telegramId);
+        // Получаем ID пользователя
+        const userResult = await pool.query('SELECT id FROM users WHERE telegram_id = $1', [userId]);
+        const dbUserId = userResult.rows[0].id;
+        
+        // Создаем активную подписку
+        await pool.query(
+          `INSERT INTO subscriptions (user_id, plan_type, status, payment_id, expires_at, amount_paid)
+           VALUES ($1, 'month', 'active', $2, CURRENT_TIMESTAMP + INTERVAL '1 month', $3)`,
+          [dbUserId, paymentId, 19900]
+        );
+        
+        console.log('Подписка создана и активирована');
+        
+        // Отправляем уведомление
+        const premiumUrl = `${process.env.WEBAPP_URL}/premium.html?user_id=${userId}`;
+        await bot.api.sendMessage(userId, 
+          `🎉 Оплата прошла успешно! Премиум доступ активирован.`
+        );
       }
-    } else {
-      console.log('Получен webhook типа:', type);
     }
     
     res.status(200).json({ status: 'ok' });
